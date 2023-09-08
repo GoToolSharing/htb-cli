@@ -16,7 +16,7 @@ var bloodCmd = &cobra.Command{
 			machine_id = utils.SearchMachineIDByName(args[0], "")
 			machine_id = fmt.Sprintf("%v", machine_id)
 		} else {
-			machine_id_interface := utils.GetActiveMachineID()
+			machine_id_interface := utils.GetActiveMachineID(proxyParam)
 			machine_id = fmt.Sprintf("%v", machine_id_interface)
 		}
 		url := "https://www.hackthebox.com/api/v4/machine/profile/" + machine_id

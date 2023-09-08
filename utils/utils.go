@@ -100,24 +100,21 @@ func GetUserSubscription(proxyURL string) string {
 	return "free"
 }
 
-func GetActiveMachineID() interface{} {
+func GetActiveMachineID(proxyURL string) string {
 	url := "https://www.hackthebox.com/api/v4/machine/active"
-	resp := HtbGet(url)
+	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 	info := ParseJsonMessage(resp, "info")
 	if info == nil {
-		url = "https://www.hackthebox.com/api/v4/release_arena/active"
-		resp = HtbGet(url)
-		info = ParseJsonMessage(resp, "info")
-		if info == nil {
-			fmt.Println("No machine is running")
-			os.Exit(1)
-		}
-		return info.(map[string]interface{})["id"]
-	} else {
-		return info.(map[string]interface{})["id"]
+		fmt.Println("No machine is running")
+		os.Exit(0)
 	}
+	return fmt.Sprintf("%.0f", info.(map[string]interface{})["id"].(float64))
 }
 
+// Can get GetActiveMachineID() here
 func GetActiveMachineName(machine_id interface{}) interface{} {
 	machine_id = fmt.Sprintf("%v", machine_id)
 	url := "https://www.hackthebox.com/api/v4/machine/profile/" + machine_id.(string)

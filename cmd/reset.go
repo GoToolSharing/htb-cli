@@ -12,7 +12,7 @@ var resetCmd = &cobra.Command{
 	Short: "Reset a machine",
 	Long:  "Reset a machine",
 	Run: func(cmd *cobra.Command, args []string) {
-		machine_id := utils.GetActiveMachineID()
+		machine_id := utils.GetActiveMachineID(proxyParam)
 		machine_id_string := fmt.Sprintf("%v", machine_id)
 		machine_type := utils.GetMachineType(machine_id, "")
 		machine_id = fmt.Sprintf("%v", machine_id)
