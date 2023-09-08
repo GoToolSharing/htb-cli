@@ -10,6 +10,15 @@ import (
 	"strconv"
 )
 
+type Machine struct {
+	ID    string `json:"id"`
+	Value string `json:"value"`
+}
+
+type Root struct {
+	Machines interface{} `json:"machines"`
+}
+
 func SearchMachineIDByName(machine_name string, proxyURL string) string {
 	url := "https://www.hackthebox.com/api/v4/search/fetch?query=" + machine_name
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
@@ -20,11 +29,29 @@ func SearchMachineIDByName(machine_name string, proxyURL string) string {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	var result map[string]interface{}
-	json.Unmarshal([]byte(json_body), &result)
-	machinesArray := result["machines"].([]interface{})
-	machineData := machinesArray[0].(map[string]interface{})
-	return machineData["id"].(string)
+
+	var root Root
+	err = json.Unmarshal([]byte(json_body), &root)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	// The HackTheBox API can return either a slice or a map
+	switch root.Machines.(type) {
+	case []interface{}:
+		var machines []Machine
+		machineData, _ := json.Marshal(root.Machines)
+		json.Unmarshal(machineData, &machines)
+		return machines[0].ID
+	case map[string]interface{}:
+		var machines map[string]Machine
+		machineData, _ := json.Marshal(root.Machines)
+		json.Unmarshal(machineData, &machines)
+		return machines["0"].ID
+	default:
+		log.Fatal("No machine found")
+	}
+	return ""
 }
 
 func ParseJsonMessage(resp *http.Response, key string) interface{} {
