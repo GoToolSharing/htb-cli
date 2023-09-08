@@ -13,7 +13,7 @@ var bloodCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		machine_id := ""
 		if len(args) != 0 {
-			machine_id = utils.SearchMachineIDByName(args[0])
+			machine_id = utils.SearchMachineIDByName(args[0], "")
 			machine_id = fmt.Sprintf("%v", machine_id)
 		} else {
 			machine_id_interface := utils.GetActiveMachineID()

@@ -10,9 +10,12 @@ import (
 	"strconv"
 )
 
-func SearchMachineIDByName(machine_name string) string {
+func SearchMachineIDByName(machine_name string, proxyURL string) string {
 	url := "https://www.hackthebox.com/api/v4/search/fetch?query=" + machine_name
-	resp := HtbGet(url)
+	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 	json_body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalln(err)

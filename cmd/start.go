@@ -16,7 +16,7 @@ var startCmd = &cobra.Command{
 			fmt.Println("USAGE : htb-cli start MACHINE_NAME")
 			return
 		}
-		machine_id := utils.SearchMachineIDByName(args[0])
+		machine_id := utils.SearchMachineIDByName(args[0], "")
 		machine_type := utils.GetMachineType(machine_id)
 		user_subscription := utils.GetUserSubscription()
 		if machine_type == "release" {
