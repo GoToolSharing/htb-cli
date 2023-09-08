@@ -14,8 +14,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var proxyParam string
-
 var activeCmd = &cobra.Command{
 	Use:   "active",
 	Short: "List of active machines",
@@ -58,5 +56,4 @@ var activeCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(activeCmd)
-	activeCmd.Flags().StringVarP(&proxyParam, "proxy", "p", "", "Configure a URL for an HTTP proxy")
 }

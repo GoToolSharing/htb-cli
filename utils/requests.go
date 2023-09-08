@@ -62,7 +62,6 @@ func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte
 	log.Println("HTTP request URL :", req.URL)
 	log.Println("HTTP request method :", req.Method)
 	log.Println("HTTP request body :", req.Body)
-	log.Println("HTTP request headers :", req.Header)
 
 	client := &http.Client{Transport: transport}
 
@@ -74,6 +73,7 @@ func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte
 	return resp, nil
 }
 
+// TODO : Remove this
 func HtbGet(url string) *http.Response {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	JWT_TOKEN := GetHTBToken()

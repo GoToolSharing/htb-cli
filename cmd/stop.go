@@ -14,8 +14,8 @@ var stopCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		machine_id := utils.GetActiveMachineID()
 		machine_id_string := fmt.Sprintf("%v", machine_id)
-		machine_type := utils.GetMachineType(machine_id)
-		user_subscription := utils.GetUserSubscription()
+		machine_type := utils.GetMachineType(machine_id, "")
+		user_subscription := utils.GetUserSubscription(proxyParam)
 
 		if machine_type == "release" {
 			url := "https://www.hackthebox.com/api/v4/release_arena/terminate"

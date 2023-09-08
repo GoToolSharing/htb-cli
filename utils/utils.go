@@ -25,10 +25,8 @@ func SearchMachineIDByName(machine_name string, proxyURL string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	json_body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	defer resp.Body.Close()
+	json_body, _ := io.ReadAll(resp.Body)
 
 	var root Root
 	err = json.Unmarshal([]byte(json_body), &root)
@@ -55,27 +53,31 @@ func SearchMachineIDByName(machine_name string, proxyURL string) string {
 }
 
 func ParseJsonMessage(resp *http.Response, key string) interface{} {
-	json_body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	json_body, _ := io.ReadAll(resp.Body)
 	var result map[string]interface{}
 	json.Unmarshal([]byte(json_body), &result)
 	return result[key]
 }
 
-func GetMachineType(machine_id interface{}) string {
-	machine_id = fmt.Sprintf("%v", machine_id)
+func GetMachineType(machine_id interface{}, proxyURL string) string {
+	// Check if the machine is the latest release
 	url := "https://www.hackthebox.com/api/v4/machine/recommended/"
-	resp := HtbGet(url)
-	card1 := ParseJsonMessage(resp, "card1").(map[string]interface{})
+	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	card := ParseJsonMessage(resp, "card1").(map[string]interface{})
 	fmachine_id, _ := strconv.ParseFloat(machine_id.(string), 64)
-	if card1["id"].(float64) == fmachine_id {
+	if card["id"].(float64) == fmachine_id {
 		return "release"
 	}
 
+	// Check if the machine is active or retired
 	url = "https://www.hackthebox.com/api/v4/machine/profile/" + machine_id.(string)
-	resp = HtbGet(url)
+	resp, err = HtbRequest(http.MethodGet, url, proxyURL, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 	info := ParseJsonMessage(resp, "info").(map[string]interface{})
 	if info["active"].(float64) == 1 {
 		return "active"
@@ -85,9 +87,12 @@ func GetMachineType(machine_id interface{}) string {
 	return "error"
 }
 
-func GetUserSubscription() string {
+func GetUserSubscription(proxyURL string) string {
 	url := "https://www.hackthebox.com/api/v4/user/info"
-	resp := HtbGet(url)
+	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 	info := ParseJsonMessage(resp, "info").(map[string]interface{})
 	if info["canAccessVIP"].(bool) {
 		return "vip"

@@ -2,48 +2,58 @@ package cmd
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 
 	"github.com/QU35T-code/htb-cli/utils"
 	"github.com/spf13/cobra"
 )
+
+var machineChoosen string
 
 var startCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start a machine",
 	Long:  `Starts a Hackthebox machine specified in argument`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 1 {
-			fmt.Println("USAGE : htb-cli start MACHINE_NAME")
-			return
-		}
-		machine_id := utils.SearchMachineIDByName(args[0], "")
-		machine_type := utils.GetMachineType(machine_id)
-		user_subscription := utils.GetUserSubscription()
+		machine_id := utils.SearchMachineIDByName(machineChoosen, proxyParam)
+		log.Println("Machine ID :", machine_id)
+		machine_type := utils.GetMachineType(machine_id, proxyParam)
+		log.Println("Machine Type :", machine_type)
+		user_subscription := utils.GetUserSubscription(proxyParam)
+		log.Println("User subscription :", user_subscription)
 		if machine_type == "release" {
-			url := "https://www.hackthebox.com/api/v4/release_arena/spawn"
-			var jsonData3 = []byte(`{}`)
-			resp := utils.HtbPost(url, jsonData3)
+			url := "https://www.hackthebox.com/api/v4/arena/start"
+			resp, err := utils.HtbRequest(http.MethodPost, url, proxyParam, []byte(`{}`))
+			if err != nil {
+				log.Fatal(err)
+			}
 			message := utils.ParseJsonMessage(resp, "message")
 			fmt.Println(message)
 			return
 		}
-		if user_subscription == "vip" {
-			url := "https://www.hackthebox.com/api/v4/vm/spawn"
-			var jsonData2 = []byte(`{"machine_id": ` + machine_id + `}`)
-			resp := utils.HtbPost(url, jsonData2)
-			message := utils.ParseJsonMessage(resp, "message")
-			fmt.Println(message)
-			return
-		} else {
-			url := "https://www.hackthebox.com/api/v4/machine/play/" + machine_id
-			var jsonData = []byte("{}")
-			resp := utils.HtbPost(url, jsonData)
-			message := utils.ParseJsonMessage(resp, "message")
-			fmt.Println(message)
+
+		url := ""
+		jsonData := []byte("")
+		switch user_subscription {
+		case "vip":
+			url = "https://www.hackthebox.com/api/v4/vm/spawn"
+			jsonData = []byte(`{"machine_id": ` + machine_id + `}`)
+		default:
+			url = "https://www.hackthebox.com/api/v4/machine/play/" + machine_id
+			jsonData = []byte("{}")
 		}
+		resp, err := utils.HtbRequest(http.MethodPost, url, proxyParam, jsonData)
+		if err != nil {
+			log.Fatal(err)
+		}
+		message := utils.ParseJsonMessage(resp, "message")
+		fmt.Println(message)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(startCmd)
+	startCmd.Flags().StringVarP(&machineChoosen, "machine", "m", "", "Machine name")
+	startCmd.MarkFlagRequired("machine")
 }

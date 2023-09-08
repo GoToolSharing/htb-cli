@@ -9,6 +9,7 @@ import (
 )
 
 var verbose bool
+var proxyParam string
 
 var rootCmd = &cobra.Command{
 	Use:   "htb-cli",
@@ -32,4 +33,5 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose mode")
+	rootCmd.PersistentFlags().StringVarP(&proxyParam, "proxy", "p", "", "Configure a URL for an HTTP proxy")
 }

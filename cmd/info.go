@@ -20,7 +20,7 @@ var infoCmd = &cobra.Command{
 	Short: "Displays machine information",
 	Run: func(cmd *cobra.Command, args []string) {
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
-		fmt.Fprintln(w, "Name\tOS\tActive\tDifficulty\tStars\tFirstUserBlood\tFirstRootBlood\tStatus\tMaker\tRelease")
+		fmt.Fprintln(w, "Name\tOS\tActive\tDifficulty\tStars\tFirstUserBlood\tFirstRootBlood\tStatus\tRelease")
 		status := "Not defined"
 		log.Println(machineParam)
 		for index, _ := range machineParam {
@@ -49,11 +49,7 @@ var infoCmd = &cobra.Command{
 				return
 			}
 			datetime := t.Format("2006-01-02")
-			maker, ok := data["maker"].(map[string]interface{})
-			if !ok {
-				log.Fatal("Maker field doesn't exists or is missing")
-			}
-			fmt.Fprintf(w, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], data["active"], data["difficultyText"], data["stars"], data["firstUserBloodTime"], data["firstRootBloodTime"], status, maker["name"], datetime)
+			fmt.Fprintf(w, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], data["active"], data["difficultyText"], data["stars"], data["firstUserBloodTime"], data["firstRootBloodTime"], status, datetime)
 		}
 		w.Flush()
 
@@ -63,6 +59,6 @@ var infoCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(infoCmd)
 	infoCmd.Flags().StringSliceVarP(&machineParam, "machine", "m", []string{}, "Machine name")
-	infoCmd.Flags().StringVarP(&proxyParam, "proxy", "p", "", "Configure a URL for an HTTP proxy")
+	// infoCmd.Flags().StringVarP(&proxyParam, "proxy", "p", "", "Configure a URL for an HTTP proxy")
 	infoCmd.MarkFlagRequired("machine")
 }

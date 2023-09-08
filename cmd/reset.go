@@ -14,7 +14,7 @@ var resetCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		machine_id := utils.GetActiveMachineID()
 		machine_id_string := fmt.Sprintf("%v", machine_id)
-		machine_type := utils.GetMachineType(machine_id)
+		machine_type := utils.GetMachineType(machine_id, "")
 		machine_id = fmt.Sprintf("%v", machine_id)
 
 		if machine_type == "active" {
