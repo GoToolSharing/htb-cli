@@ -5,10 +5,12 @@ import (
 	"log"
 	"os"
 	"text/tabwriter"
+	"time"
 
 	"net/http"
 
 	"github.com/QU35T-code/htb-cli/utils"
+	"github.com/kyokomi/emoji/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -34,15 +36,21 @@ var activeCmd = &cobra.Command{
 		for _, value := range info.([]interface{}) {
 			data := value.(map[string]interface{})
 			if data["authUserInUserOwns"] == nil && data["authUserInRootOwns"] == nil {
-				status = "❌ User - ❌ Root"
+				status = emoji.Sprint(":x:User - :x:Root")
 			} else if data["authUserInUserOwns"] == true && data["authUserInRootOwns"] == nil {
-				status = "✅ User - ❌ Root"
+				status = emoji.Sprint(":white_check_mark:User - :x:Root")
 			} else if data["authUserInUserOwns"] == nil && data["authUserInRootOwns"] == true {
-				status = "❌ User - ✅ Root"
+				status = emoji.Sprint(":x:User - :white_check_mark:Root")
 			} else if data["authUserInUserOwns"] == true && data["authUserInRootOwns"] == true {
-				status = "✅ User - ✅ Root"
+				status = emoji.Sprint(":white_check_mark:User - :white_check_mark:Root")
 			}
-			fmt.Fprintf(w, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], data["difficultyText"], data["user_owns_count"], data["root_owns_count"], data["stars"], status, data["release"])
+			t, err := time.Parse(time.RFC3339Nano, data["release"].(string))
+			if err != nil {
+				fmt.Println("Erreur when date parsing :", err)
+				return
+			}
+			datetime := t.Format("2006-01-02")
+			fmt.Fprintf(w, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], data["difficultyText"], data["user_owns_count"], data["root_owns_count"], data["stars"], status, datetime)
 		}
 		w.Flush()
 	},

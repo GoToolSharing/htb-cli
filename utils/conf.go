@@ -9,7 +9,7 @@ func GetHTBToken() string {
 	var envName = "HTB_TOKEN"
 	if os.Getenv(envName) == "" {
 		fmt.Printf("Environment variable is not set : %v", envName)
-		os.Exit(84)
+		os.Exit(1)
 	}
 	return os.Getenv("HTB_TOKEN")
 }
