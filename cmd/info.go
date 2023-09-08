@@ -17,7 +17,8 @@ var machineParam []string
 
 var infoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "Displays machine information",
+	Short: "Showcase detailed machine information",
+	Long:  "Displays detailed information of the specified machines in a structured table.",
 	Run: func(cmd *cobra.Command, args []string) {
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
 		fmt.Fprintln(w, "Name\tOS\tActive\tDifficulty\tStars\tFirstUserBlood\tFirstRootBlood\tStatus\tRelease")

@@ -16,7 +16,8 @@ import (
 
 var activeCmd = &cobra.Command{
 	Use:   "active",
-	Short: "List of active machines",
+	Short: "Catalogue of active machines",
+	Long:  "This command serves to generate a detailed summary of the currently active machines, providing pertinent information for each.",
 	Run: func(cmd *cobra.Command, args []string) {
 		url := "https://www.hackthebox.com/api/v4/machine/list"
 		resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)

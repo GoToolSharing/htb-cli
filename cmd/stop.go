@@ -12,7 +12,6 @@ import (
 var stopCmd = &cobra.Command{
 	Use:   "stop",
 	Short: "Stop the current machine",
-	Long:  "Stop the current machine",
 	Run: func(cmd *cobra.Command, args []string) {
 		machine_id := utils.GetActiveMachineID(proxyParam)
 		log.Println("Machine ID :", machine_id)

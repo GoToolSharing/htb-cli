@@ -13,8 +13,8 @@ var proxyParam string
 
 var rootCmd = &cobra.Command{
 	Use:   "htb-cli",
-	Short: "Shortcuts that facilitate Hackthebox",
-	Long:  `This is a program developed in Go to facilitate and automate certain tasks for the Hackthebox platform.`,
+	Short: "CLI enhancing the HackTheBox user experience.",
+	Long:  `This software, engineered using the Go programming language, serves to streamline and automate various tasks for the HackTheBox platform, enhancing user efficiency and productivity.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if verbose {
 			log.SetOutput(os.Stdout)
@@ -32,6 +32,7 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose mode")
 	rootCmd.PersistentFlags().StringVarP(&proxyParam, "proxy", "p", "", "Configure a URL for an HTTP proxy")
 }

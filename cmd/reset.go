@@ -11,8 +11,8 @@ import (
 
 var resetCmd = &cobra.Command{
 	Use:   "reset",
-	Short: "Reset a machine",
-	Long:  "Reset a machine",
+	Short: "Reset a machine - [WIP]",
+	Long:  "Initiates a reset request for the selected machine.",
 	Run: func(cmd *cobra.Command, args []string) {
 		machine_id := utils.GetActiveMachineID(proxyParam)
 		log.Println("Machine ID :", machine_id)

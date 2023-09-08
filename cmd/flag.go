@@ -6,7 +6,8 @@ import (
 
 var flagCmd = &cobra.Command{
 	Use:   "flag",
-	Short: "Submit a flag (user and root)",
+	Short: "Submit credentials (User and Root Flags) - [WIP]",
+	Long:  "This command allows for the submission of user and root flags discovered on vulnerable machines.",
 	Run: func(cmd *cobra.Command, args []string) {
 		// if len(args) != 2 {
 		// 	fmt.Println("USAGE : htb-cli flag FLAG DIFFICULTY(1:10)")
