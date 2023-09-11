@@ -30,8 +30,8 @@ type Root struct {
 func GetHTBToken() string {
 	var envName = "HTB_TOKEN"
 	if os.Getenv(envName) == "" {
-		fmt.Printf("Environment variable is not set : %v", envName)
-		os.Exit(1)
+		fmt.Printf("Environment variable is not set : %v\n", envName)
+		return ""
 	}
 	return os.Getenv("HTB_TOKEN")
 }
@@ -143,6 +143,10 @@ func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte
 
 	s.Start()
 	JWT_TOKEN := GetHTBToken()
+	if JWT_TOKEN == "" {
+		s.Stop()
+		os.Exit(1)
+	}
 
 	req, err := http.NewRequest(method, urlParam, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -184,6 +188,18 @@ func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	resp.Body = io.NopCloser(bytes.NewReader(body))
+	var i interface{}
+	if json.Unmarshal(body, &i) != nil {
+		s.Stop()
+		fmt.Println("Your token is invalid or expired")
+		os.Exit(1)
 	}
 	s.Stop()
 	return resp, nil
