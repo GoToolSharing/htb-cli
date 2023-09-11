@@ -6,7 +6,7 @@ Usage:
 
 Available Commands:
   active      Catalogue of active machines
-  flag        Submit credentials (User and Root Flags) - [WIP]
+  submit        Submit credentials (User and Root Flags) - [WIP]
   help        Help about any command
   info        Showcase detailed machine information
   reset       Reset a machine - [WIP]
@@ -55,14 +55,13 @@ Machine terminated.
 Machine terminated.
 ```
 
-## Flag
+## Submit
 
 This command allows to submit the user flag and the root flag of active and retired machines. The first argument is the flag and the second the difficulty /10.
 
 ```
-> htb-cli flag flag4testing 3
+> htb-cli submit -f flag4testing -d 3
 
-Machine : SteamCloud
 SteamCloud user is now owned.
 ```
 

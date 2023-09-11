@@ -60,6 +60,5 @@ var infoCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(infoCmd)
 	infoCmd.Flags().StringSliceVarP(&machineParam, "machine", "m", []string{}, "Machine name")
-	// infoCmd.Flags().StringVarP(&proxyParam, "proxy", "p", "", "Configure a URL for an HTTP proxy")
 	infoCmd.MarkFlagRequired("machine")
 }
