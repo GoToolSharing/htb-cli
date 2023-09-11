@@ -9,7 +9,7 @@ import (
 
 	"net/http"
 
-	"github.com/QU35T-code/htb-cli/utils"
+	"github.com/GoToolSharing/htb-cli/utils"
 	"github.com/kyokomi/emoji/v2"
 	"github.com/spf13/cobra"
 )

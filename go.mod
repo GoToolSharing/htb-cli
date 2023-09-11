@@ -1,4 +1,4 @@
-module github.com/QU35T-code/htb-cli
+module github.com/GoToolSharing/htb-cli
 
 go 1.18
 

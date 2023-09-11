@@ -1,6 +1,6 @@
 package main
 
-import "github.com/QU35T-code/htb-cli/cmd"
+import "github.com/GoToolSharing/htb-cli/cmd"
 
 func main() {
 	cmd.Execute()

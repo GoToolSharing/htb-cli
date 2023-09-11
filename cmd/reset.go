@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/QU35T-code/htb-cli/utils"
+	"github.com/GoToolSharing/htb-cli/utils"
 	"github.com/spf13/cobra"
 )
 
