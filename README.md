@@ -6,7 +6,7 @@ Usage:
 
 Available Commands:
   active      Catalogue of active machines
-  submit        Submit credentials (User and Root Flags) - [WIP]
+  submit      Submit credentials (User and Root Flags)
   help        Help about any command
   info        Showcase detailed machine information
   reset       Reset a machine - [WIP]
