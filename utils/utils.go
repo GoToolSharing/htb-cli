@@ -190,10 +190,7 @@ func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte
 		log.Fatalln(err)
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	body, _ := io.ReadAll(resp.Body)
 	resp.Body = io.NopCloser(bytes.NewReader(body))
 	var i interface{}
 	if json.Unmarshal(body, &i) != nil {
