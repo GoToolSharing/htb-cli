@@ -141,9 +141,16 @@ func GetUserSubscription(proxyURL string) string {
 		log.Fatal(err)
 	}
 	info := ParseJsonMessage(resp, "info").(map[string]interface{})
-	if info["canAccessVIP"].(bool) {
+	canAccessVIP := info["canAccessVIP"].(bool)
+	isDedicatedVIP := info["isDedicatedVip"].(bool)
+
+	if canAccessVIP {
+		if isDedicatedVIP {
+			return "vip+"
+		}
 		return "vip"
 	}
+
 	return "free"
 }
 
