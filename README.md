@@ -37,21 +37,21 @@ export HTB_TOKEN=eyJ...
 ## Start
 
 ```
-> htb-cli start -m Flight
+❯ htb-cli start -m Flight
 Machine deployed to lab.
 ```
 
 ## Stop
 
 ```
-> htb-cli stop
+❯ htb-cli stop
 Machine terminated.
 ```
 
 ## Reset
 
 ```
-> htb-cli reset
+❯ htb-cli reset
 CozyHosting will be reset in 1 minute.
 ```
 
@@ -61,14 +61,14 @@ This command allows to submit the user flag and the root flag of active and reti
 
 ### Submit machine flag
 ```
-> htb-cli submit -m SteamCloud -f flag4testing -d 3
+❯ htb-cli submit -m SteamCloud -f flag4testing -d 3
 
 SteamCloud user is now owned.
 ```
 
 ### Submit challenge flag
 ```
-> htb-cli submit -c Phonebook -f flag4testing -d 3
+❯ htb-cli submit -c Phonebook -f flag4testing -d 3
 
 Incorrect flag
 ```
@@ -78,9 +78,17 @@ Incorrect flag
 By default the command shows the active machine.
 
 ```
-> htb-cli info -m Zipper -m Sau
+❯ htb-cli info -m Zipper -m Sau
 
 Name     |OS      |Active   |Difficulty   |Stars   |FirstUserBlood   |FirstRootBlood   |Status            |Release
 Zipper   |Linux   |0        |Hard         |4.5     |1H 57M 59S       |2H 8M 18S        |❌ User - ❌ Root   |2018-10-20
 Sau      |Linux   |1        |Easy         |4.6     |0H 8M 39S        |0H 11M 40S       |✅ User - ✅ Root   |2023-07-08
+```
+
+## Status
+
+```
+❯ htb-cli status
+
+All Systems Operational
 ```
