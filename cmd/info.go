@@ -25,7 +25,7 @@ var infoCmd = &cobra.Command{
 		status := "Not defined"
 		log.Println(machineParam)
 		for index, _ := range machineParam {
-			machine_id := utils.SearchMachineIDByName(machineParam[index], proxyParam)
+			machine_id := utils.SearchItemIDByName(machineParam[index], proxyParam, "Machine")
 
 			url := "https://www.hackthebox.com/api/v4/machine/profile/" + machine_id
 			resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)

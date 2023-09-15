@@ -51,18 +51,26 @@ Machine terminated.
 ## Reset
 
 ```
-> htb-cli reset -m Flight
-Machine terminated.
+> htb-cli reset
+CozyHosting will be reset in 1 minute.
 ```
 
 ## Submit
 
 This command allows to submit the user flag and the root flag of active and retired machines. The first argument is the flag and the second the difficulty /10.
 
+### Submit machine flag
 ```
-> htb-cli submit -f flag4testing -d 3
+> htb-cli submit -m SteamCloud -f flag4testing -d 3
 
 SteamCloud user is now owned.
+```
+
+### Submit challenge flag
+```
+> htb-cli submit -c Phonebook -f flag4testing -d 3
+
+Incorrect flag
 ```
 
 ## Info
