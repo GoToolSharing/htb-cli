@@ -1,3 +1,31 @@
+# htb-cli
+
+![Workflows (main)](https://github.com/GoToolSharing/htb-cli/actions/workflows/go.yml/badge.svg?branch=main)
+![Workflows (dev)](https://github.com/GoToolSharing/htb-cli/actions/workflows/go.yml/badge.svg?branch=dev)
+
+<br><br>
+<img alt="current version" src="https://img.shields.io/badge/linux-supported-success">
+<img alt="current version" src="https://img.shields.io/badge/windows-supported-success">
+<img alt="current version" src="https://img.shields.io/badge/mac-supported-success">
+<br>
+<img alt="amd64" src="https://img.shields.io/badge/amd64%20(x86__64)-supported-success">
+<img alt="arm64" src="https://img.shields.io/badge/arm64%20(aarch64)-supported-success">
+
+## Installation
+
+`go install github.com/GoToolSharing/htb-cli@latest`
+
+## Configuration
+
+You must add a Hackthebox **App token** in the **HTB_TOKEN** environment variable (zshrc maybe).
+API Token can be find here : https://app.hackthebox.com/profile/settings => `Create App Token`
+
+```
+export HTB_TOKEN=eyJ...
+```
+
+## Helper
+
 ```
 This software, engineered using the Go programming language, serves to streamline and automate various tasks for the HackTheBox platform, enhancing user efficiency and productivity.
 
@@ -20,19 +48,6 @@ Flags:
   -v, --verbose        Verbose mode
 
 Use "htb-cli [command] --help" for more information about a command.
-```
-
-## Installation
-
-`go install github.com/GoToolSharing/htb-cli@latest`
-
-## Configuration
-
-You must add a Hackthebox **App token** in the **HTB_TOKEN** environment variable (zshrc maybe).
-API Token can be find here : https://app.hackthebox.com/profile/settings => Create App Token
-
-```
-export HTB_TOKEN=eyJ...
 ```
 
 ## Start
