@@ -19,7 +19,7 @@ var flagParam string
 
 var submitCmd = &cobra.Command{
 	Use:   "submit",
-	Short: "Submit credentials (User and Root Flags) - [WIP]",
+	Short: "Submit credentials (User and Root Flags)",
 	Long:  "This command allows for the submission of user and root flags discovered on vulnerable machines.",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if verbose {

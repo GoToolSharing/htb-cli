@@ -6,12 +6,13 @@ Usage:
 
 Available Commands:
   active      Catalogue of active machines
-  submit      Submit credentials (User and Root Flags)
   help        Help about any command
   info        Showcase detailed machine information
-  reset       Reset a machine - [WIP]
+  reset       Reset a machine
   start       Start a machine
+  status      Displays the status of HackTheBox servers
   stop        Stop the current machine
+  submit      Submit credentials (User and Root Flags)
 
 Flags:
   -h, --help           help for htb-cli
