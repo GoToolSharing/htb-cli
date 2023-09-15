@@ -1,10 +1,9 @@
 # htb-cli
 
-<div align="center">
-  ![Workflows (main)](https://github.com/GoToolSharing/htb-cli/actions/workflows/go.yml/badge.svg?branch=main)
-  ![Workflows (dev)](https://github.com/GoToolSharing/htb-cli/actions/workflows/go.yml/badge.svg?branch=dev)
+![Workflows (main)](https://github.com/GoToolSharing/htb-cli/actions/workflows/go.yml/badge.svg?branch=main)
+![Workflows (dev)](https://github.com/GoToolSharing/htb-cli/actions/workflows/go.yml/badge.svg?branch=dev)
 
-  <br><br>
+<div align="center">
   <img alt="current version" src="https://img.shields.io/badge/linux-supported-success">
   <img alt="current version" src="https://img.shields.io/badge/windows-supported-success">
   <img alt="current version" src="https://img.shields.io/badge/mac-supported-success">
