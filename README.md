@@ -3,13 +3,14 @@
 ![Workflows (main)](https://github.com/GoToolSharing/htb-cli/actions/workflows/go.yml/badge.svg?branch=main)
 ![Workflows (dev)](https://github.com/GoToolSharing/htb-cli/actions/workflows/go.yml/badge.svg?branch=dev)
 
-
-<img alt="current version" src="https://img.shields.io/badge/linux-supported-success">
-<img alt="current version" src="https://img.shields.io/badge/windows-supported-success">
-<img alt="current version" src="https://img.shields.io/badge/mac-supported-success">
-<br>
-<img alt="amd64" src="https://img.shields.io/badge/amd64%20(x86__64)-supported-success">
-<img alt="arm64" src="https://img.shields.io/badge/arm64%20(aarch64)-supported-success">
+<div>
+  <img alt="current version" src="https://img.shields.io/badge/linux-supported-success">
+  <img alt="current version" src="https://img.shields.io/badge/windows-supported-success">
+  <img alt="current version" src="https://img.shields.io/badge/mac-supported-success">
+  <br>
+  <img alt="amd64" src="https://img.shields.io/badge/amd64%20(x86__64)-supported-success">
+  <img alt="arm64" src="https://img.shields.io/badge/arm64%20(aarch64)-supported-success">
+</div>
 
 ## Installation
 
