@@ -207,8 +207,7 @@ func GetActiveMachineID(proxyURL string) string {
 	}
 	info := ParseJsonMessage(resp, "info")
 	if info == nil {
-		fmt.Println("No machine is running")
-		os.Exit(0)
+		return ""
 	}
 	return fmt.Sprintf("%.0f", info.(map[string]interface{})["id"].(float64))
 }
