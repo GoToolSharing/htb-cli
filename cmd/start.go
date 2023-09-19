@@ -16,7 +16,7 @@ var startCmd = &cobra.Command{
 	Short: "Start a machine",
 	Long:  `Starts a Hackthebox machine specified in argument`,
 	Run: func(cmd *cobra.Command, args []string) {
-		machine_id := utils.SearchMachineIDByName(machineChoosen, proxyParam)
+		machine_id := utils.SearchItemIDByName(machineChoosen, proxyParam, "Machine")
 		log.Println("Machine ID :", machine_id)
 		machine_type := utils.GetMachineType(machine_id, proxyParam)
 		log.Println("Machine Type :", machine_type)

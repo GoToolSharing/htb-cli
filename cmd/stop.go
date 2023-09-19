@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/GoToolSharing/htb-cli/utils"
 	"github.com/spf13/cobra"
@@ -14,6 +15,10 @@ var stopCmd = &cobra.Command{
 	Short: "Stop the current machine",
 	Run: func(cmd *cobra.Command, args []string) {
 		machine_id := utils.GetActiveMachineID(proxyParam)
+		if machine_id == "" {
+			fmt.Println("No machine is running")
+			os.Exit(0)
+		}
 		log.Println("Machine ID :", machine_id)
 		machine_type := utils.GetMachineType(machine_id, "")
 		log.Println("Machine Type :", machine_type)

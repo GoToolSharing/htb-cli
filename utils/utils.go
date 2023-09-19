@@ -15,6 +15,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/briandowns/spinner"
 )
 
@@ -23,8 +24,14 @@ type Machine struct {
 	Value string `json:"value"`
 }
 
+type Challenge struct {
+	ID    string `json:"id"`
+	Value string `json:"value"`
+}
+
 type Root struct {
-	Machines interface{} `json:"machines"`
+	Machines   interface{} `json:"machines"`
+	Challenges interface{} `json:"challenges"`
 }
 
 func GetHTBToken() string {
@@ -36,8 +43,8 @@ func GetHTBToken() string {
 	return os.Getenv("HTB_TOKEN")
 }
 
-func SearchMachineIDByName(machine_name string, proxyURL string) string {
-	url := "https://www.hackthebox.com/api/v4/search/fetch?query=" + machine_name
+func SearchItemIDByName(item string, proxyURL string, element_type string) string {
+	url := "https://www.hackthebox.com/api/v4/search/fetch?query=" + item
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -51,21 +58,89 @@ func SearchMachineIDByName(machine_name string, proxyURL string) string {
 		fmt.Println("error:", err)
 	}
 
-	// The HackTheBox API can return either a slice or a map
-	switch root.Machines.(type) {
-	case []interface{}:
-		var machines []Machine
-		machineData, _ := json.Marshal(root.Machines)
-		json.Unmarshal(machineData, &machines)
-		return machines[0].ID
-	case map[string]interface{}:
-		var machines map[string]Machine
-		machineData, _ := json.Marshal(root.Machines)
-		json.Unmarshal(machineData, &machines)
-		return machines["0"].ID
-	default:
-		log.Fatal("No machine found")
+	if element_type == "Machine" {
+		switch root.Machines.(type) {
+		case []interface{}:
+			var machines []Machine
+			machineData, _ := json.Marshal(root.Machines)
+			json.Unmarshal(machineData, &machines)
+			log.Println("Machine found :", machines[0].Value)
+			var confirmation bool
+			confirmation_message := "The following machine was found : " + machines[0].Value
+			prompt := &survey.Confirm{
+				Message: confirmation_message,
+			}
+			if err := survey.AskOne(prompt, &confirmation); err != nil {
+				log.Fatal(err)
+			}
+			if !confirmation {
+				log.Fatal("Canceled")
+			}
+			return machines[0].ID
+		case map[string]interface{}:
+			var machines map[string]Machine
+			machineData, _ := json.Marshal(root.Machines)
+			json.Unmarshal(machineData, &machines)
+			log.Println("Machine found :", machines["0"].Value)
+			var confirmation bool
+			confirmation_message := "The following machine was found : " + machines["0"].Value
+			prompt := &survey.Confirm{
+				Message: confirmation_message,
+			}
+			if err := survey.AskOne(prompt, &confirmation); err != nil {
+				log.Fatal(err)
+			}
+			if !confirmation {
+				log.Fatal("Canceled")
+			}
+			return machines["0"].ID
+		default:
+			log.Fatal("No machine found")
+		}
+	} else if element_type == "Challenge" {
+		switch root.Challenges.(type) {
+		case []interface{}:
+			var challenges []Challenge
+			challengeData, _ := json.Marshal(root.Challenges)
+			json.Unmarshal(challengeData, &challenges)
+			log.Println("Challenge found :", challenges[0].Value)
+			var confirmation bool
+			confirmation_message := "The following challenge was found : " + challenges[0].Value
+			prompt := &survey.Confirm{
+				Message: confirmation_message,
+			}
+			if err := survey.AskOne(prompt, &confirmation); err != nil {
+				log.Fatal(err)
+			}
+			if !confirmation {
+				log.Fatal("Canceled")
+			}
+			return challenges[0].ID
+		case map[string]interface{}:
+			var challenges map[string]Challenge
+			challengeData, _ := json.Marshal(root.Challenges)
+			json.Unmarshal(challengeData, &challenges)
+			log.Println("Challenge found :", challenges["0"].Value)
+			var confirmation bool
+			confirmation_message := "The following challenge was found : " + challenges["0"].Value
+			prompt := &survey.Confirm{
+				Message: confirmation_message,
+			}
+			if err := survey.AskOne(prompt, &confirmation); err != nil {
+				log.Fatal(err)
+			}
+			if !confirmation {
+				log.Fatal("Canceled")
+			}
+			return challenges["0"].ID
+		default:
+			log.Fatal("No challenge found")
+		}
+	} else {
+		log.Fatal("Bad element_type")
 	}
+
+	// The HackTheBox API can return either a slice or a map
 	return ""
 }
 
@@ -111,9 +186,16 @@ func GetUserSubscription(proxyURL string) string {
 		log.Fatal(err)
 	}
 	info := ParseJsonMessage(resp, "info").(map[string]interface{})
-	if info["canAccessVIP"].(bool) {
+	canAccessVIP := info["canAccessVIP"].(bool)
+	isDedicatedVIP := info["isDedicatedVip"].(bool)
+
+	if canAccessVIP {
+		if isDedicatedVIP {
+			return "vip+"
+		}
 		return "vip"
 	}
+
 	return "free"
 }
 
@@ -125,8 +207,7 @@ func GetActiveMachineID(proxyURL string) string {
 	}
 	info := ParseJsonMessage(resp, "info")
 	if info == nil {
-		fmt.Println("No machine is running")
-		os.Exit(0)
+		return ""
 	}
 	return fmt.Sprintf("%.0f", info.(map[string]interface{})["id"].(float64))
 }
