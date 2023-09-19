@@ -15,6 +15,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/briandowns/spinner"
 )
 
@@ -64,12 +65,34 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) strin
 			machineData, _ := json.Marshal(root.Machines)
 			json.Unmarshal(machineData, &machines)
 			log.Println("Machine found :", machines[0].Value)
+			var confirmation bool
+			confirmation_message := "The following machine was found : " + machines[0].Value
+			prompt := &survey.Confirm{
+				Message: confirmation_message,
+			}
+			if err := survey.AskOne(prompt, &confirmation); err != nil {
+				log.Fatal(err)
+			}
+			if !confirmation {
+				log.Fatal("Canceled")
+			}
 			return machines[0].ID
 		case map[string]interface{}:
 			var machines map[string]Machine
 			machineData, _ := json.Marshal(root.Machines)
 			json.Unmarshal(machineData, &machines)
 			log.Println("Machine found :", machines["0"].Value)
+			var confirmation bool
+			confirmation_message := "The following machine was found : " + machines["0"].Value
+			prompt := &survey.Confirm{
+				Message: confirmation_message,
+			}
+			if err := survey.AskOne(prompt, &confirmation); err != nil {
+				log.Fatal(err)
+			}
+			if !confirmation {
+				log.Fatal("Canceled")
+			}
 			return machines["0"].ID
 		default:
 			log.Fatal("No machine found")
@@ -81,12 +104,34 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) strin
 			challengeData, _ := json.Marshal(root.Challenges)
 			json.Unmarshal(challengeData, &challenges)
 			log.Println("Challenge found :", challenges[0].Value)
+			var confirmation bool
+			confirmation_message := "The following challenge was found : " + challenges[0].Value
+			prompt := &survey.Confirm{
+				Message: confirmation_message,
+			}
+			if err := survey.AskOne(prompt, &confirmation); err != nil {
+				log.Fatal(err)
+			}
+			if !confirmation {
+				log.Fatal("Canceled")
+			}
 			return challenges[0].ID
 		case map[string]interface{}:
 			var challenges map[string]Challenge
 			challengeData, _ := json.Marshal(root.Challenges)
 			json.Unmarshal(challengeData, &challenges)
 			log.Println("Challenge found :", challenges["0"].Value)
+			var confirmation bool
+			confirmation_message := "The following challenge was found : " + challenges["0"].Value
+			prompt := &survey.Confirm{
+				Message: confirmation_message,
+			}
+			if err := survey.AskOne(prompt, &confirmation); err != nil {
+				log.Fatal(err)
+			}
+			if !confirmation {
+				log.Fatal("Canceled")
+			}
 			return challenges["0"].ID
 		default:
 			log.Fatal("No challenge found")
