@@ -31,3 +31,10 @@ jobs:
         GOOS: ${{ matrix.os }}
         GOARCH: ${{ matrix.arch }}
       run: go build -v ./...
+    
+    - name: Tests
+      env:
+        GOOS: linux
+        GOARCH: amd64
+        HTB_TOKEN: ${{ secrets.HTB_TOKEN_SECRET }}
+      run: go test -v ./...

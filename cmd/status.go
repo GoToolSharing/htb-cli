@@ -60,7 +60,7 @@ var statusCmd = &cobra.Command{
 			proxyURLParsed, err := url.Parse(proxyParam)
 			if err != nil {
 				s.Stop()
-				log.Fatal("error parsing proxy url : %v", err)
+				log.Fatal("error parsing proxy url :", err)
 			}
 			transport.Proxy = http.ProxyURL(proxyURLParsed)
 		}
