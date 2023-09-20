@@ -29,6 +29,10 @@ var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Displays the status of HackTheBox servers",
 	Run: func(cmd *cobra.Command, args []string) {
+		// Need for tests to work because the Run() function is called instead of Exec() which sets the flags
+		if !verbose {
+			log.SetOutput(io.Discard)
+		}
 		s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 		sigs := make(chan os.Signal, 1)
 		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -39,8 +43,8 @@ var statusCmd = &cobra.Command{
 		}()
 
 		s.Start()
-		status_url := "https://status.hackthebox.com/api/v2/status.json"
-		req, err := http.NewRequest(http.MethodGet, status_url, nil)
+		var statusURL = "https://status.hackthebox.com/api/v2/status.json"
+		req, err := http.NewRequest(http.MethodGet, statusURL, nil)
 		if err != nil {
 			s.Stop()
 			log.Fatalln(err)
