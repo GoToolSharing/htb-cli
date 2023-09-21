@@ -1,0 +1,15 @@
+profile: cover.out
+local-prefix: github.com/GoToolSharing/htb-cli
+threshold:
+  file: 70
+  package: 80
+  total: 95
+
+override:
+  - threshold: 100
+    path: ^pkg/lib/foo$
+
+exclude:
+  paths:
+    - \.pb\.go$
+    - ^pkg/bar
