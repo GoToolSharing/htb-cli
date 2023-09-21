@@ -5,10 +5,12 @@ on:
     branches: [ "main", "dev" ]
   pull_request:
     branches: [ "main", "dev" ]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
 
   build:
+    if: github.event_name != 'pull_request' || (github.event_name == 'pull_request' && !github.event.pull_request.draft)
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -30,6 +32,7 @@ jobs:
       run: go build -v ./...
 
   tests:
+    if: github.event_name != 'pull_request' || (github.event_name == 'pull_request' && !github.event.pull_request.draft)
     needs: build
     runs-on: ubuntu-latest
     steps:
