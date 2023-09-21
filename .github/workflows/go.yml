@@ -71,5 +71,5 @@ jobs:
         message: ${{ steps.coverage.outputs.badge-text }}
         message-color: ${{ steps.coverage.outputs.badge-color }}
         file-name: coverage.svg
-        badge-branch: badges
+        badge-branch: dev
         github-token: "${{ secrets.GITHUB_TOKEN }}"
