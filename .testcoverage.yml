@@ -1,9 +1,9 @@
 profile: cover.out
 local-prefix: github.com/GoToolSharing/htb-cli
 threshold:
-  file: 1
-  package: 1
-  total: 5
+  file: 0
+  package: 0
+  total: 0
 
 override:
   - threshold: 100

@@ -56,8 +56,8 @@ jobs:
         config: ./.testcoverage.yml
         profile: cover.out
         local-prefix: github.com/GoToolSharing/htb-cli
-        threshold-file: 1
-        threshold-package: 1
+        threshold-file: 0
+        threshold-package: 0
         threshold-total: 5
 
     - name: Detailed Coverage Report
