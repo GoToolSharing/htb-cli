@@ -35,41 +35,54 @@ jobs:
     if: github.event_name != 'pull_request' || (github.event_name == 'pull_request' && !github.event.pull_request.draft)
     needs: build
     runs-on: ubuntu-latest
+    name: Update coverage badge
     steps:
-    - uses: actions/checkout@v3
-
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: 1.21
-
-    - name: Check test and generate coverage
-      env:
-        GOOS: linux
-        GOARCH: amd64
-        HTB_TOKEN: ${{ secrets.HTB_TOKEN_SECRET }}
-      run: go test -v ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
-
-    - name: Check test coverage
-      uses: vladopajic/go-test-coverage@v2
-      with:
-        config: ./.testcoverage.yml
-        profile: cover.out
-        local-prefix: github.com/GoToolSharing/htb-cli
-        threshold-file: 0
-        threshold-package: 0
-        threshold-total: 5
-
-    - name: Detailed Coverage Report
-      if: ${{ failure() }}
-      run: go tool cover -func=./cover.out
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
+          fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
       
-    - name: make coverage badge
-      uses: action-badges/core@0.2.2
-      with:
-        label: coverage
-        message: ${{ steps.coverage.outputs.badge-text }}
-        message-color: ${{ steps.coverage.outputs.badge-color }}
-        file-name: coverage.svg
-        badge-branch: badges
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.19'
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Run Test
+        run: |
+          go test -v ./... -covermode=count -coverprofile=coverage.out
+          go tool cover -func=coverage.out -o=coverage.out
+
+      - name: Go Coverage Badge
+        uses: tj-actions/coverage-badge-go@v2
+        with:
+          filename: coverage.out
+
+      - name: Verify Changed files
+        uses: tj-actions/verify-changed-files@v12
+        id: verify-changed-files
+        with:
+          files: README.md
+
+      - name: Commit changes
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          git commit -m "chore: Updated coverage badge."
+
+      - name: Push changes
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ github.token }}
+          # branch: ${{ github.head_ref }}
+          branch: badges
