@@ -14,11 +14,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func core_activeCmd() string {
+func core_activeCmd() (string, error) {
 	url := "https://www.hackthebox.com/api/v4/machine/list"
 	resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	info := utils.ParseJsonMessage(resp, "info")
 	log.Println(info)
@@ -41,14 +41,13 @@ func core_activeCmd() string {
 		}
 		t, err := time.Parse(time.RFC3339Nano, data["release"].(string))
 		if err != nil {
-			fmt.Println("Erreur when date parsing :", err)
-			return "error"
+			return "", err
 		}
 		datetime := t.Format("2006-01-02")
 		fmt.Fprintf(w, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], data["difficultyText"], data["user_owns_count"], data["root_owns_count"], data["stars"], status, datetime)
 	}
 	w.Flush()
-	return "success"
+	return "", nil
 }
 
 var activeCmd = &cobra.Command{
@@ -56,7 +55,11 @@ var activeCmd = &cobra.Command{
 	Short: "Catalogue of active machines",
 	Long:  "This command serves to generate a detailed summary of the currently active machines, providing pertinent information for each.",
 	Run: func(cmd *cobra.Command, args []string) {
-		core_activeCmd()
+		output, err := core_activeCmd()
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(output)
 	},
 }
 

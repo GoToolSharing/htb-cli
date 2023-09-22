@@ -10,8 +10,9 @@ func TestCheckStatus(t *testing.T) {
 	r, w := utils.SetOutputTest()
 	defer w.Close()
 	defer r.Close()
-	output := core_status("")
-	if output != "All Systems Operational" {
-		t.Fatalf("Expected 'All Systems Operational' but got '%v'", output)
+	output, err := core_status("")
+	expected := "All Systems Operational"
+	if err != nil || output != expected {
+		t.Fatalf("Error \"%v\", Expected output: \"%s\", Got \"%v\"", err, expected, output)
 	}
 }

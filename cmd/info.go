@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -17,10 +18,9 @@ import (
 var machineParam []string
 var challengeParam []string
 
-func core_infoCmd(machineParam []string, challengeParam []string) string {
+func core_infoCmd(machineParam []string, challengeParam []string) (string, error) {
 	if len(machineParam) > 0 && len(challengeParam) > 0 {
-		fmt.Println("Error: You can only specify either -m or -c flags, not both.")
-		return "error flags"
+		return "", errors.New("Error: You can only specify either -m or -c flags, not both.")
 	}
 	if os.Getenv("TEST") == "" {
 		var confirmation bool
@@ -29,7 +29,7 @@ func core_infoCmd(machineParam []string, challengeParam []string) string {
 			Message: confirmation_message,
 		}
 		if err := survey.AskOne(prompt, &confirmation); err != nil {
-			log.Fatal(err)
+			return "", err
 		}
 		if confirmation {
 			checkActiveMachine()
@@ -49,7 +49,7 @@ func core_infoCmd(machineParam []string, challengeParam []string) string {
 			url := "https://www.hackthebox.com/api/v4/machine/profile/" + machine_id
 			resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
 			if err != nil {
-				log.Fatal(err)
+				return "", err
 			}
 			info := utils.ParseJsonMessage(resp, "info")
 
@@ -70,14 +70,15 @@ func core_infoCmd(machineParam []string, challengeParam []string) string {
 			}
 			t, err := time.Parse(time.RFC3339Nano, data["release"].(string))
 			if err != nil {
+
 				fmt.Println("Erreur when date parsing :", err)
-				return "error parsing date"
+				return "", errors.New("Error: Parsing date")
 			}
 			datetime := t.Format("2006-01-02")
 			fmt.Fprintf(w, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], retired_status, data["difficultyText"], data["stars"], data["firstUserBloodTime"], data["firstRootBloodTime"], status, datetime)
 			w.Flush()
 		}
-		return "success"
+		return "", nil
 	}
 
 	// Challenges search
@@ -93,7 +94,7 @@ func core_infoCmd(machineParam []string, challengeParam []string) string {
 			url := "https://www.hackthebox.com/api/v4/challenge/info/" + challenge_id
 			resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
 			if err != nil {
-				log.Fatal(err)
+				return "", err
 			}
 			info := utils.ParseJsonMessage(resp, "challenge")
 			data := info.(map[string]interface{})
@@ -110,15 +111,15 @@ func core_infoCmd(machineParam []string, challengeParam []string) string {
 			t, err := time.Parse(time.RFC3339Nano, data["release_date"].(string))
 			if err != nil {
 				fmt.Println("Erreur when date parsing :", err)
-				return "error parsing date"
+				return "", errors.New("Error: Parsing date")
 			}
 			datetime := t.Format("2006-01-02")
 			fmt.Fprintf(w, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["category_name"], retired_status, data["difficulty"], data["stars"], data["solves"], status, datetime)
 			w.Flush()
 		}
-		return "success"
+		return "", nil
 	}
-	return "success"
+	return "", nil
 }
 
 func checkActiveMachine() {
@@ -167,7 +168,11 @@ var infoCmd = &cobra.Command{
 	Short: "Showcase detailed machine information",
 	Long:  "Displays detailed information of the specified machines in a structured table.",
 	Run: func(cmd *cobra.Command, args []string) {
-		core_infoCmd(machineParam, challengeParam)
+		output, err := core_infoCmd(machineParam, challengeParam)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(output)
 	},
 }
 

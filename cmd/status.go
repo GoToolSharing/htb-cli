@@ -3,6 +3,7 @@ package cmd
 import (
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -25,7 +26,7 @@ type Status struct {
 	Description string `json:"description"`
 }
 
-func core_status(proxyParam string) string {
+func core_status(proxyParam string) (string, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -40,7 +41,7 @@ func core_status(proxyParam string) string {
 	req, err := http.NewRequest(http.MethodGet, statusURL, nil)
 	if err != nil {
 		s.Stop()
-		log.Fatalln(err)
+		return "", err
 	}
 
 	req.Header.Set("User-Agent", "HTB-Tool")
@@ -58,6 +59,7 @@ func core_status(proxyParam string) string {
 		if err != nil {
 			s.Stop()
 			log.Fatal("error parsing proxy url :", err)
+			return "", errors.New(fmt.Sprintf("Error: parsing proxy url: %v", err))
 		}
 		transport.Proxy = http.ProxyURL(proxyURLParsed)
 	}
@@ -70,7 +72,7 @@ func core_status(proxyParam string) string {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalln(err)
+		return "", err
 	}
 	defer resp.Body.Close()
 	s.Stop()
