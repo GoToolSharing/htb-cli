@@ -8,10 +8,10 @@ import (
 
 func TestListActiveMachines(t *testing.T) {
 	r, w := utils.SetOutputTest()
+	defer w.Close()
+	defer r.Close()
 	output := core_activeCmd()
 	if output != "success" {
 		t.Fatalf("Expected 'Easy / Medium / Hard / Insane' but got '%v'", output)
 	}
-	w.Close()
-	r.Close()
 }
