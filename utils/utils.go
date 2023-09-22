@@ -13,6 +13,7 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"text/tabwriter"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -39,6 +40,28 @@ type Challenge struct {
 type Root struct {
 	Machines   interface{} `json:"machines"`
 	Challenges interface{} `json:"challenges"`
+}
+
+func SetTabWriterHeader(header string) *tabwriter.Writer {
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
+	fmt.Fprintln(w, header)
+	return w
+}
+
+func SetTabWriterData(w *tabwriter.Writer, data string) {
+	fmt.Fprintf(w, data)
+	w.Flush()
+}
+
+func AskConfirmation(message string) bool {
+	var confirmation bool
+	prompt := &survey.Confirm{
+		Message: message,
+	}
+	if err := survey.AskOne(prompt, &confirmation); err != nil {
+		return false
+	}
+	return confirmation
 }
 
 func GetHTBToken() string {

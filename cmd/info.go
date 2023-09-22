@@ -9,7 +9,6 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/GoToolSharing/htb-cli/utils"
 	"github.com/spf13/cobra"
 )
@@ -19,19 +18,12 @@ var challengeParam []string
 
 func coreInfoCmd(machineParam []string, challengeParam []string) (string, error) {
 	if len(machineParam) > 0 && len(challengeParam) > 0 {
-		return "", errors.New("Error: You can only specify either -m or -c flags, not both.")
+		return "", errors.New("error: You can only specify either -m or -c flags, not both")
 	}
 	if os.Getenv("TEST") == "" {
-		var confirmation bool
-		confirmation_message := "Do you want to check for active machine ?"
-		prompt := &survey.Confirm{
-			Message: confirmation_message,
-		}
-		if err := survey.AskOne(prompt, &confirmation); err != nil {
-			return "", err
-		}
-		if confirmation {
-			err := checkActiveMachine()
+		isConfirmed := utils.AskConfirmation("Do you want to check for active machine ?")
+		if isConfirmed {
+			err := displayActiveMachine()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -40,8 +32,8 @@ func coreInfoCmd(machineParam []string, challengeParam []string) (string, error)
 
 	// Machines search
 	if len(machineParam) > 0 {
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
-		fmt.Fprintln(w, "Name\tOS\tActive\tDifficulty\tStars\tFirstUserBlood\tFirstRootBlood\tStatus\tRelease")
+		header := "Name\tOS\tActive\tDifficulty\tStars\tFirstUserBlood\tFirstRootBlood\tStatus\tRelease"
+		w := utils.SetTabWriterHeader(header)
 		status := "Not defined"
 		retired_status := "Not defined"
 		log.Println(machineParam)
@@ -77,8 +69,8 @@ func coreInfoCmd(machineParam []string, challengeParam []string) (string, error)
 				return "", errors.New("Error: Parsing date")
 			}
 			datetime := t.Format("2006-01-02")
-			fmt.Fprintf(w, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], retired_status, data["difficultyText"], data["stars"], data["firstUserBloodTime"], data["firstRootBloodTime"], status, datetime)
-			w.Flush()
+			bodyData := fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], retired_status, data["difficultyText"], data["stars"], data["firstUserBloodTime"], data["firstRootBloodTime"], status, datetime)
+			utils.SetTabWriterData(w, bodyData)
 		}
 		return "", nil
 	}
@@ -86,7 +78,8 @@ func coreInfoCmd(machineParam []string, challengeParam []string) (string, error)
 	// Challenges search
 	if len(challengeParam) > 0 {
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
-		fmt.Fprintln(w, "Name\tCategory\tActive\tDifficulty\tStars\tSolves\tStatus\tRelease")
+		header := "Name\tCategory\tActive\tDifficulty\tStars\tSolves\tStatus\tRelease"
+		w = utils.SetTabWriterHeader(header)
 		status := "Not defined"
 		retired_status := "Not defined"
 		log.Println(challengeParam)
@@ -116,15 +109,15 @@ func coreInfoCmd(machineParam []string, challengeParam []string) (string, error)
 				return "", errors.New("Error: Parsing date")
 			}
 			datetime := t.Format("2006-01-02")
-			fmt.Fprintf(w, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["category_name"], retired_status, data["difficulty"], data["stars"], data["solves"], status, datetime)
-			w.Flush()
+			bodyData := fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["category_name"], retired_status, data["difficulty"], data["stars"], data["solves"], status, datetime)
+			utils.SetTabWriterData(w, bodyData)
 		}
 		return "", nil
 	}
 	return "", nil
 }
 
-func checkActiveMachine() error {
+func displayActiveMachine() error {
 	machine_id := utils.GetActiveMachineID(proxyParam)
 	status := "Not defined"
 	retired_status := "Not defined"
@@ -132,7 +125,8 @@ func checkActiveMachine() error {
 		log.Println("Active machine found !")
 		log.Println("Machine ID:", machine_id)
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
-		fmt.Fprintln(w, "Name\tOS\tActive\tDifficulty\tStars\tIP\tStatus\tRelease")
+		header := "Name\tOS\tActive\tDifficulty\tStars\tIP\tStatus\tRelease"
+		w = utils.SetTabWriterHeader(header)
 		url := "https://www.hackthebox.com/api/v4/machine/profile/" + machine_id
 		resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
 		if err != nil {
@@ -160,8 +154,8 @@ func checkActiveMachine() error {
 			return errors.New(fmt.Sprintf("Error: parsing date: %v", err))
 		}
 		datetime := t.Format("2006-01-02")
-		fmt.Fprintf(w, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], retired_status, data["difficultyText"], data["stars"], data["ip"], status, datetime)
-		w.Flush()
+		bodyData := fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], retired_status, data["difficultyText"], data["stars"], data["ip"], status, datetime)
+		utils.SetTabWriterData(w, bodyData)
 	} else {
 		fmt.Print("No machine is running")
 	}
