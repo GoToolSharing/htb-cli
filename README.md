@@ -101,18 +101,18 @@ Incorrect flag
 ```
 ❯ htb-cli info
 ? Do you want to check for active machine ? Yes
-Name   |OS        |Active   |Difficulty   |Stars   |IP            |Status            |Release
-Blue   |Windows   |0        |Easy         |4.5     |10.10.10.40   |✅ User - ✅ Root   |2017-07-28
+Name      |OS      |Active   |Difficulty   |Stars   |FirstUserBlood   |FirstRootBlood   |Status         |Release
+Blue      |Windows |No       |Easy         |4.5     |0H 2M 34S        |0H 2M 1S         |User & Root    |2017-07-28
 ```
 
 ```
 ❯ htb-cli info -m Zip -m pilgrimage
 ? Do you want to check for active machine ? No
 ? The following machine was found : Zipping Yes
-Name      |OS      |Active   |Difficulty   |Stars   |FirstUserBlood   |FirstRootBlood   |Status            |Release
-Zipping   |Linux   |✅        |Medium       |4.1     |0H 15M 9S        |1H 12M 28S       |❌ User - ❌ Root   |2023-08-26
+Name        |OS      |Active   |Difficulty   |Stars   |FirstUserBlood   |FirstRootBlood   |Status       |Release
+Zipping     |Linux   |Yes      |Medium       |4.1     |0H 15M 9S        |1H 12M 28S       |No flags     |2023-08-26
 ? The following machine was found : Pilgrimage Yes
-Pilgrimage   |Linux   |✅    |Easy   |4.5   |0H 17M 0S   |0H 20M 33S   |✅ User - ✅ Root   |2023-06-24
+Pilgrimage  |Linux   |Yes      |Easy         |4.5     |0H 17M 0S        |0H 20M 33S       |User & Root  |2023-06-24
 ```
 
 ## Status
