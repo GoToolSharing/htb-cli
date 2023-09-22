@@ -12,7 +12,7 @@ func TestSubmitChallengeBadFlag(t *testing.T) {
 	defer r.Close()
 	difficulty := 1
 	machineName := ""
-	challengeName := "Leet Test"
+	challengeName := "EasterBunny"
 	flag := "testingflag"
 	output, err := coreSubmitCmd(difficulty, machineName, challengeName, flag, "")
 	expected := "Incorrect flag"
@@ -27,7 +27,7 @@ func TestSubmitMachineBadFlag(t *testing.T) {
 	defer w.Close()
 	defer r.Close()
 	difficulty := 1
-	machineName := "Blue"
+	machineName := "Rebound"
 	challengeName := ""
 	flag := "testingflag"
 	output, err := coreSubmitCmd(difficulty, machineName, challengeName, flag, "")
