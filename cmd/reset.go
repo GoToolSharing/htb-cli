@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func core_resetCmd(proxyParam string) (string, error) {
+func coreResetCmd(proxyParam string) (string, error) {
 	machine_id := utils.GetActiveMachineID(proxyParam)
 	log.Println("Machine ID :", machine_id)
 	machine_type := utils.GetMachineType(machine_id, "")
@@ -38,7 +38,7 @@ var resetCmd = &cobra.Command{
 	Short: "Reset a machine",
 	Long:  "Initiates a reset request for the selected machine.",
 	Run: func(cmd *cobra.Command, args []string) {
-		output, err := core_resetCmd(proxyParam)
+		output, err := coreResetCmd(proxyParam)
 		if err != nil {
 			log.Fatal(err)
 		}

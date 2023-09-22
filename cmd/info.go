@@ -18,7 +18,7 @@ import (
 var machineParam []string
 var challengeParam []string
 
-func core_infoCmd(machineParam []string, challengeParam []string) (string, error) {
+func coreInfoCmd(machineParam []string, challengeParam []string) (string, error) {
 	if len(machineParam) > 0 && len(challengeParam) > 0 {
 		return "", errors.New("Error: You can only specify either -m or -c flags, not both.")
 	}
@@ -168,7 +168,7 @@ var infoCmd = &cobra.Command{
 	Short: "Showcase detailed machine information",
 	Long:  "Displays detailed information of the specified machines in a structured table.",
 	Run: func(cmd *cobra.Command, args []string) {
-		output, err := core_infoCmd(machineParam, challengeParam)
+		output, err := coreInfoCmd(machineParam, challengeParam)
 		if err != nil {
 			log.Fatal(err)
 		}

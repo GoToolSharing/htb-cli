@@ -26,7 +26,7 @@ type Status struct {
 	Description string `json:"description"`
 }
 
-func core_status(proxyParam string) (string, error) {
+func coreStatusCmd(proxyParam string) (string, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -89,7 +89,7 @@ var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Displays the status of HackTheBox servers",
 	Run: func(cmd *cobra.Command, args []string) {
-		output, err := core_status(proxyParam)
+		output, err := coreStatusCmd(proxyParam)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,10 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func core_stopCmd(proxyParam string) (string, error) {
+func coreStopCmd(proxyParam string) (string, error) {
 	machine_id := utils.GetActiveMachineID(proxyParam)
 	if machine_id == "" {
-		return "", errors.New("No machine is running")
+		return "No machine is running", nil
 	}
 	log.Println("Machine ID :", machine_id)
 	machine_type := utils.GetMachineType(machine_id, "")
@@ -53,7 +52,7 @@ var stopCmd = &cobra.Command{
 	Use:   "stop",
 	Short: "Stop the current machine",
 	Run: func(cmd *cobra.Command, args []string) {
-		output, err := core_stopCmd(proxyParam)
+		output, err := coreStopCmd(proxyParam)
 		if err != nil {
 			log.Fatal(err)
 		}

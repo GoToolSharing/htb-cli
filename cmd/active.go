@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func core_activeCmd() (string, error) {
+func coreActiveCmd(proxyParam string) (string, error) {
 	url := "https://www.hackthebox.com/api/v4/machine/list"
 	resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
 	if err != nil {
@@ -55,7 +55,7 @@ var activeCmd = &cobra.Command{
 	Short: "Catalogue of active machines",
 	Long:  "This command serves to generate a detailed summary of the currently active machines, providing pertinent information for each.",
 	Run: func(cmd *cobra.Command, args []string) {
-		output, err := core_activeCmd()
+		output, err := coreActiveCmd(proxyParam)
 		if err != nil {
 			log.Fatal(err)
 		}
