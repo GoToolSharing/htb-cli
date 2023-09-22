@@ -31,7 +31,7 @@ func TestSubmitMachineBadFlag(t *testing.T) {
 	challengeName := ""
 	flag := "testingflag"
 	output, err := coreSubmitCmd(difficulty, machineName, challengeName, flag, "")
-	expected := "Incorrect flag"
+	expected := "Incorrect flag!"
 
 	if err != nil || output != expected {
 		t.Fatalf("Error \"%v\", Expected output: \"%s\", Got \"%v\"", err, expected, output)
