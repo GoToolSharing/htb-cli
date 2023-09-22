@@ -61,6 +61,7 @@ jobs:
           go tool cover -func=coverage.out -o=coverage.out
         env:
           HTB_TOKEN: ${{ secrets.HTB_TOKEN }}
+          TEST: "true"
 
       - name: Go Coverage Badge
         uses: tj-actions/coverage-badge-go@v2
