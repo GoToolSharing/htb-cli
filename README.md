@@ -3,7 +3,8 @@
 
 ![Workflows (main)](https://github.com/GoToolSharing/htb-cli/actions/workflows/go.yml/badge.svg?branch=main)
 ![Workflows (dev)](https://github.com/GoToolSharing/htb-cli/actions/workflows/go.yml/badge.svg?branch=dev)
-![GitHub go.mod Go version (subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/GoToolSharing/htb-cli)
+![GitHub go.mod Go version (main)](https://img.shields.io/github/go-mod/go-version/GoToolSharing/htb-cli/main)
+![GitHub go.mod Go version (dev)](https://img.shields.io/github/go-mod/go-version/GoToolSharing/htb-cli/dev)
 ![GitHub release](https://img.shields.io/github/v/release/GoToolSharing/htb-cli)
 ![GitHub Repo stars](https://img.shields.io/github/stars/GoToolSharing/htb-cli)
 
