@@ -58,7 +58,6 @@ func core_status(proxyParam string) (string, error) {
 		proxyURLParsed, err := url.Parse(proxyParam)
 		if err != nil {
 			s.Stop()
-			log.Fatal("error parsing proxy url :", err)
 			return "", errors.New(fmt.Sprintf("Error: parsing proxy url: %v", err))
 		}
 		transport.Proxy = http.ProxyURL(proxyURLParsed)
@@ -80,19 +79,21 @@ func core_status(proxyParam string) (string, error) {
 	var pageStatus PageStatus
 	err = json.Unmarshal([]byte(body), &pageStatus)
 	if err != nil {
-		fmt.Println("Erreur lors du décodage JSON:", err)
-		return ""
+		return "", errors.New(fmt.Sprintf("Error: JSON decode: %v", err))
 	}
-
 	description := pageStatus.Status.Description
-	return description
+	return description, nil
 }
 
 var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Displays the status of HackTheBox servers",
 	Run: func(cmd *cobra.Command, args []string) {
-		core_status(proxyParam)
+		output, err := core_status(proxyParam)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(output)
 	},
 }
 
