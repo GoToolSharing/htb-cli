@@ -19,6 +19,13 @@ import (
 	"github.com/briandowns/spinner"
 )
 
+func SetOutputTest() (*os.File, *os.File) {
+	log.SetOutput(io.Discard)
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	return r, w
+}
+
 type Machine struct {
 	ID    string `json:"id"`
 	Value string `json:"value"`

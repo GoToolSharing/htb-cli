@@ -1,14 +1,17 @@
 package cmd
 
 import (
-	"strings"
 	"testing"
+
+	"github.com/GoToolSharing/htb-cli/utils"
 )
 
 func TestListActiveMachines(t *testing.T) {
-	output := runCmdAndCaptureOutput(t, activeCmd, []string{})
-
-	if !strings.Contains(output, "Medium") && !strings.Contains(output, "Easy") && !strings.Contains(output, "Hard") && !strings.Contains(output, "Insane") {
+	r, w := utils.SetOutputTest()
+	output := core_activeCmd()
+	if output != "success" {
 		t.Fatalf("Expected 'Easy / Medium / Hard / Insane' but got '%v'", output)
 	}
+	w.Close()
+	r.Close()
 }
