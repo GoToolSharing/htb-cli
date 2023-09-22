@@ -32,7 +32,10 @@ func coreInfoCmd(machineParam []string, challengeParam []string) (string, error)
 			return "", err
 		}
 		if confirmation {
-			checkActiveMachine()
+			err := checkActiveMachine()
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 
@@ -122,7 +125,7 @@ func coreInfoCmd(machineParam []string, challengeParam []string) (string, error)
 	return "", nil
 }
 
-func checkActiveMachine() {
+func checkActiveMachine() error {
 	machine_id := utils.GetActiveMachineID(proxyParam)
 	status := "Not defined"
 	retired_status := "Not defined"
@@ -134,9 +137,10 @@ func checkActiveMachine() {
 		url := "https://www.hackthebox.com/api/v4/machine/profile/" + machine_id
 		resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		info := utils.ParseJsonMessage(resp, "info")
+		log.Println(info)
 		data := info.(map[string]interface{})
 		if data["authUserInUserOwns"] == nil && data["authUserInRootOwns"] == nil {
 			status = emoji.Sprint(":x:User - :x:Root")
@@ -154,13 +158,15 @@ func checkActiveMachine() {
 		}
 		t, err := time.Parse(time.RFC3339Nano, data["release"].(string))
 		if err != nil {
-			fmt.Println("Erreur when date parsing :", err)
-			return
+			return errors.New(fmt.Sprintf("Error: parsing date: %v", err))
 		}
 		datetime := t.Format("2006-01-02")
 		fmt.Fprintf(w, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], retired_status, data["difficultyText"], data["stars"], data["ip"], status, datetime)
 		w.Flush()
+	} else {
+		fmt.Print("No machine is running")
 	}
+	return nil
 }
 
 var infoCmd = &cobra.Command{
