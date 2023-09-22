@@ -11,7 +11,6 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/GoToolSharing/htb-cli/utils"
-	"github.com/kyokomi/emoji/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -58,18 +57,18 @@ func coreInfoCmd(machineParam []string, challengeParam []string) (string, error)
 
 			data := info.(map[string]interface{})
 			if data["authUserInUserOwns"] == nil && data["authUserInRootOwns"] == nil {
-				status = emoji.Sprint(":x:User - :x:Root")
+				status = "No flags"
 			} else if data["authUserInUserOwns"] == true && data["authUserInRootOwns"] == nil {
-				status = emoji.Sprint(":white_check_mark:User - :x:Root")
+				status = "User flag"
 			} else if data["authUserInUserOwns"] == nil && data["authUserInRootOwns"] == true {
-				status = emoji.Sprint(":x:User - :white_check_mark:Root")
+				status = "Root flag"
 			} else if data["authUserInUserOwns"] == true && data["authUserInRootOwns"] == true {
-				status = emoji.Sprint(":white_check_mark:User - :white_check_mark:Root")
+				status = "User & Root"
 			}
 			if data["retired"].(float64) == 0 {
-				retired_status = emoji.Sprint(":white_check_mark:")
+				retired_status = "Yes"
 			} else {
-				retired_status = emoji.Sprint(":x:")
+				retired_status = "No"
 			}
 			t, err := time.Parse(time.RFC3339Nano, data["release"].(string))
 			if err != nil {
@@ -102,14 +101,14 @@ func coreInfoCmd(machineParam []string, challengeParam []string) (string, error)
 			info := utils.ParseJsonMessage(resp, "challenge")
 			data := info.(map[string]interface{})
 			if data["authUserSolve"] == false {
-				status = emoji.Sprint(":x:Flag")
+				status = "No flag"
 			} else {
-				status = emoji.Sprint(":white_check_mark:Flag")
+				status = "Flagged !"
 			}
 			if data["retired"].(float64) == 0 {
-				retired_status = emoji.Sprint(":white_check_mark:")
+				retired_status = "Yes"
 			} else {
-				retired_status = emoji.Sprint(":x:")
+				retired_status = "No"
 			}
 			t, err := time.Parse(time.RFC3339Nano, data["release_date"].(string))
 			if err != nil {
@@ -143,18 +142,18 @@ func checkActiveMachine() error {
 		log.Println(info)
 		data := info.(map[string]interface{})
 		if data["authUserInUserOwns"] == nil && data["authUserInRootOwns"] == nil {
-			status = emoji.Sprint(":x:User - :x:Root")
+			status = "No flags"
 		} else if data["authUserInUserOwns"] == true && data["authUserInRootOwns"] == nil {
-			status = emoji.Sprint(":white_check_mark:User - :x:Root")
+			status = "User flag"
 		} else if data["authUserInUserOwns"] == nil && data["authUserInRootOwns"] == true {
-			status = emoji.Sprint(":x:User - :white_check_mark:Root")
+			status = "Root flag"
 		} else if data["authUserInUserOwns"] == true && data["authUserInRootOwns"] == true {
-			status = emoji.Sprint(":white_check_mark:User - :white_check_mark:Root")
+			status = "User & Root"
 		}
 		if data["retired"].(float64) == 0 {
-			retired_status = emoji.Sprint(":white_check_mark:")
+			retired_status = "Yes"
 		} else {
-			retired_status = emoji.Sprint(":x:")
+			retired_status = "No"
 		}
 		t, err := time.Parse(time.RFC3339Nano, data["release"].(string))
 		if err != nil {

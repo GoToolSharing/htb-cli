@@ -10,7 +10,6 @@ import (
 	"net/http"
 
 	"github.com/GoToolSharing/htb-cli/utils"
-	"github.com/kyokomi/emoji/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -31,13 +30,13 @@ func coreActiveCmd(proxyParam string) (string, error) {
 	for _, value := range info.([]interface{}) {
 		data := value.(map[string]interface{})
 		if data["authUserInUserOwns"] == nil && data["authUserInRootOwns"] == nil {
-			status = emoji.Sprint(":x:User - :x:Root")
+			status = "No flags"
 		} else if data["authUserInUserOwns"] == true && data["authUserInRootOwns"] == nil {
-			status = emoji.Sprint(":white_check_mark:User - :x:Root")
+			status = "User flag"
 		} else if data["authUserInUserOwns"] == nil && data["authUserInRootOwns"] == true {
-			status = emoji.Sprint(":x:User - :white_check_mark:Root")
+			status = "Root flag"
 		} else if data["authUserInUserOwns"] == true && data["authUserInRootOwns"] == true {
-			status = emoji.Sprint(":white_check_mark:User - :white_check_mark:Root")
+			status = "User & Root"
 		}
 		t, err := time.Parse(time.RFC3339Nano, data["release"].(string))
 		if err != nil {
