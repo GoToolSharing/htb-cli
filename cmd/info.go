@@ -66,7 +66,7 @@ func coreInfoCmd(machineParam []string, challengeParam []string) (string, error)
 			if err != nil {
 
 				fmt.Println("Erreur when date parsing :", err)
-				return "", errors.New("Error: Parsing date")
+				return "", errors.New("error: Parsing date")
 			}
 			datetime := t.Format("2006-01-02")
 			bodyData := fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], retired_status, data["difficultyText"], data["stars"], data["firstUserBloodTime"], data["firstRootBloodTime"], status, datetime)
@@ -106,7 +106,7 @@ func coreInfoCmd(machineParam []string, challengeParam []string) (string, error)
 			t, err := time.Parse(time.RFC3339Nano, data["release_date"].(string))
 			if err != nil {
 				fmt.Println("Erreur when date parsing :", err)
-				return "", errors.New("Error: Parsing date")
+				return "", errors.New("error: Parsing date")
 			}
 			datetime := t.Format("2006-01-02")
 			bodyData := fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["category_name"], retired_status, data["difficulty"], data["stars"], data["solves"], status, datetime)
