@@ -50,7 +50,6 @@ func SetTabWriterHeader(header string) *tabwriter.Writer {
 
 func SetTabWriterData(w *tabwriter.Writer, data string) {
 	fmt.Fprintf(w, data)
-	w.Flush()
 }
 
 func AskConfirmation(message string) bool {

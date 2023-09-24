@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 	"text/tabwriter"
-	"time"
 
 	"github.com/GoToolSharing/htb-cli/utils"
 	"github.com/spf13/cobra"
@@ -16,42 +15,6 @@ import (
 
 var machineParam []string
 var challengeParam []string
-
-// parseAndFormatDate takes a date string, parses it into a time.Time object, and then formats it to the "2006-01-02" format.
-func parseAndFormatDate(input string) (string, error) {
-	t, err := time.Parse(time.RFC3339Nano, input)
-	if err != nil {
-		return "", fmt.Errorf("error: parsing date: %v", err)
-	}
-	return t.Format("2006-01-02"), nil
-}
-
-// setStatus determines the status based on user and root flags.
-func setStatus(data map[string]interface{}) string {
-	userFlag, userFlagExists := data["authUserInUserOwns"].(bool)
-	rootFlag, rootFlagExists := data["authUserInRootOwns"].(bool)
-
-	switch {
-	case !userFlagExists && !rootFlagExists:
-		return "No flags"
-	case userFlag && !rootFlag:
-		return "User flag"
-	case !userFlag && rootFlag:
-		return "Root flag"
-	case userFlag && rootFlag:
-		return "User & Root"
-	default:
-		return "No flags"
-	}
-}
-
-// setRetiredStatus determines whether an item is retired or not.
-func setRetiredStatus(data map[string]interface{}) string {
-	if retired, exists := data["retired"].(bool); exists && !retired {
-		return "Yes"
-	}
-	return "No"
-}
 
 // fetchAndDisplayInfo fetches and displays information based on the specified parameters.
 func fetchAndDisplayInfo(url, header string, params []string, elementType string) error {
@@ -78,8 +41,8 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 		info := utils.ParseJsonMessage(resp, infoKey)
 		data := info.(map[string]interface{})
 
-		status := setStatus(data)
-		retiredStatus := setRetiredStatus(data)
+		status := utils.SetStatus(data)
+		retiredStatus := utils.SetRetiredStatus(data)
 
 		release_key := ""
 		if elementType == "Machine" {
@@ -87,7 +50,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 		} else {
 			release_key = "release_date"
 		}
-		datetime, err := parseAndFormatDate(data[release_key].(string))
+		datetime, err := utils.ParseAndFormatDate(data[release_key].(string))
 		if err != nil {
 			return err
 		}
@@ -100,6 +63,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 		}
 
 		utils.SetTabWriterData(w, bodyData)
+		w.Flush()
 	}
 	return nil
 }
@@ -158,7 +122,7 @@ func displayActiveMachine() error {
 		log.Println(info)
 		data := info.(map[string]interface{})
 
-		status := setStatus(data)
+		status := utils.SetStatus(data)
 
 		if data["retired"].(float64) == 0 {
 			retiredStatus = "Yes"
@@ -166,7 +130,7 @@ func displayActiveMachine() error {
 			retiredStatus = "No"
 		}
 
-		datetime, err := parseAndFormatDate(data["release"].(string))
+		datetime, err := utils.ParseAndFormatDate(data["release"].(string))
 		if err != nil {
 			return err
 		}
@@ -177,6 +141,7 @@ func displayActiveMachine() error {
 			data["ip"], status, datetime)
 
 		utils.SetTabWriterData(w, bodyData)
+		w.Flush()
 	} else {
 		fmt.Print("No machine is running")
 	}
