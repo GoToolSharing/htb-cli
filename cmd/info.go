@@ -47,7 +47,7 @@ func setStatus(data map[string]interface{}) string {
 
 // setRetiredStatus determines whether an item is retired or not.
 func setRetiredStatus(data map[string]interface{}) string {
-	if retired, exists := data["retired"].(float64); exists && retired == 0 {
+	if retired, exists := data["retired"].(bool); exists && !retired {
 		return "Yes"
 	}
 	return "No"
@@ -58,6 +58,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 	log.Println("Params :", params)
 	w := utils.SetTabWriterHeader(header)
 
+	// Iteration on all machines / challenges argument
 	for _, param := range params {
 		itemID := utils.SearchItemIDByName(param, proxyParam, elementType)
 
@@ -108,6 +109,7 @@ func coreInfoCmd(machineParam []string, challengeParam []string) error {
 	if len(machineParam) > 0 && len(challengeParam) > 0 {
 		return errors.New("error: You can only specify either -m or -c flags, not both")
 	}
+	// Add this check to avoid interactive mode during unit testing
 	if os.Getenv("TEST") == "" {
 		isConfirmed := utils.AskConfirmation("Do you want to check for active machine ?")
 		if isConfirmed {
@@ -136,18 +138,18 @@ func coreInfoCmd(machineParam []string, challengeParam []string) error {
 
 // displayActiveMachine displays information about the active machine if one is found.
 func displayActiveMachine() error {
-	machine_id := utils.GetActiveMachineID(proxyParam)
-	retired_status := "Not defined"
+	machineID := utils.GetActiveMachineID(proxyParam)
+	retiredStatus := "Not defined"
 
-	if machine_id != "" {
+	if machineID != "" {
 		log.Println("Active machine found !")
-		log.Println("Machine ID:", machine_id)
+		log.Println("Machine ID:", machineID)
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
 		header := "Name\tOS\tActive\tDifficulty\tStars\tIP\tStatus\tRelease"
 		w = utils.SetTabWriterHeader(header)
 
-		url := "https://www.hackthebox.com/api/v4/machine/profile/" + machine_id
+		url := "https://www.hackthebox.com/api/v4/machine/profile/" + machineID
 		resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
 		if err != nil {
 			return err
@@ -159,9 +161,9 @@ func displayActiveMachine() error {
 		status := setStatus(data)
 
 		if data["retired"].(float64) == 0 {
-			retired_status = "Yes"
+			retiredStatus = "Yes"
 		} else {
-			retired_status = "No"
+			retiredStatus = "No"
 		}
 
 		datetime, err := parseAndFormatDate(data["release"].(string))
@@ -170,7 +172,7 @@ func displayActiveMachine() error {
 		}
 
 		bodyData := fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n",
-			data["name"], data["os"], retired_status,
+			data["name"], data["os"], retiredStatus,
 			data["difficultyText"], data["stars"],
 			data["ip"], status, datetime)
 
