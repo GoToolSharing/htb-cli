@@ -9,45 +9,62 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func coreStopCmd(proxyParam string) (string, error) {
-	machine_id := utils.GetActiveMachineID(proxyParam)
-	if machine_id == "" {
-		return "No machine is running", nil
-	}
-	log.Println("Machine ID :", machine_id)
-	machine_type := utils.GetMachineType(machine_id, "")
-	log.Println("Machine Type :", machine_type)
-	user_subscription := utils.GetUserSubscription(proxyParam)
-	log.Println("User subscription :", user_subscription)
+const (
+	releaseAPI = "https://www.hackthebox.com/api/v4/arena/stop"
+	vipAPI     = "https://www.hackthebox.com/api/v4/vm/terminate"
+	defaultAPI = "https://www.hackthebox.com/api/v4/machine/stop"
+)
 
-	if machine_type == "release" {
-		url := "https://www.hackthebox.com/api/v4/arena/stop"
-		resp, err := utils.HtbRequest(http.MethodPost, url, proxyParam, []byte(`{}`))
-		if err != nil {
-			log.Fatal(err)
-		}
-		message := utils.ParseJsonMessage(resp, "message")
-		return message.(string), nil
+// buildMachineStopRequest constructs the URL endpoint and JSON data payload for stopping a machine based on its type and user's subscription.
+func buildMachineStopRequest(machineType, userSubscription, machineID, proxyParam string) (string, []byte) {
+	var apiEndpoint string
+	var jsonData []byte
+
+	if machineType == "release" {
+		return releaseAPI, []byte(`{}`)
 	}
 
-	url := ""
-	jsonData := []byte("")
-	switch user_subscription {
+	switch userSubscription {
 	case "vip":
-		url = "https://www.hackthebox.com/api/v4/vm/terminate"
-		jsonData = []byte(`{"machine_id": ` + machine_id + `}`)
+		apiEndpoint = vipAPI
 	default:
-		url = "https://www.hackthebox.com/api/v4/machine/stop"
-		jsonData = []byte(`{"machine_id": ` + machine_id + `}`)
+		apiEndpoint = defaultAPI
 	}
-	resp, err := utils.HtbRequest(http.MethodPost, url, proxyParam, jsonData)
-	if err != nil {
-		log.Fatal(err)
-	}
-	message := utils.ParseJsonMessage(resp, "message")
-	return message.(string), nil
+
+	jsonData = []byte(fmt.Sprintf(`{"machine_id": "%s"}`, machineID))
+	return apiEndpoint, jsonData
 }
 
+// coreStopCmd stops the currently active machine.
+// It fetches machine's ID, its type, and user's subscription to determine how to stop the machine.
+func coreStopCmd(proxyParam string) (string, error) {
+	machineID := utils.GetActiveMachineID(proxyParam)
+	if machineID == "" {
+		return "No machine is running", nil
+	}
+	log.Println("Machine ID:", machineID)
+
+	machineType := utils.GetMachineType(machineID, "")
+	log.Println("Machine Type:", machineType)
+
+	userSubscription := utils.GetUserSubscription(proxyParam)
+	log.Println("User subscription:", userSubscription)
+
+	apiEndpoint, jsonData := buildMachineStopRequest(machineType, userSubscription, machineID, proxyParam)
+	resp, err := utils.HtbRequest(http.MethodPost, apiEndpoint, proxyParam, jsonData)
+	if err != nil {
+		return "", err
+	}
+
+	message, ok := utils.ParseJsonMessage(resp, "message").(string)
+	if !ok {
+		return "", fmt.Errorf("error parsing message from response")
+	}
+
+	return message, nil
+}
+
+// stopCmd represents the "stop" command which stops the current active machine.
 var stopCmd = &cobra.Command{
 	Use:   "stop",
 	Short: "Stop the current machine",
@@ -60,6 +77,7 @@ var stopCmd = &cobra.Command{
 	},
 }
 
+// init initializes the command by adding it to the root command.
 func init() {
 	rootCmd.AddCommand(stopCmd)
 }
