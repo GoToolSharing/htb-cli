@@ -186,8 +186,8 @@ func displayActiveMachine() error {
 // infoCmd is a Cobra command that serves as an entry point to display detailed information about machines.
 var infoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "Showcase detailed machine information",
-	Long:  "Displays detailed information of the specified machines in a structured table.",
+	Short: "Detailed information on challenges and machines",
+	Long:  "Displays detailed information on machines and challenges in a structured table",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := coreInfoCmd(machineParam, challengeParam)
 		if err != nil {

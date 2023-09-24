@@ -32,92 +32,36 @@ export HTB_TOKEN=eyJ...
 
 ## Helper
 
-```
-This software, engineered using the Go programming language, serves to streamline and automate various tasks for the HackTheBox platform, enhancing user efficiency and productivity.
-
-Usage:
-  htb-cli [command]
-
-Available Commands:
-  active      Catalogue of active machines
-  help        Help about any command
-  info        Showcase detailed machine information
-  reset       Reset a machine
-  start       Start a machine
-  status      Displays the status of HackTheBox servers
-  stop        Stop the current machine
-  submit      Submit credentials (User and Root Flags)
-
-Flags:
-  -h, --help           help for htb-cli
-  -p, --proxy string   Configure a URL for an HTTP proxy
-  -v, --verbose        Verbose mode
-
-Use "htb-cli [command] --help" for more information about a command.
-```
+![Helper](/assets/helper.png)
 
 ## Start
 
-```
-❯ htb-cli start -m Blue
-? The following machine was found : Blue Yes
-Machine deployed to lab.
-```
+![Start machine](/assets/start.png)
 
 ## Stop
 
-```
-❯ htb-cli stop
-Machine terminated.
-```
+![Stop machine](/assets/stop.png)
 
 ## Reset
 
-```
-❯ htb-cli reset
-CozyHosting will be reset in 1 minute.
-```
+TODO
 
 ## Submit
 
-This command allows to submit the user flag and the root flag of active and retired machines. The first argument is the flag and the second the difficulty /10.
-
 ### Submit machine flag
-```
-❯ htb-cli submit -m SteamCloud -f flag4testing -d 3
-? The following machine was found : SteamCloud Yes
-SteamCloud user is now owned.
-```
+
+![Submit machine flag](/assets/submit_machine.png)
 
 ### Submit challenge flag
-```
-❯ htb-cli submit -c Phonebook -f flag4testing -d 3
-? The following challenge was found : Phonebook Yes
-Incorrect flag
-```
+
+![Submit challenge flag](/assets/submit_challenge.png)
 
 ## Info
 
-```
-❯ htb-cli info
-? Do you want to check for active machine ? Yes
-Name      |OS      |Active   |Difficulty   |Stars   |FirstUserBlood   |FirstRootBlood   |Status         |Release
-Blue      |Windows |No       |Easy         |4.5     |0H 2M 34S        |0H 2M 1S         |User & Root    |2017-07-28
-```
+![Info active machine](/assets/info_active.png)
 
-```
-❯ htb-cli info -m Zip -m pilgrimage
-? Do you want to check for active machine ? No
-? The following machine was found : Zipping Yes
-Name        |OS      |Active   |Difficulty   |Stars   |FirstUserBlood   |FirstRootBlood   |Status       |Release
-Zipping     |Linux   |Yes      |Medium       |4.1     |0H 15M 9S        |1H 12M 28S       |No flags     |2023-08-26
-? The following machine was found : Pilgrimage Yes
-Pilgrimage  |Linux   |Yes      |Easy         |4.5     |0H 17M 0S        |0H 20M 33S       |User & Root  |2023-06-24
-```
+![Info machines](/assets/info_machines.png)
 
 ## Status
 
-```
-❯ htb-cli status
-All Systems Operational
-```
+![Status](/assets/status.png)

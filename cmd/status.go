@@ -113,7 +113,7 @@ func coreStatusCmd(proxyParam string) error {
 // statusCmd defines the Cobra command to display the status of HackTheBox servers.
 var statusCmd = &cobra.Command{
 	Use:   "status",
-	Short: "Displays the status of HackTheBox servers",
+	Short: "Displays the status of hackthebox servers",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := coreStatusCmd(proxyParam)
 		if err != nil {

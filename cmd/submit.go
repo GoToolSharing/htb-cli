@@ -54,8 +54,8 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 
 var submitCmd = &cobra.Command{
 	Use:   "submit",
-	Short: "Submit credentials (User and Root Flags)",
-	Long:  "This command allows for the submission of user and root flags discovered on vulnerable machines.",
+	Short: "Submit credentials (machines & challenges)",
+	Long:  "This command allows for the submission of user and root flags discovered on vulnerable machines / challenges",
 	Run: func(cmd *cobra.Command, args []string) {
 		output, err := coreSubmitCmd(difficultyParam, machineNameParam, challengeNameParam, flagParam, proxyParam)
 		if err != nil {
