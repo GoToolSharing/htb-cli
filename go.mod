@@ -5,7 +5,6 @@ go 1.19
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/briandowns/spinner v1.23.0
-	github.com/kyokomi/emoji/v2 v2.2.12
 	github.com/spf13/cobra v1.5.0
 )
 
