@@ -42,7 +42,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 		data := info.(map[string]interface{})
 
 		status := utils.SetStatus(data)
-		retiredStatus := utils.SetRetiredStatus(data)
+		retiredStatus := getMachineStatus(data)
 
 		release_key := ""
 		if elementType == "Machine" {
@@ -55,9 +55,11 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 			return err
 		}
 
+		ip := getIPStatus(data)
+
 		var bodyData string
 		if strings.Contains(url, "machine") {
-			bodyData = fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], retiredStatus, data["difficultyText"], data["stars"], data["firstUserBloodTime"], data["firstRootBloodTime"], status, datetime)
+			bodyData = fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], retiredStatus, data["difficultyText"], data["stars"], ip, status, data["last_reset_time"], datetime)
 		} else {
 			bodyData = fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["category_name"], retiredStatus, data["difficulty"], data["stars"], data["solves"], status, datetime)
 		}
@@ -73,20 +75,19 @@ func coreInfoCmd(machineParam []string, challengeParam []string) error {
 	if len(machineParam) > 0 && len(challengeParam) > 0 {
 		return errors.New("error: You can only specify either -m or -c flags, not both")
 	}
-	// Add this check to avoid interactive mode during unit testing
-	if os.Getenv("TEST") == "" {
+
+	machineHeader := "Name\tOS\tRetired\tDifficulty\tStars\tIP\tStatus\tLast Reset\tRelease"
+	challengeHeader := "Name\tCategory\tRetired\tDifficulty\tStars\tSolves\tStatus\tRelease"
+
+	if len(machineParam) > 0 {
+		// Add this check to avoid interactive mode during unit testing
 		isConfirmed := utils.AskConfirmation("Do you want to check for active machine ?")
 		if isConfirmed {
-			err := displayActiveMachine()
+			err := displayActiveMachine(machineHeader)
 			if err != nil {
 				log.Fatal(err)
 			}
 		}
-	}
-
-	machineHeader := "Name\tOS\tActive\tDifficulty\tStars\tFirstUserBlood\tFirstRootBlood\tStatus\tRelease"
-	challengeHeader := "Name\tCategory\tActive\tDifficulty\tStars\tSolves\tStatus\tRelease"
-	if len(machineParam) > 0 {
 		err := fetchAndDisplayInfo("https://www.hackthebox.com/api/v4/machine/profile/", machineHeader, machineParam, "Machine")
 		if err != nil {
 			return err
@@ -100,17 +101,30 @@ func coreInfoCmd(machineParam []string, challengeParam []string) error {
 	return nil
 }
 
+// getMachineStatus returns machine status
+func getMachineStatus(data map[string]interface{}) string {
+	if data["retired"].(float64) == 0 {
+		return "No"
+	}
+	return "Yes"
+}
+
+func getIPStatus(data map[string]interface{}) interface{} {
+	if data["ip"] == nil {
+		return "Undefined"
+	}
+	return data["ip"]
+}
+
 // displayActiveMachine displays information about the active machine if one is found.
-func displayActiveMachine() error {
+func displayActiveMachine(header string) error {
 	machineID := utils.GetActiveMachineID(proxyParam)
-	retiredStatus := "Not defined"
 
 	if machineID != "" {
 		log.Println("Active machine found !")
 		log.Println("Machine ID:", machineID)
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
-		header := "Name\tOS\tActive\tDifficulty\tStars\tIP\tStatus\tRelease"
 		w = utils.SetTabWriterHeader(header)
 
 		url := "https://www.hackthebox.com/api/v4/machine/profile/" + machineID
@@ -120,25 +134,22 @@ func displayActiveMachine() error {
 		}
 		info := utils.ParseJsonMessage(resp, "info")
 		log.Println(info)
+		
 		data := info.(map[string]interface{})
-
 		status := utils.SetStatus(data)
-
-		if data["retired"].(float64) == 0 {
-			retiredStatus = "Yes"
-		} else {
-			retiredStatus = "No"
-		}
-
+		retiredStatus := getMachineStatus(data)
+		
 		datetime, err := utils.ParseAndFormatDate(data["release"].(string))
 		if err != nil {
 			return err
 		}
 
-		bodyData := fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n",
+		ip := getIPStatus(data)
+
+		bodyData := fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n",
 			data["name"], data["os"], retiredStatus,
 			data["difficultyText"], data["stars"],
-			data["ip"], status, datetime)
+			ip, status, data["last_reset_time"], datetime)
 
 		utils.SetTabWriterData(w, bodyData)
 		w.Flush()

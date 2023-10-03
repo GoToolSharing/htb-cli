@@ -94,18 +94,16 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) strin
 			machineData, _ := json.Marshal(root.Machines)
 			json.Unmarshal(machineData, &machines)
 			log.Println("Machine found :", machines[0].Value)
-			if os.Getenv("TEST") == "" {
-				var confirmation bool
-				confirmation_message := "The following machine was found : " + machines[0].Value
-				prompt := &survey.Confirm{
-					Message: confirmation_message,
-				}
-				if err := survey.AskOne(prompt, &confirmation); err != nil {
-					log.Fatal(err)
-				}
-				if !confirmation {
-					log.Fatal("Canceled")
-				}
+			var confirmation bool
+			confirmation_message := "The following machine was found : " + machines[0].Value
+			prompt := &survey.Confirm{
+				Message: confirmation_message,
+			}
+			if err := survey.AskOne(prompt, &confirmation); err != nil {
+				log.Fatal(err)
+			}
+			if !confirmation {
+				log.Fatal("Canceled")
 			}
 			return machines[0].ID
 		case map[string]interface{}:
@@ -113,18 +111,16 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) strin
 			machineData, _ := json.Marshal(root.Machines)
 			json.Unmarshal(machineData, &machines)
 			log.Println("Machine found :", machines["0"].Value)
-			if os.Getenv("TEST") == "" {
-				var confirmation bool
-				confirmation_message := "The following machine was found : " + machines["0"].Value
-				prompt := &survey.Confirm{
-					Message: confirmation_message,
-				}
-				if err := survey.AskOne(prompt, &confirmation); err != nil {
-					log.Fatal(err)
-				}
-				if !confirmation {
-					log.Fatal("Canceled")
-				}
+			var confirmation bool
+			confirmation_message := "The following machine was found : " + machines["0"].Value
+			prompt := &survey.Confirm{
+				Message: confirmation_message,
+			}
+			if err := survey.AskOne(prompt, &confirmation); err != nil {
+				log.Fatal(err)
+			}
+			if !confirmation {
+				log.Fatal("Canceled")
 			}
 			return machines["0"].ID
 		default:
@@ -137,18 +133,16 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) strin
 			challengeData, _ := json.Marshal(root.Challenges)
 			json.Unmarshal(challengeData, &challenges)
 			log.Println("Challenge found :", challenges[0].Value)
-			if os.Getenv("TEST") == "" {
-				var confirmation bool
-				confirmation_message := "The following challenge was found : " + challenges[0].Value
-				prompt := &survey.Confirm{
-					Message: confirmation_message,
-				}
-				if err := survey.AskOne(prompt, &confirmation); err != nil {
-					log.Fatal(err)
-				}
-				if !confirmation {
-					log.Fatal("Canceled")
-				}
+			var confirmation bool
+			confirmation_message := "The following challenge was found : " + challenges[0].Value
+			prompt := &survey.Confirm{
+				Message: confirmation_message,
+			}
+			if err := survey.AskOne(prompt, &confirmation); err != nil {
+				log.Fatal(err)
+			}
+			if !confirmation {
+				log.Fatal("Canceled")
 			}
 			return challenges[0].ID
 		case map[string]interface{}:
@@ -156,18 +150,16 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) strin
 			challengeData, _ := json.Marshal(root.Challenges)
 			json.Unmarshal(challengeData, &challenges)
 			log.Println("Challenge found :", challenges["0"].Value)
-			if os.Getenv("TEST") == "" {
-				var confirmation bool
-				confirmation_message := "The following challenge was found : " + challenges["0"].Value
-				prompt := &survey.Confirm{
-					Message: confirmation_message,
-				}
-				if err := survey.AskOne(prompt, &confirmation); err != nil {
-					log.Fatal(err)
-				}
-				if !confirmation {
-					log.Fatal("Canceled")
-				}
+			var confirmation bool
+			confirmation_message := "The following challenge was found : " + challenges["0"].Value
+			prompt := &survey.Confirm{
+				Message: confirmation_message,
+			}
+			if err := survey.AskOne(prompt, &confirmation); err != nil {
+				log.Fatal(err)
+			}
+			if !confirmation {
+				log.Fatal("Canceled")
 			}
 			return challenges["0"].ID
 		default:
