@@ -23,7 +23,11 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 
 	// Iteration on all machines / challenges argument
 	for _, param := range params {
-		itemID := utils.SearchItemIDByName(param, proxyParam, elementType)
+		itemID, err := utils.SearchItemIDByName(param, proxyParam, elementType)
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
 
 		fullURL := url + itemID
 		resp, err := utils.HtbRequest(http.MethodGet, fullURL, proxyParam, nil)

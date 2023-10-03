@@ -29,7 +29,13 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 	difficultyString := strconv.Itoa(difficultyParam * 10)
 	if machineNameParam != "" {
 		log.Println("Machine submit requested !")
-		machine_id := utils.SearchItemIDByName(machineNameParam, proxyParam, "Machine")
+		machine_id, err := utils.SearchItemIDByName(machineNameParam, proxyParam, "Machine")
+		if err != nil {
+			return "", err
+		}
+		if machine_id == "" {
+			return "Machine was not found", nil
+		}
 		// TODO: Add current machine ID
 		// machine_id := utils.GetActiveMachineID(proxyParam)
 		// log.Println("Machine ID :", machine_id)
@@ -37,7 +43,10 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 		jsonData = []byte(`{"flag": "` + flagParam + `", "id": ` + machine_id + `, "difficulty": ` + difficultyString + `}`)
 	} else if challengeNameParam != "" {
 		log.Println("Challenge submit requested !")
-		challenge_id := utils.SearchItemIDByName(challengeNameParam, proxyParam, "Challenge")
+		challenge_id, err := utils.SearchItemIDByName(challengeNameParam, proxyParam, "Challenge")
+		if err != nil {
+			return "", err
+		}
 		url = "https://www.hackthebox.com/api/v4/challenge/own"
 		jsonData = []byte(`{"flag": "` + flagParam + `", "challenge_id": ` + challenge_id + `, "difficulty": ` + difficultyString + `}`)
 	}

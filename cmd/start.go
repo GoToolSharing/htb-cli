@@ -12,7 +12,10 @@ import (
 var machineChoosen string
 
 func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
-	machine_id := utils.SearchItemIDByName(machineChoosen, proxyParam, "Machine")
+	machine_id, err := utils.SearchItemIDByName(machineChoosen, proxyParam, "Machine")
+	if err != nil {
+		return "", err
+	}
 	log.Println("Machine ID :", machine_id)
 	machine_type := utils.GetMachineType(machine_id, proxyParam)
 	log.Println("Machine Type :", machine_type)
