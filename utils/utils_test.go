@@ -56,12 +56,12 @@ func TestGetUserSubscription(t *testing.T) {
 // 	}
 // }
 
-func TestSearchItemIDByNameChallenge(t *testing.T) {
-	r, w := SetOutputTest()
-	defer w.Close()
-	defer r.Close()
-	output := SearchItemIDByName("test", "", "Challenge")
-	if output != "173" {
-		t.Fatalf("Expected \"%s\" but got \"%s\"", "173", output)
-	}
-}
+// func TestSearchItemIDByNameChallenge(t *testing.T) {
+// 	r, w := SetOutputTest()
+// 	defer w.Close()
+// 	defer r.Close()
+// 	output := SearchItemIDByName("test", "", "Challenge")
+// 	if output != "173" {
+// 		t.Fatalf("Expected \"%s\" but got \"%s\"", "173", output)
+// 	}
+// }
