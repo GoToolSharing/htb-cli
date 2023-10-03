@@ -5,16 +5,18 @@ import (
 	"time"
 )
 
-// parseAndFormatDate takes a date string, parses it into a time.Time object, and then formats it to the "2006-01-02" format.
+const dateFormat = "2006-01-02"
+
+// ParseAndFormatDate takes an input date string, parses it into a time.Time object, and formats it to the "2006-01-02" format.
 func ParseAndFormatDate(input string) (string, error) {
 	t, err := time.Parse(time.RFC3339Nano, input)
 	if err != nil {
-		return "", fmt.Errorf("error: parsing date: %v", err)
+		return "", fmt.Errorf("error parsing date [%s]: %v", input, err)
 	}
-	return t.Format("2006-01-02"), nil
+	return t.Format(dateFormat), nil
 }
 
-// setStatus determines the status based on user and root flags.
+// SetStatus determines the status based on user and root flags.
 func SetStatus(data map[string]interface{}) string {
 	userFlag, userFlagExists := data["authUserInUserOwns"].(bool)
 	rootFlag, rootFlagExists := data["authUserInRootOwns"].(bool)
@@ -33,7 +35,7 @@ func SetStatus(data map[string]interface{}) string {
 	}
 }
 
-// setRetiredStatus determines whether an item is retired or not.
+// SetRetiredStatus determines whether an item is retired or not.
 func SetRetiredStatus(data map[string]interface{}) string {
 	if retired, exists := data["retired"].(bool); exists && !retired {
 		return "Yes"
