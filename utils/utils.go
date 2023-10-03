@@ -140,7 +140,7 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) (stri
 			}
 			return machines["0"].ID, nil
 		default:
-			log.Fatal("No machine found")
+			return "", fmt.Errorf("No machine was found")
 		}
 	} else if element_type == "Challenge" {
 		switch root.Challenges.(type) {
