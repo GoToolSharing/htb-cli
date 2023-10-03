@@ -44,7 +44,7 @@ export HTB_TOKEN=eyJ...
 
 ## Reset
 
-TODO
+![Reset machine](/assets/reset.png)
 
 ## Submit
 
