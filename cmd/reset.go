@@ -11,6 +11,9 @@ import (
 
 func coreResetCmd(proxyParam string) (string, error) {
 	machine_id := utils.GetActiveMachineID(proxyParam)
+	if machine_id == "" {
+		return "No active machine found", nil
+	}
 	log.Println("Machine ID :", machine_id)
 	machine_type := utils.GetMachineType(machine_id, "")
 	log.Println("Machine Type :", machine_type)
