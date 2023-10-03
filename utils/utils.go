@@ -13,6 +13,7 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"text/tabwriter"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -34,6 +35,40 @@ type Root struct {
 	Challenges interface{} `json:"challenges"`
 }
 
+// Function that removes the output from the console for unit tests.
+// TODO: Move into a utils-tests.go file
+func SetOutputTest() (*os.File, *os.File) {
+	log.SetOutput(io.Discard)
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	return r, w
+}
+
+// SetTabWriterHeader will display the information in an array
+func SetTabWriterHeader(header string) *tabwriter.Writer {
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
+	fmt.Fprintln(w, header)
+	return w
+}
+
+// SetTabWriterData will write the contents of each array cell
+func SetTabWriterData(w *tabwriter.Writer, data string) {
+	fmt.Fprintf(w, data)
+}
+
+// AskConfirmation will request confirmation from the user
+func AskConfirmation(message string) bool {
+	var confirmation bool
+	prompt := &survey.Confirm{
+		Message: message,
+	}
+	if err := survey.AskOne(prompt, &confirmation); err != nil {
+		return false
+	}
+	return confirmation
+}
+
+// GetHTBToken checks whether the HTB_TOKEN environment variable exists
 func GetHTBToken() string {
 	var envName = "HTB_TOKEN"
 	if os.Getenv(envName) == "" {
@@ -43,7 +78,8 @@ func GetHTBToken() string {
 	return os.Getenv("HTB_TOKEN")
 }
 
-func SearchItemIDByName(item string, proxyURL string, element_type string) string {
+// SearchItemIDByName will return the id of an item (machine / challenge) based on its name
+func SearchItemIDByName(item string, proxyURL string, element_type string) (string, error) {
 	url := "https://www.hackthebox.com/api/v4/search/fetch?query=" + item
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
@@ -61,9 +97,17 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) strin
 	if element_type == "Machine" {
 		switch root.Machines.(type) {
 		case []interface{}:
+			// Checking if machines array is empty
+			if len(root.Machines.([]interface{})) == 0 {
+				fmt.Println("No machine was found")
+				return "", fmt.Errorf("error: No machine was found")
+			}
 			var machines []Machine
 			machineData, _ := json.Marshal(root.Machines)
-			json.Unmarshal(machineData, &machines)
+			err := json.Unmarshal(machineData, &machines)
+			if err != nil {
+				fmt.Println("error:", err)
+			}
 			log.Println("Machine found :", machines[0].Value)
 			var confirmation bool
 			confirmation_message := "The following machine was found : " + machines[0].Value
@@ -76,11 +120,19 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) strin
 			if !confirmation {
 				log.Fatal("Canceled")
 			}
-			return machines[0].ID
+			return machines[0].ID, nil
 		case map[string]interface{}:
+			// Checking if machines array is empty
+			if len(root.Machines.(map[string]interface{})) == 0 {
+				fmt.Println("No machine was found")
+				return "", fmt.Errorf("error: No machine was found")
+			}
 			var machines map[string]Machine
 			machineData, _ := json.Marshal(root.Machines)
-			json.Unmarshal(machineData, &machines)
+			err := json.Unmarshal(machineData, &machines)
+			if err != nil {
+				fmt.Println("error:", err)
+			}
 			log.Println("Machine found :", machines["0"].Value)
 			var confirmation bool
 			confirmation_message := "The following machine was found : " + machines["0"].Value
@@ -93,16 +145,24 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) strin
 			if !confirmation {
 				log.Fatal("Canceled")
 			}
-			return machines["0"].ID
+			return machines["0"].ID, nil
 		default:
-			log.Fatal("No machine found")
+			return "", fmt.Errorf("No machine was found")
 		}
 	} else if element_type == "Challenge" {
 		switch root.Challenges.(type) {
 		case []interface{}:
+			// Checking if challenges array is empty
+			if len(root.Challenges.([]interface{})) == 0 {
+				fmt.Println("No challenge was found")
+				return "", fmt.Errorf("error: No challenge was found")
+			}
 			var challenges []Challenge
 			challengeData, _ := json.Marshal(root.Challenges)
-			json.Unmarshal(challengeData, &challenges)
+			err := json.Unmarshal(challengeData, &challenges)
+			if err != nil {
+				fmt.Println("error:", err)
+			}
 			log.Println("Challenge found :", challenges[0].Value)
 			var confirmation bool
 			confirmation_message := "The following challenge was found : " + challenges[0].Value
@@ -115,11 +175,19 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) strin
 			if !confirmation {
 				log.Fatal("Canceled")
 			}
-			return challenges[0].ID
+			return challenges[0].ID, nil
 		case map[string]interface{}:
+			// Checking if challenges array is empty
+			if len(root.Challenges.(map[string]interface{})) == 0 {
+				fmt.Println("No challenge was found")
+				return "", fmt.Errorf("error: No challenge was found")
+			}
 			var challenges map[string]Challenge
 			challengeData, _ := json.Marshal(root.Challenges)
-			json.Unmarshal(challengeData, &challenges)
+			err := json.Unmarshal(challengeData, &challenges)
+			if err != nil {
+				fmt.Println("error:", err)
+			}
 			log.Println("Challenge found :", challenges["0"].Value)
 			var confirmation bool
 			confirmation_message := "The following challenge was found : " + challenges["0"].Value
@@ -132,7 +200,7 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) strin
 			if !confirmation {
 				log.Fatal("Canceled")
 			}
-			return challenges["0"].ID
+			return challenges["0"].ID, nil
 		default:
 			log.Fatal("No challenge found")
 		}
@@ -141,16 +209,21 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) strin
 	}
 
 	// The HackTheBox API can return either a slice or a map
-	return ""
+	return "", nil
 }
 
+// ParseJsonMessage will parse the result of the API request into a JSON
 func ParseJsonMessage(resp *http.Response, key string) interface{} {
 	json_body, _ := io.ReadAll(resp.Body)
 	var result map[string]interface{}
-	json.Unmarshal([]byte(json_body), &result)
+	err := json.Unmarshal([]byte(json_body), &result)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
 	return result[key]
 }
 
+// GetMachineType will return the machine type
 func GetMachineType(machine_id interface{}, proxyURL string) string {
 	// Check if the machine is the latest release
 	url := "https://www.hackthebox.com/api/v4/machine/recommended/"
@@ -179,6 +252,7 @@ func GetMachineType(machine_id interface{}, proxyURL string) string {
 	return "error"
 }
 
+// GetUserSubscription returns the user's subscription level
 func GetUserSubscription(proxyURL string) string {
 	url := "https://www.hackthebox.com/api/v4/user/info"
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
@@ -199,6 +273,7 @@ func GetUserSubscription(proxyURL string) string {
 	return "free"
 }
 
+// GetActiveMachineID returns the id of the active machine
 func GetActiveMachineID(proxyURL string) string {
 	url := "https://www.hackthebox.com/api/v4/machine/active"
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
@@ -212,6 +287,7 @@ func GetActiveMachineID(proxyURL string) string {
 	return fmt.Sprintf("%.0f", info.(map[string]interface{})["id"].(float64))
 }
 
+// HtbRequest makes an HTTP request to the Hackthebox API
 func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte) (*http.Response, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 	sigs := make(chan os.Signal, 1)

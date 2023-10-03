@@ -1,168 +1,183 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"text/tabwriter"
-	"time"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/GoToolSharing/htb-cli/utils"
-	"github.com/kyokomi/emoji/v2"
 	"github.com/spf13/cobra"
 )
 
 var machineParam []string
 var challengeParam []string
 
-func checkActiveMachine() {
-	machine_id := utils.GetActiveMachineID(proxyParam)
-	status := "Not defined"
-	retired_status := "Not defined"
-	if machine_id != "" {
-		log.Println("Active machine found !")
-		log.Println("Machine ID:", machine_id)
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
-		fmt.Fprintln(w, "Name\tOS\tActive\tDifficulty\tStars\tIP\tStatus\tRelease")
-		url := "https://www.hackthebox.com/api/v4/machine/profile/" + machine_id
-		resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
+// fetchAndDisplayInfo fetches and displays information based on the specified parameters.
+func fetchAndDisplayInfo(url, header string, params []string, elementType string) error {
+	log.Println("Params :", params)
+	w := utils.SetTabWriterHeader(header)
+
+	// Iteration on all machines / challenges argument
+	for _, param := range params {
+		itemID, err := utils.SearchItemIDByName(param, proxyParam, elementType)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			return nil
 		}
-		info := utils.ParseJsonMessage(resp, "info")
-		data := info.(map[string]interface{})
-		if data["authUserInUserOwns"] == nil && data["authUserInRootOwns"] == nil {
-			status = emoji.Sprint(":x:User - :x:Root")
-		} else if data["authUserInUserOwns"] == true && data["authUserInRootOwns"] == nil {
-			status = emoji.Sprint(":white_check_mark:User - :x:Root")
-		} else if data["authUserInUserOwns"] == nil && data["authUserInRootOwns"] == true {
-			status = emoji.Sprint(":x:User - :white_check_mark:Root")
-		} else if data["authUserInUserOwns"] == true && data["authUserInRootOwns"] == true {
-			status = emoji.Sprint(":white_check_mark:User - :white_check_mark:Root")
+
+		fullURL := url + itemID
+		resp, err := utils.HtbRequest(http.MethodGet, fullURL, proxyParam, nil)
+		if err != nil {
+			return err
 		}
-		if data["retired"].(float64) == 0 {
-			retired_status = emoji.Sprint(":white_check_mark:")
+
+		var infoKey string
+		if strings.Contains(url, "machine") {
+			infoKey = "info"
 		} else {
-			retired_status = emoji.Sprint(":x:")
+			infoKey = "challenge"
 		}
-		t, err := time.Parse(time.RFC3339Nano, data["release"].(string))
+
+		info := utils.ParseJsonMessage(resp, infoKey)
+		data := info.(map[string]interface{})
+
+		status := utils.SetStatus(data)
+		retiredStatus := getMachineStatus(data)
+
+		release_key := ""
+		if elementType == "Machine" {
+			release_key = "release"
+		} else {
+			release_key = "release_date"
+		}
+		datetime, err := utils.ParseAndFormatDate(data[release_key].(string))
 		if err != nil {
-			fmt.Println("Erreur when date parsing :", err)
-			return
+			return err
 		}
-		datetime := t.Format("2006-01-02")
-		fmt.Fprintf(w, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], retired_status, data["difficultyText"], data["stars"], data["ip"], status, datetime)
+
+		ip := getIPStatus(data)
+
+		var bodyData string
+		if strings.Contains(url, "machine") {
+			bodyData = fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], retiredStatus, data["difficultyText"], data["stars"], ip, status, data["last_reset_time"], datetime)
+		} else {
+			bodyData = fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["category_name"], retiredStatus, data["difficulty"], data["stars"], data["solves"], status, datetime)
+		}
+
+		utils.SetTabWriterData(w, bodyData)
 		w.Flush()
 	}
+	return nil
 }
 
+// coreInfoCmd is the core of the info command; it checks the parameters and displays corresponding information.
+func coreInfoCmd(machineParam []string, challengeParam []string) error {
+	if len(machineParam) > 0 && len(challengeParam) > 0 {
+		return errors.New("error: You can only specify either -m or -c flags, not both")
+	}
+
+	machineHeader := "Name\tOS\tRetired\tDifficulty\tStars\tIP\tStatus\tLast Reset\tRelease"
+	challengeHeader := "Name\tCategory\tRetired\tDifficulty\tStars\tSolves\tStatus\tRelease"
+
+	if len(machineParam) > 0 {
+		// Add this check to avoid interactive mode during unit testing
+		isConfirmed := utils.AskConfirmation("Do you want to check for active machine ?")
+		if isConfirmed {
+			err := displayActiveMachine(machineHeader)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+		err := fetchAndDisplayInfo("https://www.hackthebox.com/api/v4/machine/profile/", machineHeader, machineParam, "Machine")
+		if err != nil {
+			return err
+		}
+	} else if len(challengeParam) > 0 {
+		err := fetchAndDisplayInfo("https://www.hackthebox.com/api/v4/challenge/info/", challengeHeader, challengeParam, "Challenge")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// getMachineStatus returns machine status
+func getMachineStatus(data map[string]interface{}) string {
+	if data["retired"].(float64) == 0 {
+		return "No"
+	}
+	return "Yes"
+}
+
+// getIPStatus returns ip status
+func getIPStatus(data map[string]interface{}) interface{} {
+	if data["ip"] == nil {
+		return "Undefined"
+	}
+	return data["ip"]
+}
+
+// displayActiveMachine displays information about the active machine if one is found.
+func displayActiveMachine(header string) error {
+	machineID := utils.GetActiveMachineID(proxyParam)
+
+	if machineID != "" {
+		log.Println("Active machine found !")
+		log.Println("Machine ID:", machineID)
+
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
+		w = utils.SetTabWriterHeader(header)
+
+		url := "https://www.hackthebox.com/api/v4/machine/profile/" + machineID
+		resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
+		if err != nil {
+			return err
+		}
+		info := utils.ParseJsonMessage(resp, "info")
+		log.Println(info)
+		
+		data := info.(map[string]interface{})
+		status := utils.SetStatus(data)
+		retiredStatus := getMachineStatus(data)
+		
+		datetime, err := utils.ParseAndFormatDate(data["release"].(string))
+		if err != nil {
+			return err
+		}
+
+		ip := getIPStatus(data)
+
+		bodyData := fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n",
+			data["name"], data["os"], retiredStatus,
+			data["difficultyText"], data["stars"],
+			ip, status, data["last_reset_time"], datetime)
+
+		utils.SetTabWriterData(w, bodyData)
+		w.Flush()
+	} else {
+		fmt.Print("No machine is running")
+	}
+	return nil
+}
+
+// infoCmd is a Cobra command that serves as an entry point to display detailed information about machines.
 var infoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "Showcase detailed machine information",
-	Long:  "Displays detailed information of the specified machines in a structured table.",
+	Short: "Detailed information on challenges and machines",
+	Long:  "Displays detailed information on machines and challenges in a structured table",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(machineParam) > 0 && len(challengeParam) > 0 {
-			fmt.Println("Error: You can only specify either -m or -c flags, not both.")
-			cmd.Help()
-			os.Exit(1)
-		}
-		var confirmation bool
-		confirmation_message := "Do you want to check for active machine ?"
-		prompt := &survey.Confirm{
-			Message: confirmation_message,
-		}
-		if err := survey.AskOne(prompt, &confirmation); err != nil {
+		err := coreInfoCmd(machineParam, challengeParam)
+		if err != nil {
 			log.Fatal(err)
-		}
-		if confirmation {
-			checkActiveMachine()
-		}
-
-		// Machines search
-		if len(machineParam) > 0 {
-			w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
-			fmt.Fprintln(w, "Name\tOS\tActive\tDifficulty\tStars\tFirstUserBlood\tFirstRootBlood\tStatus\tRelease")
-			status := "Not defined"
-			retired_status := "Not defined"
-			log.Println(machineParam)
-			for index, _ := range machineParam {
-				machine_id := utils.SearchItemIDByName(machineParam[index], proxyParam, "Machine")
-
-				url := "https://www.hackthebox.com/api/v4/machine/profile/" + machine_id
-				resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
-				if err != nil {
-					log.Fatal(err)
-				}
-				info := utils.ParseJsonMessage(resp, "info")
-
-				data := info.(map[string]interface{})
-				if data["authUserInUserOwns"] == nil && data["authUserInRootOwns"] == nil {
-					status = emoji.Sprint(":x:User - :x:Root")
-				} else if data["authUserInUserOwns"] == true && data["authUserInRootOwns"] == nil {
-					status = emoji.Sprint(":white_check_mark:User - :x:Root")
-				} else if data["authUserInUserOwns"] == nil && data["authUserInRootOwns"] == true {
-					status = emoji.Sprint(":x:User - :white_check_mark:Root")
-				} else if data["authUserInUserOwns"] == true && data["authUserInRootOwns"] == true {
-					status = emoji.Sprint(":white_check_mark:User - :white_check_mark:Root")
-				}
-				if data["retired"].(float64) == 0 {
-					retired_status = emoji.Sprint(":white_check_mark:")
-				} else {
-					retired_status = emoji.Sprint(":x:")
-				}
-				t, err := time.Parse(time.RFC3339Nano, data["release"].(string))
-				if err != nil {
-					fmt.Println("Erreur when date parsing :", err)
-					return
-				}
-				datetime := t.Format("2006-01-02")
-				fmt.Fprintf(w, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["os"], retired_status, data["difficultyText"], data["stars"], data["firstUserBloodTime"], data["firstRootBloodTime"], status, datetime)
-				w.Flush()
-			}
-		}
-
-		// Challenges search
-		if len(challengeParam) > 0 {
-			w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
-			fmt.Fprintln(w, "Name\tCategory\tActive\tDifficulty\tStars\tSolves\tStatus\tRelease")
-			status := "Not defined"
-			retired_status := "Not defined"
-			log.Println(challengeParam)
-			for index, _ := range challengeParam {
-				challenge_id := utils.SearchItemIDByName(challengeParam[index], proxyParam, "Challenge")
-				log.Println("Challenge id:", challenge_id)
-				url := "https://www.hackthebox.com/api/v4/challenge/info/" + challenge_id
-				resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
-				if err != nil {
-					log.Fatal(err)
-				}
-				info := utils.ParseJsonMessage(resp, "challenge")
-				data := info.(map[string]interface{})
-				if data["authUserSolve"] == false {
-					status = emoji.Sprint(":x:Flag")
-				} else {
-					status = emoji.Sprint(":white_check_mark:Flag")
-				}
-				if data["retired"].(float64) == 0 {
-					retired_status = emoji.Sprint(":white_check_mark:")
-				} else {
-					retired_status = emoji.Sprint(":x:")
-				}
-				t, err := time.Parse(time.RFC3339Nano, data["release_date"].(string))
-				if err != nil {
-					fmt.Println("Erreur when date parsing :", err)
-					return
-				}
-				datetime := t.Format("2006-01-02")
-				fmt.Fprintf(w, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["category_name"], retired_status, data["difficulty"], data["stars"], data["solves"], status, datetime)
-				w.Flush()
-			}
 		}
 	},
 }
 
+// init adds the info command to the root command and sets flags specific to this command.
 func init() {
 	rootCmd.AddCommand(infoCmd)
 	infoCmd.Flags().StringSliceVarP(&machineParam, "machine", "m", []string{}, "Machine name")
