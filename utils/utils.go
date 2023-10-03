@@ -20,13 +20,6 @@ import (
 	"github.com/briandowns/spinner"
 )
 
-func SetOutputTest() (*os.File, *os.File) {
-	log.SetOutput(io.Discard)
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-	return r, w
-}
-
 type Machine struct {
 	ID    string `json:"id"`
 	Value string `json:"value"`
@@ -42,16 +35,28 @@ type Root struct {
 	Challenges interface{} `json:"challenges"`
 }
 
+// Function that removes the output from the console for unit tests.
+// TODO: Move into a utils-tests.go file
+func SetOutputTest() (*os.File, *os.File) {
+	log.SetOutput(io.Discard)
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	return r, w
+}
+
+// SetTabWriterHeader will display the information in an array
 func SetTabWriterHeader(header string) *tabwriter.Writer {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
 	fmt.Fprintln(w, header)
 	return w
 }
 
+// SetTabWriterData will write the contents of each array cell
 func SetTabWriterData(w *tabwriter.Writer, data string) {
 	fmt.Fprintf(w, data)
 }
 
+// AskConfirmation will request confirmation from the user
 func AskConfirmation(message string) bool {
 	var confirmation bool
 	prompt := &survey.Confirm{
@@ -63,6 +68,7 @@ func AskConfirmation(message string) bool {
 	return confirmation
 }
 
+// GetHTBToken checks whether the HTB_TOKEN environment variable exists
 func GetHTBToken() string {
 	var envName = "HTB_TOKEN"
 	if os.Getenv(envName) == "" {
@@ -72,6 +78,7 @@ func GetHTBToken() string {
 	return os.Getenv("HTB_TOKEN")
 }
 
+// SearchItemIDByName will return the id of an item (machine / challenge) based on its name
 func SearchItemIDByName(item string, proxyURL string, element_type string) (string, error) {
 	url := "https://www.hackthebox.com/api/v4/search/fetch?query=" + item
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
@@ -205,6 +212,7 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) (stri
 	return "", nil
 }
 
+// ParseJsonMessage will parse the result of the API request into a JSON
 func ParseJsonMessage(resp *http.Response, key string) interface{} {
 	json_body, _ := io.ReadAll(resp.Body)
 	var result map[string]interface{}
@@ -215,6 +223,7 @@ func ParseJsonMessage(resp *http.Response, key string) interface{} {
 	return result[key]
 }
 
+// GetMachineType will return the machine type
 func GetMachineType(machine_id interface{}, proxyURL string) string {
 	// Check if the machine is the latest release
 	url := "https://www.hackthebox.com/api/v4/machine/recommended/"
@@ -243,6 +252,7 @@ func GetMachineType(machine_id interface{}, proxyURL string) string {
 	return "error"
 }
 
+// GetUserSubscription returns the user's subscription level
 func GetUserSubscription(proxyURL string) string {
 	url := "https://www.hackthebox.com/api/v4/user/info"
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
@@ -263,6 +273,7 @@ func GetUserSubscription(proxyURL string) string {
 	return "free"
 }
 
+// GetActiveMachineID returns the id of the active machine
 func GetActiveMachineID(proxyURL string) string {
 	url := "https://www.hackthebox.com/api/v4/machine/active"
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
@@ -276,6 +287,7 @@ func GetActiveMachineID(proxyURL string) string {
 	return fmt.Sprintf("%.0f", info.(map[string]interface{})["id"].(float64))
 }
 
+// HtbRequest makes an HTTP request to the Hackthebox API
 func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte) (*http.Response, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 	sigs := make(chan os.Signal, 1)
