@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,44 +12,51 @@ import (
 
 var machineChoosen string
 
+// coreStartCmd starts a specified machine and returns a status message and any error encountered.
 func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
-	machine_id, err := utils.SearchItemIDByName(machineChoosen, proxyParam, "Machine")
+	machineID, err := utils.SearchItemIDByName(machineChoosen, proxyParam, "Machine")
 	if err != nil {
 		return "", err
 	}
-	log.Println("Machine ID :", machine_id)
-	machine_type := utils.GetMachineType(machine_id, proxyParam)
-	log.Println("Machine Type :", machine_type)
-	user_subscription := utils.GetUserSubscription(proxyParam)
-	log.Println("User subscription :", user_subscription)
-	if machine_type == "release" {
-		url := "https://www.hackthebox.com/api/v4/arena/start"
-		resp, err := utils.HtbRequest(http.MethodPost, url, proxyParam, []byte(`{}`))
-		if err != nil {
-			return "", err
-		}
-		message := utils.ParseJsonMessage(resp, "message")
-		return message.(string), nil
-	}
+	log.Printf("Machine ID: %s", machineID)
 
-	url := ""
-	jsonData := []byte("")
-	switch user_subscription {
-	case "vip":
-		url = "https://www.hackthebox.com/api/v4/vm/spawn"
-		jsonData = []byte(`{"machine_id": ` + machine_id + `}`)
+	machineType := utils.GetMachineType(machineID, proxyParam)
+	log.Printf("Machine Type: %s", machineType)
+
+	userSubscription := utils.GetUserSubscription(proxyParam)
+	log.Printf("User subscription: %s", userSubscription)
+
+	var url string
+	var jsonData []byte
+
+	switch {
+	case machineType == "release":
+		url = baseAPIURL + "/arena/start"
+		jsonData = []byte("{}")
+	case userSubscription == "vip":
+		url = baseAPIURL + "/vm/spawn"
+		jsonData, err = json.Marshal(map[string]string{"machine_id": machineID})
+		if err != nil {
+			return "", fmt.Errorf("failed to create JSON data: %w", err)
+		}
 	default:
-		url = "https://www.hackthebox.com/api/v4/machine/play/" + machine_id
+		url = baseAPIURL + "/machine/play/" + machineID
 		jsonData = []byte("{}")
 	}
+
 	resp, err := utils.HtbRequest(http.MethodPost, url, proxyParam, jsonData)
 	if err != nil {
 		return "", err
 	}
-	message := utils.ParseJsonMessage(resp, "message")
-	return message.(string), nil
+
+	message, ok := utils.ParseJsonMessage(resp, "message").(string)
+	if !ok {
+		return "", fmt.Errorf("unexpected response format")
+	}
+	return message, nil
 }
 
+// startCmd defines the "start" command which initiates the starting of a specified machine.
 var startCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start a machine",
@@ -56,12 +64,13 @@ var startCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		output, err := coreStartCmd(machineChoosen, proxyParam)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Error: %v", err)
 		}
 		fmt.Println(output)
 	},
 }
 
+// init adds the startCmd to rootCmd and sets flags for the "start" command.
 func init() {
 	rootCmd.AddCommand(startCmd)
 	startCmd.Flags().StringVarP(&machineChoosen, "machine", "m", "", "Machine name")

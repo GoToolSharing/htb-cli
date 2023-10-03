@@ -10,8 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const baseAPIURL = "https://www.hackthebox.com/api/v4"
-
 // coreResetCmd sends a reset request for an active machine.
 func coreResetCmd(proxyParam string) (string, error) {
 	// Retrieve the ID of the active machine.
