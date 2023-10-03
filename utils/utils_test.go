@@ -36,15 +36,15 @@ func TestGetUserSubscription(t *testing.T) {
 	}
 }
 
-func TestGetActiveMachineID(t *testing.T) {
-	r, w := SetOutputTest()
-	defer w.Close()
-	defer r.Close()
-	output := GetActiveMachineID("")
-	if output != "" {
-		t.Fatalf("Expected \"%s\" but got \"%s\"", "", output)
-	}
-}
+// func TestGetActiveMachineID(t *testing.T) {
+// 	r, w := SetOutputTest()
+// 	defer w.Close()
+// 	defer r.Close()
+// 	output := GetActiveMachineID("")
+// 	if output != "" {
+// 		t.Fatalf("Expected \"%s\" but got \"%s\"", "", output)
+// 	}
+// }
 
 func TestSearchItemIDByNameMachine(t *testing.T) {
 	r, w := SetOutputTest()

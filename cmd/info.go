@@ -109,6 +109,7 @@ func getMachineStatus(data map[string]interface{}) string {
 	return "Yes"
 }
 
+// getIPStatus returns ip status
 func getIPStatus(data map[string]interface{}) interface{} {
 	if data["ip"] == nil {
 		return "Undefined"
