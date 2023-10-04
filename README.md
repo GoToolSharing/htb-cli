@@ -1,5 +1,5 @@
 # htb-cli
-![Coverage](https://img.shields.io/badge/Coverage-15.8%25-red)
+![Coverage](https://img.shields.io/badge/Coverage-15.9%25-red)
 
 ![Workflows (main)](https://github.com/GoToolSharing/htb-cli/actions/workflows/go.yml/badge.svg?branch=main)
 ![Workflows (dev)](https://github.com/GoToolSharing/htb-cli/actions/workflows/go.yml/badge.svg?branch=dev)
