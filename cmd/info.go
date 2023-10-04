@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -76,33 +75,39 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 
 // coreInfoCmd is the core of the info command; it checks the parameters and displays corresponding information.
 func coreInfoCmd(machineParam []string, challengeParam []string) error {
-	if len(machineParam) > 0 && len(challengeParam) > 0 {
-		return errors.New("error: You can only specify either -m or -c flags, not both")
-	}
+    machineHeader := "Name\tOS\tRetired\tDifficulty\tStars\tIP\tStatus\tLast Reset\tRelease"
+    challengeHeader := "Name\tCategory\tRetired\tDifficulty\tStars\tSolves\tStatus\tRelease"
 
-	machineHeader := "Name\tOS\tRetired\tDifficulty\tStars\tIP\tStatus\tLast Reset\tRelease"
-	challengeHeader := "Name\tCategory\tRetired\tDifficulty\tStars\tSolves\tStatus\tRelease"
+    type infoType struct {
+        APIURL string
+        Header string
+        Params []string
+        Name   string
+    }
 
-	if len(machineParam) > 0 {
-		// Add this check to avoid interactive mode during unit testing
-		isConfirmed := utils.AskConfirmation("Do you want to check for active machine ?")
-		if isConfirmed {
-			err := displayActiveMachine(machineHeader)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-		err := fetchAndDisplayInfo("https://www.hackthebox.com/api/v4/machine/profile/", machineHeader, machineParam, "Machine")
-		if err != nil {
-			return err
-		}
-	} else if len(challengeParam) > 0 {
-		err := fetchAndDisplayInfo("https://www.hackthebox.com/api/v4/challenge/info/", challengeHeader, challengeParam, "Challenge")
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+    infos := []infoType{
+        {"https://www.hackthebox.com/api/v4/machine/profile/", machineHeader, machineParam, "Machine"},
+        {"https://www.hackthebox.com/api/v4/challenge/info/", challengeHeader, challengeParam, "Challenge"},
+    }
+
+    for _, info := range infos {
+        if len(info.Params) > 0 {
+            isConfirmed := utils.AskConfirmation("Do you want to check for active " + strings.ToLower(info.Name) + "?")
+            if isConfirmed && info.Name == "Machine" { 
+                err := displayActiveMachine(info.Header)
+                if err != nil {
+                    log.Fatal(err)
+                }
+            }
+            for _, param := range info.Params {
+                err := fetchAndDisplayInfo(info.APIURL, info.Header, []string{param}, info.Name)
+                if err != nil {
+                    return err
+                }
+            }
+        }
+    }
+    return nil
 }
 
 // getMachineStatus returns machine status
