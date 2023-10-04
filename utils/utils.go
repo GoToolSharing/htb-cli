@@ -30,9 +30,15 @@ type Challenge struct {
 	Value string `json:"value"`
 }
 
+type Username struct {
+	ID    string `json:"id"`
+	Value string `json:"value"`
+}
+
 type Root struct {
 	Machines   interface{} `json:"machines"`
 	Challenges interface{} `json:"challenges"`
+	Usernames  interface{} `json:"users"`
 }
 
 // Function that removes the output from the console for unit tests.
@@ -78,7 +84,7 @@ func GetHTBToken() string {
 	return os.Getenv("HTB_TOKEN")
 }
 
-// SearchItemIDByName will return the id of an item (machine / challenge) based on its name
+// SearchItemIDByName will return the id of an item (machine / challenge / user) based on its name
 func SearchItemIDByName(item string, proxyURL string, element_type string) (string, error) {
 	url := "https://www.hackthebox.com/api/v4/search/fetch?query=" + item
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
@@ -204,7 +210,62 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) (stri
 		default:
 			log.Fatal("No challenge found")
 		}
-	} else {
+	} else if element_type == "Username" {
+		switch root.Usernames.(type) {
+		case []interface{}:
+			// Checking if usernames array is empty
+			if len(root.Usernames.([]interface{})) == 0 {
+				fmt.Println("No username was found")
+				return "", fmt.Errorf("error: No username was found")
+			}
+			var usernames []Username
+			usernameData, _ := json.Marshal(root.Usernames)
+			err := json.Unmarshal(usernameData, &usernames)
+			if err != nil {
+				fmt.Println("error:", err)
+			}
+			log.Println("Username found :", usernames[0].Value)
+			var confirmation bool
+			confirmation_message := "The following username was found : " + usernames[0].Value
+			prompt := &survey.Confirm{
+				Message: confirmation_message,
+			}
+			if err := survey.AskOne(prompt, &confirmation); err != nil {
+				log.Fatal(err)
+			}
+			if !confirmation {
+				log.Fatal("Canceled")
+			}
+			return usernames[0].ID, nil
+		case map[string]interface{}:
+			// Checking if usernames array is empty
+			if len(root.Usernames.(map[string]interface{})) == 0 {
+				fmt.Println("No username was found")
+				return "", fmt.Errorf("error: No username was found")
+			}
+			var usernames map[string]Username
+			usernameData, _ := json.Marshal(root.Usernames)
+			err := json.Unmarshal(usernameData, &usernames)
+			if err != nil {
+				fmt.Println("error:", err)
+			}
+			log.Println("Username found :", usernames["0"].Value)
+			var confirmation bool
+			confirmation_message := "The following username was found : " + usernames["0"].Value
+			prompt := &survey.Confirm{
+				Message: confirmation_message,
+			}
+			if err := survey.AskOne(prompt, &confirmation); err != nil {
+				log.Fatal(err)
+			}
+			if !confirmation {
+				log.Fatal("Canceled")
+			}
+			return usernames["0"].ID, nil
+		default:
+			log.Fatal("No username found")
+		}
+	}else {
 		log.Fatal("Bad element_type")
 	}
 
