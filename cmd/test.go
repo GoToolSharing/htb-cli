@@ -217,8 +217,25 @@ to quickly create a Cobra application.`,
 	
 
 		// Flex droite basse
-		rightBottomFlex := tview.NewFlex().
-		AddItem(tview.NewBox().SetBorder(true).SetTitle("Country Ranking"), 0, 1, false)
+		rightBottomFlex := tview.NewFlex().SetDirection(tview.FlexRow)
+		rightBottomFlex.SetBorder(true).SetTitle("Country Ranking").SetTitleAlign(tview.AlignLeft)
+		rightBottomFlex.AddItem(rankingTable, 0, 1, false)
+
+		// Flex bas gauche history
+		historyFlex := tview.NewFlex().SetDirection(tview.FlexRow)
+		historyFlex.SetBorder(true).SetTitle("History").SetTitleAlign(tview.AlignLeft)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]System[-] - Cozyhosting Machine - 1 day ago - +[20pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]User[-] - Cozyhosting Machine - 1 day ago - +[10pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - TwoDots Horror Challenge - 1 month ago - +[3pts]").SetDynamicColors(true), 1, 0, false)
+		
+		// historyFlex.AddItem(rankingTable, 0, 1, false)
+
+		// Flex bas gauche history
+		boxesFlex := tview.NewFlex().SetDirection(tview.FlexRow)
+		boxesFlex.SetBorder(true).SetTitle("Boxes Statistiques (graph ?)").SetTitleAlign(tview.AlignLeft)
+		// historyFlex.AddItem(rankingTable, 0, 1, false)
+		
 
 		// Flex droite qui contient les flex droite haute et droite basse
 		rightFlex := tview.NewFlex().
@@ -226,19 +243,40 @@ to quickly create a Cobra application.`,
 		AddItem(rankingCard, 0, 1, false).
 		AddItem(rightBottomFlex, 0, 1, false)
 
+		// Flex gauche qui contient les flex gauche haute et droite basse
+		leftFlex := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(userCard, 0, 1, false).
+		AddItem(boxesFlex, 0, 1, false).
+		AddItem(historyFlex, 0, 1, false)
+
 
 		// Main container
 		// mainFlex := tview.NewFlex().SetDirection(tview.FlexColumn)
 		// mainFlex.AddItem(userCard, 0, 2, true)
 		// mainFlex.AddItem(rankingCard, 0, 1, true)
 
+		// Gestion du focus avec Tab
+		app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyTab {
+			if app.GetFocus() == rankingCard {
+				app.SetFocus(rightBottomFlex)
+			} else {
+				app.SetFocus(rankingCard)
+			}
+			// Ne pas propager l'événement pour éviter de déplacer le focus inutilement
+			return nil
+		}
+		return event
+	})
+
 		mainFlex := tview.NewFlex().
-		AddItem(userCard, 0, 2, false).
+		AddItem(leftFlex, 0, 2, false).
 		AddItem(rightFlex, 0, 1, false)
 
 
 		// Run the application
-		if err := app.SetRoot(mainFlex, true).SetFocus(rankingTable).Run(); err != nil {
+		if err := app.SetRoot(mainFlex, true).Run(); err != nil {
 			panic(err)
 		}
 	},
