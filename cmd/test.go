@@ -64,7 +64,6 @@ to quickly create a Cobra application.`,
 		userCard.AddItem(university, 2, 0, false)
 
 		// TODO: Add challenges owned
-		// Add france rank
 		// Add fortress progression
 		// Add endgames progression
 		// Add last machine pwned
@@ -228,14 +227,29 @@ to quickly create a Cobra application.`,
 		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]User[-] - Cozyhosting Machine - 1 day ago - +[10pts]").SetDynamicColors(true), 1, 0, false)
 		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
 		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - TwoDots Horror Challenge - 1 month ago - +[3pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - TwoDots Horror Challenge - 1 month ago - +[3pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - TwoDots Horror Challenge - 1 month ago - +[3pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - TwoDots Horror Challenge - 1 month ago - +[3pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - TwoDots Horror Challenge - 1 month ago - +[3pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - TwoDots Horror Challenge - 1 month ago - +[3pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - TwoDots Horror Challenge - 1 month ago - +[3pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - TwoDots Horror Challenge - 1 month ago - +[3pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
 		
 		// historyFlex.AddItem(rankingTable, 0, 1, false)
 
 		// Flex bas gauche history
 		boxesFlex := tview.NewFlex().SetDirection(tview.FlexRow)
-		boxesFlex.SetBorder(true).SetTitle("Boxes Statistiques (graph ?)").SetTitleAlign(tview.AlignLeft)
-		// historyFlex.AddItem(rankingTable, 0, 1, false)
-		
+		boxesFlex.SetBorder(true).SetTitle("Advanced Labs").SetTitleAlign(tview.AlignLeft)
+		boxesFlex.AddItem(tview.NewTextView().SetText("[::b]Fortresses[-]: ").SetDynamicColors(true), 1, 0, false)
+		boxesFlex.AddItem(tview.NewTextView().SetText("[::b]Jet - Akerva - Context - Synacktiv - Faraday - AWS[-]").SetDynamicColors(true), 1, 0, false)
+		boxesFlex.AddItem(tview.NewTextView().SetText("[::b]Pro Labs[-]: ").SetDynamicColors(true), 1, 0, false)
+		boxesFlex.AddItem(tview.NewTextView().SetText("[::b]Dante - Offshore - Zephyr - Rastalabs - Cybernetics - APTLabs[-]").SetDynamicColors(true), 1, 0, false)
+		boxesFlex.AddItem(tview.NewTextView().SetText("[::b]Endgames[-]: ").SetDynamicColors(true), 1, 0, false)
+		boxesFlex.AddItem(tview.NewTextView().SetText("[::b]Solar - Odyssey - Ascension - RPG - Hades - Xen - P.O.O[-]").SetDynamicColors(true), 1, 0, false)
 
 		// Flex droite qui contient les flex droite haute et droite basse
 		rightFlex := tview.NewFlex().
