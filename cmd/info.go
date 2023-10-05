@@ -115,7 +115,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 }
 
 // coreInfoCmd is the core of the info command; it checks the parameters and displays corresponding information.
-func coreInfoCmd(machineParam []string, challengeParam []string) error {
+func coreInfoCmd() error {
 	machineHeader := "Name\tOS\tRetired\tDifficulty\tStars\tIP\tStatus\tLast Reset\tRelease"
 	challengeHeader := "Name\tCategory\tRetired\tDifficulty\tStars\tSolves\tStatus\tRelease"
 	usernameHeader := "Name\tUser Owns\tSystem Owns\tUser Bloods\tSystem Bloods\tTeam\tUniversity\tRank\tGlobal Rank\tPoints"
@@ -131,6 +131,22 @@ func coreInfoCmd(machineParam []string, challengeParam []string) error {
 		{baseAPIURL + "/machine/profile/", machineHeader, machineParam, "Machine"},
 		{baseAPIURL + "/challenge/info/", challengeHeader, challengeParam, "Challenge"},
 		{baseAPIURL + "/user/profile/basic/", usernameHeader, usernameParam, "Username"},
+	}
+
+	// No arguments provided
+	if len(machineParam) == 0 && len(usernameParam) == 0 && len(challengeParam) == 0 {
+		isConfirmed := utils.AskConfirmation("Do you want to check for active " + strings.ToLower("machine") + "?")
+		if isConfirmed {
+			err := displayActiveMachine(machineHeader)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+		// TODO: Get current account
+		// err := fetchAndDisplayInfo(baseAPIURL+"/user/profile/basic/", usernameHeader, []string{"qu35t3190"}, "Username")
+		// if err != nil {
+		// 	return err
+		// }
 	}
 
 	for _, info := range infos {
@@ -220,7 +236,7 @@ var infoCmd = &cobra.Command{
 	Short: "Detailed information on challenges and machines",
 	Long:  "Displays detailed information on machines and challenges in a structured table",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := coreInfoCmd(machineParam, challengeParam)
+		err := coreInfoCmd()
 		if err != nil {
 			log.Fatal(err)
 		}
