@@ -24,7 +24,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 
 	// Iteration on all machines / challenges / users argument
 	for _, param := range params {
-		itemID, err := utils.SearchItemIDByName(param, proxyParam, elementType)
+		itemID, err := utils.SearchItemIDByName(param, proxyParam, elementType, batchParam)
 		if err != nil {
 			fmt.Println(err)
 			return nil
@@ -135,7 +135,7 @@ func coreInfoCmd() error {
 
 	// No arguments provided
 	if len(machineParam) == 0 && len(usernameParam) == 0 && len(challengeParam) == 0 {
-		isConfirmed := utils.AskConfirmation("Do you want to check for active " + strings.ToLower("machine") + "?")
+		isConfirmed := utils.AskConfirmation("Do you want to check for active "+strings.ToLower("machine")+"?", batchParam)
 		if isConfirmed {
 			err := displayActiveMachine(machineHeader)
 			if err != nil {
@@ -152,7 +152,7 @@ func coreInfoCmd() error {
 	for _, info := range infos {
 		if len(info.Params) > 0 {
 			if info.Name == "Machine" {
-				isConfirmed := utils.AskConfirmation("Do you want to check for active " + strings.ToLower(info.Name) + "?")
+				isConfirmed := utils.AskConfirmation("Do you want to check for active "+strings.ToLower(info.Name)+"?", batchParam)
 				if isConfirmed {
 					err := displayActiveMachine(info.Header)
 					if err != nil {

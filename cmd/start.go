@@ -14,7 +14,7 @@ var machineChoosen string
 
 // coreStartCmd starts a specified machine and returns a status message and any error encountered.
 func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
-	machineID, err := utils.SearchItemIDByName(machineChoosen, proxyParam, "Machine")
+	machineID, err := utils.SearchItemIDByName(machineChoosen, proxyParam, "Machine", batchParam)
 	if err != nil {
 		return "", err
 	}

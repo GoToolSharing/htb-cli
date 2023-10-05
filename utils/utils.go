@@ -63,15 +63,18 @@ func SetTabWriterData(w *tabwriter.Writer, data string) {
 }
 
 // AskConfirmation will request confirmation from the user
-func AskConfirmation(message string) bool {
-	var confirmation bool
-	prompt := &survey.Confirm{
-		Message: message,
+func AskConfirmation(message string, batchParam bool) bool {
+	if !batchParam {
+		var confirmation bool
+		prompt := &survey.Confirm{
+			Message: message,
+		}
+		if err := survey.AskOne(prompt, &confirmation); err != nil {
+			return false
+		}
+		return confirmation
 	}
-	if err := survey.AskOne(prompt, &confirmation); err != nil {
-		return false
-	}
-	return confirmation
+	return true
 }
 
 // GetHTBToken checks whether the HTB_TOKEN environment variable exists
@@ -85,7 +88,7 @@ func GetHTBToken() string {
 }
 
 // SearchItemIDByName will return the id of an item (machine / challenge / user) based on its name
-func SearchItemIDByName(item string, proxyURL string, element_type string) (string, error) {
+func SearchItemIDByName(item string, proxyURL string, element_type string, batchParam bool) (string, error) {
 	url := "https://www.hackthebox.com/api/v4/search/fetch?query=" + item
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
@@ -115,18 +118,10 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) (stri
 				fmt.Println("error:", err)
 			}
 			log.Println("Machine found :", machines[0].Value)
-			var confirmation bool
-			confirmation_message := "The following machine was found : " + machines[0].Value
-			prompt := &survey.Confirm{
-				Message: confirmation_message,
+			isConfirmed := AskConfirmation("The following machine was found : "+machines[0].Value, batchParam)
+			if isConfirmed {
+				return machines[0].ID, nil
 			}
-			if err := survey.AskOne(prompt, &confirmation); err != nil {
-				log.Fatal(err)
-			}
-			if !confirmation {
-				log.Fatal("Canceled")
-			}
-			return machines[0].ID, nil
 		case map[string]interface{}:
 			// Checking if machines array is empty
 			if len(root.Machines.(map[string]interface{})) == 0 {
@@ -140,18 +135,10 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) (stri
 				fmt.Println("error:", err)
 			}
 			log.Println("Machine found :", machines["0"].Value)
-			var confirmation bool
-			confirmation_message := "The following machine was found : " + machines["0"].Value
-			prompt := &survey.Confirm{
-				Message: confirmation_message,
+			isConfirmed := AskConfirmation("The following machine was found : "+machines["0"].Value, batchParam)
+			if isConfirmed {
+				return machines["0"].ID, nil
 			}
-			if err := survey.AskOne(prompt, &confirmation); err != nil {
-				log.Fatal(err)
-			}
-			if !confirmation {
-				log.Fatal("Canceled")
-			}
-			return machines["0"].ID, nil
 		default:
 			return "", fmt.Errorf("No machine was found")
 		}
@@ -170,18 +157,10 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) (stri
 				fmt.Println("error:", err)
 			}
 			log.Println("Challenge found :", challenges[0].Value)
-			var confirmation bool
-			confirmation_message := "The following challenge was found : " + challenges[0].Value
-			prompt := &survey.Confirm{
-				Message: confirmation_message,
+			isConfirmed := AskConfirmation("The following challenge was found : "+challenges[0].Value, batchParam)
+			if isConfirmed {
+				return challenges[0].ID, nil
 			}
-			if err := survey.AskOne(prompt, &confirmation); err != nil {
-				log.Fatal(err)
-			}
-			if !confirmation {
-				log.Fatal("Canceled")
-			}
-			return challenges[0].ID, nil
 		case map[string]interface{}:
 			// Checking if challenges array is empty
 			if len(root.Challenges.(map[string]interface{})) == 0 {
@@ -195,18 +174,10 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) (stri
 				fmt.Println("error:", err)
 			}
 			log.Println("Challenge found :", challenges["0"].Value)
-			var confirmation bool
-			confirmation_message := "The following challenge was found : " + challenges["0"].Value
-			prompt := &survey.Confirm{
-				Message: confirmation_message,
+			isConfirmed := AskConfirmation("The following challenge was found : "+challenges["0"].Value, batchParam)
+			if isConfirmed {
+				return challenges["0"].ID, nil
 			}
-			if err := survey.AskOne(prompt, &confirmation); err != nil {
-				log.Fatal(err)
-			}
-			if !confirmation {
-				log.Fatal("Canceled")
-			}
-			return challenges["0"].ID, nil
 		default:
 			log.Fatal("No challenge found")
 		}
@@ -225,18 +196,10 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) (stri
 				fmt.Println("error:", err)
 			}
 			log.Println("Username found :", usernames[0].Value)
-			var confirmation bool
-			confirmation_message := "The following username was found : " + usernames[0].Value
-			prompt := &survey.Confirm{
-				Message: confirmation_message,
+			isConfirmed := AskConfirmation("The following username was found : "+usernames[0].Value, batchParam)
+			if isConfirmed {
+				return usernames[0].ID, nil
 			}
-			if err := survey.AskOne(prompt, &confirmation); err != nil {
-				log.Fatal(err)
-			}
-			if !confirmation {
-				log.Fatal("Canceled")
-			}
-			return usernames[0].ID, nil
 		case map[string]interface{}:
 			// Checking if usernames array is empty
 			if len(root.Usernames.(map[string]interface{})) == 0 {
@@ -250,22 +213,14 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) (stri
 				fmt.Println("error:", err)
 			}
 			log.Println("Username found :", usernames["0"].Value)
-			var confirmation bool
-			confirmation_message := "The following username was found : " + usernames["0"].Value
-			prompt := &survey.Confirm{
-				Message: confirmation_message,
+			isConfirmed := AskConfirmation("The following username was found : "+usernames["0"].Value, batchParam)
+			if isConfirmed {
+				return usernames["0"].ID, nil
 			}
-			if err := survey.AskOne(prompt, &confirmation); err != nil {
-				log.Fatal(err)
-			}
-			if !confirmation {
-				log.Fatal("Canceled")
-			}
-			return usernames["0"].ID, nil
 		default:
 			log.Fatal("No username found")
 		}
-	}else {
+	} else {
 		log.Fatal("Bad element_type")
 	}
 

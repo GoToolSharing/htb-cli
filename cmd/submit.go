@@ -39,7 +39,7 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 	switch {
 	case machineNameParam != "":
 		log.Println("Machine submit requested!")
-		machineID, err := utils.SearchItemIDByName(machineNameParam, proxyParam, "Machine")
+		machineID, err := utils.SearchItemIDByName(machineNameParam, proxyParam, "Machine", batchParam)
 		if err != nil {
 			return "", err
 		}
@@ -55,7 +55,7 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 		payload["id"] = machineID
 	case challengeNameParam != "":
 		log.Println("Challenge submit requested!")
-		challengeID, err := utils.SearchItemIDByName(challengeNameParam, proxyParam, "Challenge")
+		challengeID, err := utils.SearchItemIDByName(challengeNameParam, proxyParam, "Challenge", batchParam)
 		if err != nil {
 			return "", err
 		}
