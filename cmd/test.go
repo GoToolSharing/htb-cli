@@ -1,14 +1,14 @@
 /*
 Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/rivo/tview"
-	"github.com/gdamore/tcell/v2"
 	"strconv"
+
+	"github.com/gdamore/tcell/v2"
+	"github.com/rivo/tview"
+	"github.com/spf13/cobra"
 )
 
 // testCmd represents the test command
@@ -26,7 +26,7 @@ to quickly create a Cobra application.`,
 
 		// User card
 		userCard := tview.NewFlex().SetDirection(tview.FlexRow)
-		userCard.SetBorder(true).SetTitle("User Informations").SetTitleAlign(tview.AlignLeft)
+		userCard.SetBorder(true).SetTitle("User").SetTitleAlign(tview.AlignLeft)
 		// Creating a line with two elements on the same row
 		nameAndRank := tview.NewFlex().SetDirection(tview.FlexColumn)
 		nameAndRank.AddItem(tview.NewTextView().SetText("[::b]Name[-]: [blue]QU35T3190[-]").SetDynamicColors(true), 0, 1, false)
@@ -57,7 +57,7 @@ to quickly create a Cobra application.`,
 		userCard.AddItem(team, 2, 0, false)
 
 		userCard.AddItem(tview.NewTextView().SetText("UNIVERSITY :").SetDynamicColors(true), 1, 0, false)
-		
+
 		university := tview.NewFlex().SetDirection(tview.FlexColumn)
 		university.AddItem(tview.NewTextView().SetText("[::b]Name[-]: [blue]Epitech[-]").SetDynamicColors(true), 0, 1, false)
 		university.AddItem(tview.NewTextView().SetText("[::b]Rank[-]: [blue]40[-]").SetDynamicColors(true), 0, 1, false)
@@ -69,7 +69,6 @@ to quickly create a Cobra application.`,
 		// Add last machine pwned
 		// Add prolabs progression
 
-		
 		// rankingCard.AddItem(tview.NewTextView().SetText("[::b]Player[-]: [blue]xct[-]").SetDynamicColors(true), 0, 1, false)
 		// rankingCard.AddItem(tview.NewTextView().SetText("[::b]Points[-]: [blue]3098[-]").SetDynamicColors(true), 0, 1, false)
 		// Création des entêtes
@@ -100,11 +99,11 @@ to quickly create a Cobra application.`,
 			SetAlign(tview.AlignCenter))
 
 		// Ajout des données de joueurs dans le tableau
-		playerData := []struct{
-			Name   string
-			Points string
-			Users string
-			Systems string
+		playerData := []struct {
+			Name       string
+			Points     string
+			Users      string
+			Systems    string
 			Challenges string
 		}{
 			{"Player1", "3000", "12", "13", "343"},
@@ -189,7 +188,7 @@ to quickly create a Cobra application.`,
 		}
 
 		rankingTable.SetSelectable(true, false) // Set to true, false to enable vertical scrolling
-		rankingTable.SetFixed(1, 0) // Sets the first row as non-scrollable
+		rankingTable.SetFixed(1, 0)             // Sets the first row as non-scrollable
 		// Scrolling avec les touches fléchées
 		rankingTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 			switch event.Key() {
@@ -200,7 +199,7 @@ to quickly create a Cobra application.`,
 				}
 			case tcell.KeyDown:
 				row, _ := rankingTable.GetSelection()
-				if row < len(playerData) {  // assuming playerData is available in this context
+				if row < len(playerData) { // assuming playerData is available in this context
 					rankingTable.Select(row+1, 0)
 				}
 			}
@@ -211,9 +210,6 @@ to quickly create a Cobra application.`,
 		rankingCard := tview.NewFlex().SetDirection(tview.FlexRow)
 		rankingCard.SetBorder(true).SetTitle("Global Ranking").SetTitleAlign(tview.AlignLeft)
 		rankingCard.AddItem(rankingTable, 0, 1, false)
-
-
-	
 
 		// Flex droite basse
 		rightBottomFlex := tview.NewFlex().SetDirection(tview.FlexRow)
@@ -238,32 +234,70 @@ to quickly create a Cobra application.`,
 		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
 		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
 		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
-		
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
+		historyFlex.AddItem(tview.NewTextView().SetText("Owned [::b]Web[-] - WS-Todo Challenge - 1 month ago - +[4pts]").SetDynamicColors(true), 1, 0, false)
+
 		// historyFlex.AddItem(rankingTable, 0, 1, false)
 
 		// Flex bas gauche history
-		boxesFlex := tview.NewFlex().SetDirection(tview.FlexRow)
-		boxesFlex.SetBorder(true).SetTitle("Advanced Labs").SetTitleAlign(tview.AlignLeft)
-		boxesFlex.AddItem(tview.NewTextView().SetText("[::b]Fortresses[-]: ").SetDynamicColors(true), 1, 0, false)
-		boxesFlex.AddItem(tview.NewTextView().SetText("[::b]Jet - Akerva - Context - Synacktiv - Faraday - AWS[-]").SetDynamicColors(true), 1, 0, false)
-		boxesFlex.AddItem(tview.NewTextView().SetText("[::b]Pro Labs[-]: ").SetDynamicColors(true), 1, 0, false)
-		boxesFlex.AddItem(tview.NewTextView().SetText("[::b]Dante - Offshore - Zephyr - Rastalabs - Cybernetics - APTLabs[-]").SetDynamicColors(true), 1, 0, false)
-		boxesFlex.AddItem(tview.NewTextView().SetText("[::b]Endgames[-]: ").SetDynamicColors(true), 1, 0, false)
-		boxesFlex.AddItem(tview.NewTextView().SetText("[::b]Solar - Odyssey - Ascension - RPG - Hades - Xen - P.O.O[-]").SetDynamicColors(true), 1, 0, false)
+		fortressesPanel := tview.NewFlex().SetDirection(tview.FlexRow)
+		fortressesPanel.SetBorder(true).SetTitle("Fortresses").SetTitleAlign(tview.AlignLeft)
+		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Jet       : 11/11[-]").SetDynamicColors(true), 1, 0, false)
+		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Akerva    : 8/8[-]").SetDynamicColors(true), 1, 0, false)
+		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Context   : 2/7[-]").SetDynamicColors(true), 1, 0, false)
+		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Synacktiv : 5/7[-]").SetDynamicColors(true), 1, 0, false)
+		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Faraday   : 4/7[-]").SetDynamicColors(true), 1, 0, false)
+		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 AWS       : 0/10[-]").SetDynamicColors(true), 1, 0, false)
+		fortressesPanel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 4, 0, false)
+
+		// Flex bas gauche history
+		prolabsPanel := tview.NewFlex().SetDirection(tview.FlexRow)
+		prolabsPanel.SetBorder(true).SetTitle("Pro Labs").SetTitleAlign(tview.AlignLeft)
+		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Dante       : 11/11[-]").SetDynamicColors(true), 1, 0, false)
+		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Offshore    : 11/11[-]").SetDynamicColors(true), 1, 0, false)
+		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Zephyr      : 11/11[-]").SetDynamicColors(true), 1, 0, false)
+		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Rastalabs   : 11/11[-]").SetDynamicColors(true), 1, 0, false)
+		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Cybernetics : 11/11[-]").SetDynamicColors(true), 1, 0, false)
+		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D APTLabs     : 11/11[-]").SetDynamicColors(true), 1, 0, false)
+		prolabsPanel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 4, 0, false)
+
+		// Flex bas gauche history
+		endgamesPanel := tview.NewFlex().SetDirection(tview.FlexRow)
+		endgamesPanel.SetBorder(true).SetTitle("Endgames").SetTitleAlign(tview.AlignLeft)
+		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Solar     : 0/10[-]").SetDynamicColors(true), 1, 0, false)
+		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Odyssey   : 0/10[-]").SetDynamicColors(true), 1, 0, false)
+		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Ascension : 0/10[-]").SetDynamicColors(true), 1, 0, false)
+		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE RPG       : 0/10[-]").SetDynamicColors(true), 1, 0, false)
+		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Hades     : 0/10[-]").SetDynamicColors(true), 1, 0, false)
+		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Xen       : 0/10[-]").SetDynamicColors(true), 1, 0, false)
+		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE P.O.O     : 0/10[-]").SetDynamicColors(true), 1, 0, false)
+		endgamesPanel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 3, 0, false)
+
+		advancedLabsFlex := tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			SetDirection(tview.FlexColumn).
+			AddItem(fortressesPanel, 0, 1, false).
+			AddItem(prolabsPanel, 0, 1, false).
+			AddItem(endgamesPanel, 0, 1, false)
 
 		// Flex droite qui contient les flex droite haute et droite basse
 		rightFlex := tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(rankingCard, 0, 1, false).
-		AddItem(rightBottomFlex, 0, 1, false)
+			SetDirection(tview.FlexRow).
+			AddItem(rankingCard, 0, 1, false).
+			AddItem(rightBottomFlex, 0, 1, false)
 
 		// Flex gauche qui contient les flex gauche haute et droite basse
 		leftFlex := tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(userCard, 0, 1, false).
-		AddItem(boxesFlex, 0, 1, false).
-		AddItem(historyFlex, 0, 1, false)
-
+			SetDirection(tview.FlexRow).
+			AddItem(userCard, 0, 1, false).
+			AddItem(advancedLabsFlex, 0, 1, false).
+			AddItem(historyFlex, 0, 2, false)
 
 		// Main container
 		// mainFlex := tview.NewFlex().SetDirection(tview.FlexColumn)
@@ -272,22 +306,21 @@ to quickly create a Cobra application.`,
 
 		// Gestion du focus avec Tab
 		app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Key() == tcell.KeyTab {
-			if app.GetFocus() == rankingCard {
-				app.SetFocus(rightBottomFlex)
-			} else {
-				app.SetFocus(rankingCard)
+			if event.Key() == tcell.KeyTab {
+				if app.GetFocus() == rankingCard {
+					app.SetFocus(rightBottomFlex)
+				} else {
+					app.SetFocus(rankingCard)
+				}
+				// Ne pas propager l'événement pour éviter de déplacer le focus inutilement
+				return nil
 			}
-			// Ne pas propager l'événement pour éviter de déplacer le focus inutilement
-			return nil
-		}
-		return event
-	})
+			return event
+		})
 
 		mainFlex := tview.NewFlex().
-		AddItem(leftFlex, 0, 2, false).
-		AddItem(rightFlex, 0, 1, false)
-
+			AddItem(leftFlex, 0, 2, false).
+			AddItem(rightFlex, 0, 1, false)
 
 		// Run the application
 		if err := app.SetRoot(mainFlex, true).Run(); err != nil {
