@@ -29,7 +29,7 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 	// Common payload elements
 	difficultyString := strconv.Itoa(difficultyParam * 10)
 	payload := map[string]string{
-		"flag":      flagParam,
+		"flag":       flagParam,
 		"difficulty": difficultyString,
 	}
 
@@ -43,7 +43,15 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 		if err != nil {
 			return "", err
 		}
-		url = baseAPIURL + "/machine/own"
+		machineType := utils.GetMachineType(machineID, proxyParam)
+		log.Printf("Machine Type: %s", machineType)
+
+		if machineType == "release" {
+			url = baseAPIURL + "/arena/own"
+		} else {
+			url = baseAPIURL + "/machine/own"
+
+		}
 		payload["id"] = machineID
 	case challengeNameParam != "":
 		log.Println("Challenge submit requested!")
