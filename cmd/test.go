@@ -25,43 +25,81 @@ to quickly create a Cobra application.`,
 		app := tview.NewApplication()
 
 		// User card
-		userCard := tview.NewFlex().SetDirection(tview.FlexRow)
-		userCard.SetBorder(true).SetTitle("User").SetTitleAlign(tview.AlignLeft)
-		// Creating a line with two elements on the same row
-		nameAndRank := tview.NewFlex().SetDirection(tview.FlexColumn)
-		nameAndRank.AddItem(tview.NewTextView().SetText("[::b]Name[-]: [blue]QU35T3190[-]").SetDynamicColors(true), 0, 1, false)
-		nameAndRank.AddItem(tview.NewTextView().SetText("[::b]Rank[-]: [blue]Pro Hacker[-]").SetDynamicColors(true), 0, 1, false)
-		nameAndRank.AddItem(tview.NewTextView().SetText("[::b]Ranking[-]: [blue]737[-]\U0001F3C6").SetDynamicColors(true), 0, 1, false)
-		nameAndRank.AddItem(tview.NewTextView().SetText("[::b]Points[-]: [blue]370[-]\U0001F396").SetDynamicColors(true), 0, 1, false)
-		userCard.AddItem(nameAndRank, 1, 0, false)
+		// userCard := tview.NewFlex().SetDirection(tview.FlexRow)
+		// userCard.SetBorder(true).SetTitle("User").SetTitleAlign(tview.AlignLeft)
+		// // Creating a line with two elements on the same row
+		// nameAndRank := tview.NewFlex().SetDirection(tview.FlexColumn)
+		// nameAndRank.AddItem(tview.NewTextView().SetText("[::b]Name[-]: QU35T3190[-]").SetDynamicColors(true), 0, 1, false)
+		// nameAndRank.AddItem(tview.NewTextView().SetText("[::b]Name[-]: QU35T3190[-]").SetDynamicColors(true), 0, 1, false)
+		// nameAndRank.AddItem(tview.NewTextView().SetText("[::b]Ranking[-]: 737[-]\U0001F3C6").SetDynamicColors(true), 0, 1, false)
+		// nameAndRank.AddItem(tview.NewTextView().SetText("[::b]Points[-]: 370[-]\U0001F396").SetDynamicColors(true), 0, 1, false)
+		// userCard.AddItem(nameAndRank, 1, 0, false)
 
-		owns := tview.NewFlex().SetDirection(tview.FlexColumn)
-		owns.AddItem(tview.NewTextView().SetText("[::b]User Owns[-]: [blue]0[-]").SetDynamicColors(true), 0, 1, false)
-		owns.AddItem(tview.NewTextView().SetText("[::b]System Owns[-]: [blue]0[-]").SetDynamicColors(true), 0, 1, false)
-		owns.AddItem(tview.NewTextView().SetText("[::b]User Bloods[-]: [blue]1\U0001FA78[-]").SetDynamicColors(true), 0, 1, false)
-		owns.AddItem(tview.NewTextView().SetText("[::b]System Bloods[-]: [blue]1\U0001FA78[-]").SetDynamicColors(true), 0, 1, false)
-		userCard.AddItem(owns, 1, 0, false)
+		// Flex bas gauche history
+		userInformationsFlex := tview.NewFlex().SetDirection(tview.FlexRow)
+		userInformationsFlex.SetBorder(true).SetTitle("Profile").SetTitleAlign(tview.AlignLeft)
+		userInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Name         : QU35T3190[-]").SetDynamicColors(true), 1, 0, false)
+		userInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Team         : SimianSec[-]").SetDynamicColors(true), 1, 0, false)
+		userInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]University   : Epitech[-]").SetDynamicColors(true), 1, 0, false)
+		userInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Country      : France[-]").SetDynamicColors(true), 1, 0, false)
+		userInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Subscription : VIP[-]").SetDynamicColors(true), 1, 0, false)
+		userInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Respects     : 12[-]").SetDynamicColors(true), 1, 0, false)
+		userInformationsFlex.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 4, 0, false)
 
-		other := tview.NewFlex().SetDirection(tview.FlexColumn)
-		other.AddItem(tview.NewTextView().SetText("[::b]Country[-]: [blue]France[-]").SetDynamicColors(true), 0, 1, false)
-		other.AddItem(tview.NewTextView().SetText("[::b]Subscription[-]: [blue]VIP[-]").SetDynamicColors(true), 0, 1, false)
-		other.AddItem(tview.NewTextView().SetText("[::b]Respects[-]: [blue]12[-]").SetDynamicColors(true), 0, 1, false)
-		other.AddItem(tview.NewTextView().SetText("[::b]Rank Ownership[-]: [blue]4.12[-]").SetDynamicColors(true), 0, 1, false)
-		userCard.AddItem(other, 2, 0, false)
+		userRankingInformationsFlex := tview.NewFlex().SetDirection(tview.FlexRow)
+		userRankingInformationsFlex.SetBorder(true).SetTitle("Ranking Informations").SetTitleAlign(tview.AlignLeft)
+		userRankingInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Global       : 737[-]\U0001F3C6").SetDynamicColors(true), 1, 0, false)
+		userRankingInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Team         : 737[-]\U0001F3C6").SetDynamicColors(true), 1, 0, false)
+		userRankingInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]University   : 737[-]\U0001F3C6").SetDynamicColors(true), 1, 0, false)
+		userRankingInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Country      : 737[-]\U0001F3C6").SetDynamicColors(true), 1, 0, false)
+		userRankingInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Points       : 370[-]\U0001F396").SetDynamicColors(true), 1, 0, false)
+		userRankingInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Rank         : Pro Hacker[-]").SetDynamicColors(true), 1, 0, false)
+		userRankingInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Ownership    : 4.12[-]").SetDynamicColors(true), 1, 0, false)
+		userRankingInformationsFlex.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 3, 0, false)
 
-		userCard.AddItem(tview.NewTextView().SetText("TEAM :").SetDynamicColors(true), 1, 0, false)
+		userMiscInformationsFlex := tview.NewFlex().SetDirection(tview.FlexRow)
+		userMiscInformationsFlex.SetBorder(true).SetTitle("Misc").SetTitleAlign(tview.AlignLeft)
+		userMiscInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]User Bloods[-]   : 1\U0001FA78[-]").SetDynamicColors(true), 1, 0, false)
+		userMiscInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]System Bloods[-] : 1\U0001FA78[-]").SetDynamicColors(true), 1, 0, false)
+		userMiscInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]User Owns[-]     : 0[-]").SetDynamicColors(true), 1, 0, false)
+		userMiscInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]System Owns[-]   : 0[-]").SetDynamicColors(true), 1, 0, false)
+		userMiscInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Last User[-]     : Sau[-]").SetDynamicColors(true), 1, 0, false)
+		userMiscInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Last System[-]   : Shoppy[-]").SetDynamicColors(true), 1, 0, false)
+		userMiscInformationsFlex.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 4, 0, false)
 
-		team := tview.NewFlex().SetDirection(tview.FlexColumn)
-		team.AddItem(tview.NewTextView().SetText("[::b]Name[-]: [blue]SimianSec[-]").SetDynamicColors(true), 0, 1, false)
-		team.AddItem(tview.NewTextView().SetText("[::b]Rank[-]: [blue]4[-]").SetDynamicColors(true), 0, 1, false)
-		userCard.AddItem(team, 2, 0, false)
+		userInformationsContainer := tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			SetDirection(tview.FlexColumn).
+			AddItem(userInformationsFlex, 0, 1, false).
+			AddItem(userRankingInformationsFlex, 0, 1, false).
+			AddItem(userMiscInformationsFlex, 0, 1, false)
+		// owns := tview.NewFlex().SetDirection(tview.FlexColumn)
+		// owns.AddItem(tview.NewTextView().SetText("[::b]User Owns[-]: 0[-]").SetDynamicColors(true), 0, 1, false)
+		// owns.AddItem(tview.NewTextView().SetText("[::b]System Owns[-]: 0[-]").SetDynamicColors(true), 0, 1, false)
+		// owns.AddItem(tview.NewTextView().SetText("[::b]User Bloods[-]: 1\U0001FA78[-]").SetDynamicColors(true), 0, 1, false)
+		// owns.AddItem(tview.NewTextView().SetText("[::b]System Bloods[-]: 1\U0001FA78[-]").SetDynamicColors(true), 0, 1, false)
+		// userCard.AddItem(owns, 1, 0, false)
 
-		userCard.AddItem(tview.NewTextView().SetText("UNIVERSITY :").SetDynamicColors(true), 1, 0, false)
+		// other := tview.NewFlex().SetDirection(tview.FlexColumn)
+		// other.AddItem(tview.NewTextView().SetText("[::b]Country[-]: France[-]").SetDynamicColors(true), 0, 1, false)
+		// other.AddItem(tview.NewTextView().SetText("[::b]Subscription[-]: VIP[-]").SetDynamicColors(true), 0, 1, false)
+		// other.AddItem(tview.NewTextView().SetText("[::b]Respects[-]: 12[-]").SetDynamicColors(true), 0, 1, false)
+		// other.AddItem(tview.NewTextView().SetText("[::b]Rank Ownership[-]: 4.12[-]").SetDynamicColors(true), 0, 1, false)
+		// userCard.AddItem(other, 2, 0, false)
 
-		university := tview.NewFlex().SetDirection(tview.FlexColumn)
-		university.AddItem(tview.NewTextView().SetText("[::b]Name[-]: [blue]Epitech[-]").SetDynamicColors(true), 0, 1, false)
-		university.AddItem(tview.NewTextView().SetText("[::b]Rank[-]: [blue]40[-]").SetDynamicColors(true), 0, 1, false)
-		userCard.AddItem(university, 2, 0, false)
+		// userCard.AddItem(tview.NewTextView().SetText("TEAM :").SetDynamicColors(true), 1, 0, false)
+
+		// team := tview.NewFlex().SetDirection(tview.FlexColumn)
+		// team.AddItem(tview.NewTextView().SetText("[::b]Name[-]: [blue]SimianSec[-]").SetDynamicColors(true), 0, 1, false)
+		// team.AddItem(tview.NewTextView().SetText("[::b]Rank[-]: [blue]4[-]").SetDynamicColors(true), 0, 1, false)
+		// userCard.AddItem(team, 2, 0, false)
+
+		// userCard.AddItem(tview.NewTextView().SetText("UNIVERSITY :").SetDynamicColors(true), 1, 0, false)
+
+		// university := tview.NewFlex().SetDirection(tview.FlexColumn)
+		// university.AddItem(tview.NewTextView().SetText("[::b]Name[-]: [blue]Epitech[-]").SetDynamicColors(true), 0, 1, false)
+		// university.AddItem(tview.NewTextView().SetText("[::b]Rank[-]: [blue]40[-]").SetDynamicColors(true), 0, 1, false)
+		// userCard.AddItem(university, 2, 0, false)
 
 		// TODO: Add challenges owned
 		// Add fortress progression
@@ -248,35 +286,35 @@ to quickly create a Cobra application.`,
 		// Flex bas gauche history
 		fortressesPanel := tview.NewFlex().SetDirection(tview.FlexRow)
 		fortressesPanel.SetBorder(true).SetTitle("Fortresses").SetTitleAlign(tview.AlignLeft)
-		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Jet       : 11/11[-]").SetDynamicColors(true), 1, 0, false)
-		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Akerva    : 8/8[-]").SetDynamicColors(true), 1, 0, false)
-		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Context   : 2/7[-]").SetDynamicColors(true), 1, 0, false)
-		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Synacktiv : 5/7[-]").SetDynamicColors(true), 1, 0, false)
-		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Faraday   : 4/7[-]").SetDynamicColors(true), 1, 0, false)
-		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 AWS       : 0/10[-]").SetDynamicColors(true), 1, 0, false)
+		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Jet       : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
+		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Akerva    : [green]8/8[-]").SetDynamicColors(true), 1, 0, false)
+		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Context   : [red]2/7[-]").SetDynamicColors(true), 1, 0, false)
+		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Synacktiv : [orange]5/7[-]").SetDynamicColors(true), 1, 0, false)
+		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Faraday   : [orange]4/7[-]").SetDynamicColors(true), 1, 0, false)
+		fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 AWS       : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
 		fortressesPanel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 4, 0, false)
 
 		// Flex bas gauche history
 		prolabsPanel := tview.NewFlex().SetDirection(tview.FlexRow)
 		prolabsPanel.SetBorder(true).SetTitle("Pro Labs").SetTitleAlign(tview.AlignLeft)
-		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Dante       : 11/11[-]").SetDynamicColors(true), 1, 0, false)
-		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Offshore    : 11/11[-]").SetDynamicColors(true), 1, 0, false)
-		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Zephyr      : 11/11[-]").SetDynamicColors(true), 1, 0, false)
-		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Rastalabs   : 11/11[-]").SetDynamicColors(true), 1, 0, false)
-		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Cybernetics : 11/11[-]").SetDynamicColors(true), 1, 0, false)
-		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D APTLabs     : 11/11[-]").SetDynamicColors(true), 1, 0, false)
+		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Dante       : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
+		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Offshore    : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
+		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Zephyr      : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
+		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Rastalabs   : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
+		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Cybernetics : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
+		prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D APTLabs     : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
 		prolabsPanel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 4, 0, false)
 
 		// Flex bas gauche history
 		endgamesPanel := tview.NewFlex().SetDirection(tview.FlexRow)
 		endgamesPanel.SetBorder(true).SetTitle("Endgames").SetTitleAlign(tview.AlignLeft)
-		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Solar     : 0/10[-]").SetDynamicColors(true), 1, 0, false)
-		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Odyssey   : 0/10[-]").SetDynamicColors(true), 1, 0, false)
-		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Ascension : 0/10[-]").SetDynamicColors(true), 1, 0, false)
-		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE RPG       : 0/10[-]").SetDynamicColors(true), 1, 0, false)
-		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Hades     : 0/10[-]").SetDynamicColors(true), 1, 0, false)
-		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Xen       : 0/10[-]").SetDynamicColors(true), 1, 0, false)
-		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE P.O.O     : 0/10[-]").SetDynamicColors(true), 1, 0, false)
+		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Solar     : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
+		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Odyssey   : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
+		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Ascension : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
+		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE RPG       : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
+		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Hades     : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
+		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Xen       : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
+		endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE P.O.O     : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
 		endgamesPanel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 3, 0, false)
 
 		advancedLabsFlex := tview.NewFlex().
@@ -295,7 +333,7 @@ to quickly create a Cobra application.`,
 		// Flex gauche qui contient les flex gauche haute et droite basse
 		leftFlex := tview.NewFlex().
 			SetDirection(tview.FlexRow).
-			AddItem(userCard, 0, 1, false).
+			AddItem(userInformationsContainer, 0, 1, false).
 			AddItem(advancedLabsFlex, 0, 1, false).
 			AddItem(historyFlex, 0, 2, false)
 
