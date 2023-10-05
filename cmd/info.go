@@ -50,6 +50,39 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 		// fmt.Println(info)
 		data := info.(map[string]interface{})
 
+		// Fortresses search
+		url = baseAPIURL + "/user/profile/progress/fortress/"
+		respFortresses, err := utils.HtbRequest(http.MethodGet, (url + itemID), proxyParam, nil)
+		if err != nil {
+			return err
+		}
+		infoKey = "profile"
+
+		fortressesInfo := utils.ParseJsonMessage(respFortresses, infoKey)
+		fortressesDataMap := fortressesInfo.(map[string]interface{})
+
+		// Endgames search
+		url = baseAPIURL + "/user/profile/progress/endgame/"
+		respEndgames, err := utils.HtbRequest(http.MethodGet, (url + itemID), proxyParam, nil)
+		if err != nil {
+			return err
+		}
+		infoKey = "profile"
+
+		endgamesInfo := utils.ParseJsonMessage(respEndgames, infoKey)
+		endgamesDataMap := endgamesInfo.(map[string]interface{})
+
+		// Prolabs search
+		url = baseAPIURL + "/user/profile/progress/prolab/"
+		respProlabs, err := utils.HtbRequest(http.MethodGet, (url + itemID), proxyParam, nil)
+		if err != nil {
+			return err
+		}
+		infoKey = "profile"
+
+		prolabsInfo := utils.ParseJsonMessage(respProlabs, infoKey)
+		prolabsDataMap := prolabsInfo.(map[string]interface{})
+
 		var bodyData string
 		if elementType == "Machine" {
 			status := utils.SetStatus(data)
@@ -71,7 +104,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 			}
 			bodyData = fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["category_name"], retiredStatus, data["difficulty"], data["stars"], data["solves"], status, datetime)
 		} else if elementType == "Username" {
-			utils.DisplayInformationsGUI(data)
+			utils.DisplayInformationsGUI(data, fortressesDataMap, endgamesDataMap, prolabsDataMap)
 			os.Exit(0)
 		}
 

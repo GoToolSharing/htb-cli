@@ -8,6 +8,10 @@ import (
 	"github.com/rivo/tview"
 )
 
+func calculateSpacing(baseName string, maxNameLength int) string {
+	return fmt.Sprintf("%-*s", maxNameLength-len(baseName)+1, "")
+}
+
 func parseUserSubscription(profile map[string]interface{}) string {
 	isVip := profile["isVip"].(bool)
 	isDedicatedVIP := profile["isDedicatedVip"].(bool)
@@ -21,7 +25,118 @@ func parseUserSubscription(profile map[string]interface{}) string {
 	return "Free"
 }
 
-func DisplayInformationsGUI(profile map[string]interface{}) {
+func displayFortressesInfo(fortresses map[string]interface{}) *tview.Flex {
+	fortressesList, ok := fortresses["fortresses"].([]interface{})
+	if !ok {
+		fmt.Println("Couldn't convert fortresses[\"fortresses\"] to a slice of map")
+		return nil
+	}
+	fortressesPanel := tview.NewFlex().SetDirection(tview.FlexRow)
+	fortressesPanel.SetBorder(true).SetTitle("Fortresses").SetTitleAlign(tview.AlignLeft)
+	maxNameLength := 9
+	for _, fortressInterface := range fortressesList {
+		fortress, ok := fortressInterface.(map[string]interface{})
+		if !ok {
+			fmt.Println("Couldn't convert fortress to a map[string]interface{}")
+			continue
+		}
+		name := fortress["name"].(string)
+		ownedFlags := fortress["owned_flags"].(float64)
+		totalFlags := fortress["total_flags"].(float64)
+
+		var color string
+		if ownedFlags == totalFlags {
+			color = "[green]"
+		} else if ownedFlags == 0 {
+			color = "[red]"
+		} else {
+			color = "[orange]"
+		}
+
+		spacing := calculateSpacing(name, maxNameLength)
+
+		text := fmt.Sprintf("[::b]\U0001F3F0 %s%s: %s%.0f/%.0f[-]", name, spacing, color, ownedFlags, totalFlags)
+		fortressesPanel.AddItem(tview.NewTextView().SetText(text).SetDynamicColors(true), 1, 0, false)
+	}
+	fortressesPanel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 4, 0, false)
+	return fortressesPanel
+}
+
+func displayEndgamesInfo(endgames map[string]interface{}) *tview.Flex {
+	endgamesList, ok := endgames["endgames"].([]interface{})
+	if !ok {
+		fmt.Println("Couldn't convert endgames[\"endgames\"] to a slice of map")
+		return nil
+	}
+	endgamesPanel := tview.NewFlex().SetDirection(tview.FlexRow)
+	endgamesPanel.SetBorder(true).SetTitle("Endgames").SetTitleAlign(tview.AlignLeft)
+	maxNameLength := 9
+	for _, endgamesInterface := range endgamesList {
+		endgame, ok := endgamesInterface.(map[string]interface{})
+		if !ok {
+			fmt.Println("Couldn't convert endgame to a map[string]interface{}")
+			continue
+		}
+		name := endgame["name"].(string)
+		ownedFlags := endgame["owned_flags"].(float64)
+		totalFlags := endgame["total_flags"].(float64)
+
+		var color string
+		if ownedFlags == totalFlags {
+			color = "[green]"
+		} else if ownedFlags == 0 {
+			color = "[red]"
+		} else {
+			color = "[orange]"
+		}
+
+		spacing := calculateSpacing(name, maxNameLength)
+
+		text := fmt.Sprintf("[::b]\U0001F3AE %s%s: %s%.0f/%.0f[-]", name, spacing, color, ownedFlags, totalFlags)
+		endgamesPanel.AddItem(tview.NewTextView().SetText(text).SetDynamicColors(true), 1, 0, false)
+	}
+	endgamesPanel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 3, 0, false)
+	return endgamesPanel
+}
+
+func displayProlabsInfo(prolabs map[string]interface{}) *tview.Flex {
+	prolabsList, ok := prolabs["prolabs"].([]interface{})
+	if !ok {
+		fmt.Println("Couldn't convert endgames[\"endgames\"] to a slice of map")
+		return nil
+	}
+	prolabsPanel := tview.NewFlex().SetDirection(tview.FlexRow)
+	prolabsPanel.SetBorder(true).SetTitle("Pro Labs").SetTitleAlign(tview.AlignLeft)
+	maxNameLength := 11
+	for _, prolabsInterface := range prolabsList {
+		prolab, ok := prolabsInterface.(map[string]interface{})
+		if !ok {
+			fmt.Println("Couldn't convert prolab to a map[string]interface{}")
+			continue
+		}
+		name := prolab["name"].(string)
+		ownedFlags := prolab["owned_flags"].(float64)
+		totalFlags := prolab["total_flags"].(float64)
+
+		var color string
+		if ownedFlags == totalFlags {
+			color = "[green]"
+		} else if ownedFlags == 0 {
+			color = "[red]"
+		} else {
+			color = "[orange]"
+		}
+
+		spacing := calculateSpacing(name, maxNameLength)
+
+		text := fmt.Sprintf("[::b]\U0001F47D %s%s: %s%.0f/%.0f[-]", name, spacing, color, ownedFlags, totalFlags)
+		prolabsPanel.AddItem(tview.NewTextView().SetText(text).SetDynamicColors(true), 1, 0, false)
+	}
+	prolabsPanel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 4, 0, false)
+	return prolabsPanel
+}
+
+func DisplayInformationsGUI(profile map[string]interface{}, fortresses map[string]interface{}, endgames map[string]interface{}, prolabs map[string]interface{}) {
 
 	teamName, teamRank := "N/A", "N/A"
 	universityName, universityRank := "N/A", "N/A"
@@ -261,39 +376,43 @@ func DisplayInformationsGUI(profile map[string]interface{}) {
 
 	// historyFlex.AddItem(rankingTable, 0, 1, false)
 
-	// Flex bas gauche history
-	fortressesPanel := tview.NewFlex().SetDirection(tview.FlexRow)
-	fortressesPanel.SetBorder(true).SetTitle("Fortresses").SetTitleAlign(tview.AlignLeft)
-	fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Jet       : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
-	fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Akerva    : [green]8/8[-]").SetDynamicColors(true), 1, 0, false)
-	fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Context   : [red]2/7[-]").SetDynamicColors(true), 1, 0, false)
-	fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Synacktiv : [orange]5/7[-]").SetDynamicColors(true), 1, 0, false)
-	fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 Faraday   : [orange]4/7[-]").SetDynamicColors(true), 1, 0, false)
-	fortressesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3F0 AWS       : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
-	fortressesPanel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 4, 0, false)
+	// Fortresses
+	// var jsonStr = `{"fortresses":[{"name":"Jet","avatar":"https://www.hackthebox.com/storage/companies/3.png","completion_percentage":64,"owned_flags":7,"total_flags":11},{"name":"Akerva","avatar":"https://www.hackthebox.com/storage/companies/61.png","completion_percentage":100,"owned_flags":8,"total_flags":8},{"name":"Context","avatar":"https://www.hackthebox.com/storage/companies/9.png","completion_percentage":0,"owned_flags":0,"total_flags":7},{"name":"Synacktiv","avatar":"https://www.hackthebox.com/storage/companies/195.png","completion_percentage":71,"owned_flags":5,"total_flags":7},{"name":"Faraday","avatar":"https://www.hackthebox.com/storage/companies/28.png","completion_percentage":0,"owned_flags":0,"total_flags":7},{"name":"AWS","avatar":"https://www.hackthebox.com/storage/companies/206.png","completion_percentage":0,"owned_flags":0,"total_flags":10}]}`
+
+	// var data map[string][]map[string]interface{}
+
+	// err := json.Unmarshal([]byte(jsonStr), &data)
+	// if err != nil {
+	// 	fmt.Println("error:", err)
+	// }
 
 	// Flex bas gauche history
-	prolabsPanel := tview.NewFlex().SetDirection(tview.FlexRow)
-	prolabsPanel.SetBorder(true).SetTitle("Pro Labs").SetTitleAlign(tview.AlignLeft)
-	prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Dante       : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
-	prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Offshore    : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
-	prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Zephyr      : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
-	prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Rastalabs   : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
-	prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Cybernetics : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
-	prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D APTLabs     : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
-	prolabsPanel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 4, 0, false)
+	// prolabsPanel := tview.NewFlex().SetDirection(tview.FlexRow)
+	// prolabsPanel.SetBorder(true).SetTitle("Pro Labs").SetTitleAlign(tview.AlignLeft)
+	// prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Dante       : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
+	// prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Offshore    : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
+	// prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Zephyr      : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
+	// prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Rastalabs   : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
+	// prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D Cybernetics : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
+	// prolabsPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F47D APTLabs     : [green]11/11[-]").SetDynamicColors(true), 1, 0, false)
+	// prolabsPanel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 4, 0, false)
 
 	// Flex bas gauche history
-	endgamesPanel := tview.NewFlex().SetDirection(tview.FlexRow)
-	endgamesPanel.SetBorder(true).SetTitle("Endgames").SetTitleAlign(tview.AlignLeft)
-	endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Solar     : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
-	endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Odyssey   : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
-	endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Ascension : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
-	endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE RPG       : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
-	endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Hades     : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
-	endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Xen       : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
-	endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE P.O.O     : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
-	endgamesPanel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 3, 0, false)
+	// endgamesPanel := tview.NewFlex().SetDirection(tview.FlexRow)
+	// endgamesPanel.SetBorder(true).SetTitle("Endgames").SetTitleAlign(tview.AlignLeft)
+	// endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Solar     : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
+	// endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Odyssey   : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
+	// endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Ascension : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
+	// endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE RPG       : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
+	// endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Hades     : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
+	// endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE Xen       : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
+	// endgamesPanel.AddItem(tview.NewTextView().SetText("[::b]\U0001F3AE P.O.O     : [red]0/10[-]").SetDynamicColors(true), 1, 0, false)
+	// endgamesPanel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 3, 0, false)
+
+	// Get fortresses
+	fortressesPanel := displayFortressesInfo(fortresses)
+	endgamesPanel := displayEndgamesInfo(endgames)
+	prolabsPanel := displayProlabsInfo(prolabs)
 
 	advancedLabsFlex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
