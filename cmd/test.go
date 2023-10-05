@@ -38,7 +38,7 @@ to quickly create a Cobra application.`,
 		userRankingInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]University   : 737[-]\U0001F3C6").SetDynamicColors(true), 1, 0, false)
 		userRankingInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Points       : 370[-]\U0001F396").SetDynamicColors(true), 1, 0, false)
 		userRankingInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Rank         : Pro Hacker[-]").SetDynamicColors(true), 1, 0, false)
-		userRankingInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Ownership    : 4.12[-]").SetDynamicColors(true), 1, 0, false)
+		userRankingInformationsFlex.AddItem(tview.NewTextView().SetText("[::b]Ownership    : 4.12%[-]").SetDynamicColors(true), 1, 0, false)
 		userRankingInformationsFlex.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 4, 0, false)
 
 		userMiscInformationsFlex := tview.NewFlex().SetDirection(tview.FlexRow)

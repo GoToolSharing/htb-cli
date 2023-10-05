@@ -18,7 +18,8 @@ var usernameParam []string
 
 // fetchAndDisplayInfo fetches and displays information based on the specified parameters.
 func fetchAndDisplayInfo(url, header string, params []string, elementType string) error {
-	log.Println("Params :", params)
+	// utils.DisplayInformationsGUI()
+	// log.Println("Params :", params)
 	w := utils.SetTabWriterHeader(header)
 
 	// Iteration on all machines / challenges / users argument
@@ -29,8 +30,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 			return nil
 		}
 
-		fullURL := url + itemID
-		resp, err := utils.HtbRequest(http.MethodGet, fullURL, proxyParam, nil)
+		resp, err := utils.HtbRequest(http.MethodGet, (url + itemID), proxyParam, nil)
 		if err != nil {
 			return err
 		}
@@ -47,6 +47,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 		}
 
 		info := utils.ParseJsonMessage(resp, infoKey)
+		// fmt.Println(info)
 		data := info.(map[string]interface{})
 
 		var bodyData string
@@ -70,21 +71,10 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 			}
 			bodyData = fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["category_name"], retiredStatus, data["difficulty"], data["stars"], data["solves"], status, datetime)
 		} else if elementType == "Username" {
-			team := "None"
-			university := "None"
-			if teamInformations, ok := data["team"].(map[string]interface{}); ok {
-				if name, ok := teamInformations["name"].(string); ok {
-					team = name
-				}
-			}
-			if universityInformations, ok := data["university"].(map[string]interface{}); ok {
-				if name, ok := universityInformations["name"].(string); ok {
-					university = name
-				}
-			}
-			bodyData = fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["user_owns"], data["system_owns"], data["user_bloods"], data["system_bloods"], team, university, data["rank"], data["ranking"], data["points"])
+			utils.DisplayInformationsGUI(data)
+			os.Exit(0)
 		}
-	
+
 		utils.SetTabWriterData(w, bodyData)
 		w.Flush()
 	}
@@ -93,43 +83,43 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 
 // coreInfoCmd is the core of the info command; it checks the parameters and displays corresponding information.
 func coreInfoCmd(machineParam []string, challengeParam []string) error {
-    machineHeader := "Name\tOS\tRetired\tDifficulty\tStars\tIP\tStatus\tLast Reset\tRelease"
-    challengeHeader := "Name\tCategory\tRetired\tDifficulty\tStars\tSolves\tStatus\tRelease"
+	machineHeader := "Name\tOS\tRetired\tDifficulty\tStars\tIP\tStatus\tLast Reset\tRelease"
+	challengeHeader := "Name\tCategory\tRetired\tDifficulty\tStars\tSolves\tStatus\tRelease"
 	usernameHeader := "Name\tUser Owns\tSystem Owns\tUser Bloods\tSystem Bloods\tTeam\tUniversity\tRank\tGlobal Rank\tPoints"
 
-    type infoType struct {
-        APIURL string
-        Header string
-        Params []string
-        Name   string
-    }
+	type infoType struct {
+		APIURL string
+		Header string
+		Params []string
+		Name   string
+	}
 
-    infos := []infoType{
-        {baseAPIURL + "/machine/profile/", machineHeader, machineParam, "Machine"},
-        {baseAPIURL + "/challenge/info/", challengeHeader, challengeParam, "Challenge"},
-        {baseAPIURL + "/user/profile/basic/", usernameHeader, usernameParam, "Username"},
-    }
+	infos := []infoType{
+		{baseAPIURL + "/machine/profile/", machineHeader, machineParam, "Machine"},
+		{baseAPIURL + "/challenge/info/", challengeHeader, challengeParam, "Challenge"},
+		{baseAPIURL + "/user/profile/basic/", usernameHeader, usernameParam, "Username"},
+	}
 
-    for _, info := range infos {
-        if len(info.Params) > 0 {
-            if info.Name == "Machine" {
+	for _, info := range infos {
+		if len(info.Params) > 0 {
+			if info.Name == "Machine" {
 				isConfirmed := utils.AskConfirmation("Do you want to check for active " + strings.ToLower(info.Name) + "?")
-                if isConfirmed {
+				if isConfirmed {
 					err := displayActiveMachine(info.Header)
 					if err != nil {
 						log.Fatal(err)
 					}
 				}
-            }
-            for _, param := range info.Params {
-                err := fetchAndDisplayInfo(info.APIURL, info.Header, []string{param}, info.Name)
-                if err != nil {
-                    return err
-                }
-            }
-        }
-    }
-    return nil
+			}
+			for _, param := range info.Params {
+				err := fetchAndDisplayInfo(info.APIURL, info.Header, []string{param}, info.Name)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
 }
 
 // getMachineStatus returns machine status
@@ -166,11 +156,11 @@ func displayActiveMachine(header string) error {
 		}
 		info := utils.ParseJsonMessage(resp, "info")
 		log.Println(info)
-		
+
 		data := info.(map[string]interface{})
 		status := utils.SetStatus(data)
 		retiredStatus := getMachineStatus(data)
-		
+
 		datetime, err := utils.ParseAndFormatDate(data["release"].(string))
 		if err != nil {
 			return err
