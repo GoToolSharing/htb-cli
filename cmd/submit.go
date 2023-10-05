@@ -19,9 +19,6 @@ var flagParam string
 
 // coreSubmitCmd handles the submission of flags for machines or challenges, returning a status message or error.
 func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNameParam string, flagParam string, proxyParam string) (string, error) {
-	if machineNameParam == "" && challengeNameParam == "" {
-		return "", errors.New("either machine_name (-m) or challenge_name (-c) must be provided")
-	}
 	if difficultyParam < 1 || difficultyParam > 10 {
 		return "", errors.New("difficulty must be set between 1 and 10")
 	}
@@ -35,9 +32,15 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 
 	url := ""
 
-	// Determine the API endpoint and payload based on input parameters.
-	switch {
-	case machineNameParam != "":
+	if challengeNameParam != "" {
+		log.Println("Challenge submit requested!")
+		challengeID, err := utils.SearchItemIDByName(challengeNameParam, proxyParam, "Challenge", batchParam)
+		if err != nil {
+			return "", err
+		}
+		url = baseAPIURL + "/challenge/own"
+		payload["challenge_id"] = challengeID
+	} else if machineNameParam != "" {
 		log.Println("Machine submit requested!")
 		machineID, err := utils.SearchItemIDByName(machineNameParam, proxyParam, "Machine", batchParam)
 		if err != nil {
@@ -53,14 +56,21 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 
 		}
 		payload["id"] = machineID
-	case challengeNameParam != "":
-		log.Println("Challenge submit requested!")
-		challengeID, err := utils.SearchItemIDByName(challengeNameParam, proxyParam, "Challenge", batchParam)
-		if err != nil {
-			return "", err
+	} else if machineNameParam == "" && challengeNameParam == "" {
+		machineID := utils.GetActiveMachineID(proxyParam)
+		if machineID == "" {
+			return "No machine is running", nil
 		}
-		url = baseAPIURL + "/challenge/own"
-		payload["challenge_id"] = challengeID
+		machineType := utils.GetMachineType(machineID, proxyParam)
+		log.Printf("Machine Type: %s", machineType)
+
+		if machineType == "release" {
+			url = baseAPIURL + "/arena/own"
+		} else {
+			url = baseAPIURL + "/machine/own"
+
+		}
+		payload["id"] = machineID
 	}
 
 	log.Println("Flag :", flagParam)
