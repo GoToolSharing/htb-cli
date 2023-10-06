@@ -149,7 +149,7 @@ var machinesCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		rightFlex.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 37, 0, false)
+		rightFlex.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 0, 0, false)
 
 		mainFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
 			AddItem(leftFlex, 0, 3, false).
