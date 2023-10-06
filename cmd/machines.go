@@ -113,8 +113,7 @@ func createFlex(info interface{}, title string, isScheduled bool) (*tview.Flex, 
 
 var machinesCmd = &cobra.Command{
 	Use:   "machines",
-	Short: "A brief description of your command",
-	Long:  `A longer description ...`,
+	Short: "Displays active / retired machines and next machines to be released",
 	Run: func(cmd *cobra.Command, args []string) {
 		app := tview.NewApplication()
 

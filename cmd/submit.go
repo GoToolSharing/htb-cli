@@ -96,7 +96,7 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 // submitCmd defines the "submit" command for submitting flags for machines or challenges.
 var submitCmd = &cobra.Command{
 	Use:   "submit",
-	Short: "Submit credentials (machines & challenges)",
+	Short: "Submit credentials (machines / challenges / arena)",
 	Long:  "This command allows for the submission of user and root flags discovered on vulnerable machines / challenges",
 	Run: func(cmd *cobra.Command, args []string) {
 		output, err := coreSubmitCmd(difficultyParam, machineNameParam, challengeNameParam, flagParam, proxyParam)
