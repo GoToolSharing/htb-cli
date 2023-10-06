@@ -122,6 +122,7 @@ func SearchItemIDByName(item string, proxyURL string, element_type string, batch
 			if isConfirmed {
 				return machines[0].ID, nil
 			}
+			os.Exit(0)
 		case map[string]interface{}:
 			// Checking if machines array is empty
 			if len(root.Machines.(map[string]interface{})) == 0 {
@@ -139,6 +140,7 @@ func SearchItemIDByName(item string, proxyURL string, element_type string, batch
 			if isConfirmed {
 				return machines["0"].ID, nil
 			}
+			os.Exit(0)
 		default:
 			return "", fmt.Errorf("No machine was found")
 		}
@@ -161,6 +163,7 @@ func SearchItemIDByName(item string, proxyURL string, element_type string, batch
 			if isConfirmed {
 				return challenges[0].ID, nil
 			}
+			os.Exit(0)
 		case map[string]interface{}:
 			// Checking if challenges array is empty
 			if len(root.Challenges.(map[string]interface{})) == 0 {
@@ -178,6 +181,7 @@ func SearchItemIDByName(item string, proxyURL string, element_type string, batch
 			if isConfirmed {
 				return challenges["0"].ID, nil
 			}
+			os.Exit(0)
 		default:
 			log.Fatal("No challenge found")
 		}
@@ -200,6 +204,7 @@ func SearchItemIDByName(item string, proxyURL string, element_type string, batch
 			if isConfirmed {
 				return usernames[0].ID, nil
 			}
+			os.Exit(0)
 		case map[string]interface{}:
 			// Checking if usernames array is empty
 			if len(root.Usernames.(map[string]interface{})) == 0 {
@@ -217,6 +222,7 @@ func SearchItemIDByName(item string, proxyURL string, element_type string, batch
 			if isConfirmed {
 				return usernames["0"].ID, nil
 			}
+			os.Exit(0)
 		default:
 			log.Fatal("No username found")
 		}
