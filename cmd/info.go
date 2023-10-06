@@ -17,6 +17,7 @@ var machineParam []string
 var challengeParam []string
 var usernameParam []string
 
+// Retrieves data for user profile
 func fetchData(itemID, endpoint, infoKey, proxyParam string) (map[string]interface{}, error) {
 	url := baseAPIURL + endpoint + itemID
 

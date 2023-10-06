@@ -14,10 +14,12 @@ const (
 	maxActivityNameLength = 11
 )
 
+// Calculates the spacing between keys and values to ensure alignment
 func calculateSpacing(baseName string, maxNameLength int) string {
 	return fmt.Sprintf("%-*s", maxNameLength-len(baseName)+1, "")
 }
 
+// Parse and return the user's subscription level
 func parseUserSubscription(profile map[string]interface{}) string {
 	isVip := profile["isVip"].(bool)
 	isDedicatedVIP := profile["isDedicatedVip"].(bool)
@@ -31,6 +33,7 @@ func parseUserSubscription(profile map[string]interface{}) string {
 	return "Free"
 }
 
+// Format output for display in tview
 func formatFlagInfo(name string, ownedFlags, totalFlags float64, flagSymbol string, maxNameLength int) string {
 	var color string
 	if ownedFlags == totalFlags {
@@ -46,27 +49,33 @@ func formatFlagInfo(name string, ownedFlags, totalFlags float64, flagSymbol stri
 	return fmt.Sprintf("[::b]%s %s%s: %s%.0f/%.0f[-]", flagSymbol, name, spacing, color, ownedFlags, totalFlags)
 }
 
-func displayInfoPanel(title string, items []interface{}, formatterFunc func(map[string]interface{}) string) *tview.Flex {
+// Add items and display in tview
+func displayInfoPanel(title string, items []interface{}, formatterFunc func(map[string]interface{}) string, paddingBottom int) *tview.Flex {
 	panel := tview.NewFlex().SetDirection(tview.FlexRow)
 	panel.SetBorder(true).SetTitle(title).SetTitleAlign(tview.AlignLeft)
+
+	isScrollable := title == "Activity"
+	textView := tview.NewTextView().SetDynamicColors(true).SetScrollable(isScrollable)
 
 	for _, itemInterface := range items {
 		item, ok := itemInterface.(map[string]interface{})
 		if !ok {
-			fmt.Println("Error: couldn't convert item to a map[string]interface{}")
+			fmt.Fprintln(textView, "Error: couldn't convert item to a map[string]interface{}")
 			continue
 		}
 
 		text := formatterFunc(item)
-		panel.AddItem(tview.NewTextView().SetText(text).SetDynamicColors(true), 1, 0, false)
+		fmt.Fprintln(textView, text)
 	}
 
-	panel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 3, 0, false)
+	panel.AddItem(textView, 0, 1, false)
+	panel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), paddingBottom, 0, false)
 
 	return panel
 }
 
-func displayInfo(dataMaps map[string]map[string]interface{}, dataMapKey string, title string, flagSymbol string, maxNameLength int) *tview.Flex {
+// Get the right keys for display
+func displayInfo(dataMaps map[string]map[string]interface{}, dataMapKey string, title string, flagSymbol string, maxNameLength int, paddingBottom int) *tview.Flex {
 	items, ok := dataMaps[strings.ToUpper(string(dataMapKey[0]))+dataMapKey[1:]][dataMapKey].([]interface{})
 	if !ok {
 		fmt.Println("Error: couldn't convert data")
@@ -98,9 +107,10 @@ func displayInfo(dataMaps map[string]map[string]interface{}, dataMapKey string, 
 		}
 	}
 
-	return displayInfoPanel(title, items, formatterFunc)
+	return displayInfoPanel(title, items, formatterFunc, paddingBottom)
 }
 
+// Initializes and displays user information in tview
 func DisplayInformationsGUI(profile map[string]interface{}, advancedLabsMap map[string]map[string]interface{}) {
 
 	teamName, teamRank := "N/A", "N/A"
@@ -167,10 +177,10 @@ func DisplayInformationsGUI(profile map[string]interface{}, advancedLabsMap map[
 		AddItem(userRankingInformationsFlex, 0, 1, false).
 		AddItem(userMiscInformationsFlex, 0, 1, false)
 
-	fortressesPanel := displayInfo(advancedLabsMap, "fortresses", "Fortresses", "\U0001F3F0", maxFortressNameLength)
-	prolabsPanel := displayInfo(advancedLabsMap, "prolabs", "Pro Labs", "\U0001F47D", maxProlabNameLength)
-	endgamesPanel := displayInfo(advancedLabsMap, "endgames", "Endgames", "\U0001F3AE", maxEndgameNameLength)
-	activityPanel := displayInfo(advancedLabsMap, "activity", "Activity", "", maxActivityNameLength)
+	fortressesPanel := displayInfo(advancedLabsMap, "fortresses", "Fortresses", "\U0001F3F0", maxFortressNameLength, 4)
+	prolabsPanel := displayInfo(advancedLabsMap, "prolabs", "Pro Labs", "\U0001F47D", maxProlabNameLength, 4)
+	endgamesPanel := displayInfo(advancedLabsMap, "endgames", "Endgames", "\U0001F3AE", maxEndgameNameLength, 3)
+	activityPanel := displayInfo(advancedLabsMap, "activity", "Activity", "", maxActivityNameLength, 3)
 
 	advancedLabsFlex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
@@ -179,7 +189,6 @@ func DisplayInformationsGUI(profile map[string]interface{}, advancedLabsMap map[
 		AddItem(prolabsPanel, 0, 1, false).
 		AddItem(endgamesPanel, 0, 1, false)
 
-	// Flex gauche qui contient les flex gauche haute et droite basse
 	leftFlex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(userInformationsContainer, 0, 1, false).
