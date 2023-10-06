@@ -374,3 +374,25 @@ func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte
 	s.Stop()
 	return resp, nil
 }
+
+func GetInformationsFromActiveMachine(proxyParam string) (map[string]interface{}, error) {
+	machineID := GetActiveMachineID(proxyParam)
+
+	if machineID == "" {
+		fmt.Println("No machine is running")
+		return nil, nil
+	}
+	log.Println("Machine ID:", machineID)
+
+	url := "https://www.hackthebox.com/api/v4/machine/profile/" + machineID
+	resp, err := HtbRequest(http.MethodGet, url, proxyParam, nil)
+	if err != nil {
+		return nil, err
+	}
+	info := ParseJsonMessage(resp, "info")
+	log.Println(info)
+
+	data := info.(map[string]interface{})
+
+	return data, nil
+}

@@ -53,6 +53,13 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 	if !ok {
 		return "", fmt.Errorf("unexpected response format")
 	}
+
+	// Get IP address from active machine
+	activeMachineData, err := utils.GetInformationsFromActiveMachine(proxyParam)
+	if err != nil {
+		return "", err
+	}
+	message = fmt.Sprintf("%s\nTarget: %s", message, activeMachineData["ip"])
 	return message, nil
 }
 
