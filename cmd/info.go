@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -16,10 +17,24 @@ var machineParam []string
 var challengeParam []string
 var usernameParam []string
 
+func fetchData(itemID, endpoint, infoKey, proxyParam string) (map[string]interface{}, error) {
+	url := baseAPIURL + endpoint + itemID
+
+	resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	parsedInfo := utils.ParseJsonMessage(resp, infoKey)
+	dataMap, ok := parsedInfo.(map[string]interface{})
+	if !ok {
+		return nil, errors.New("Could not convert parsedInfo to map[string]interface{}")
+	}
+	return dataMap, nil
+}
+
 // fetchAndDisplayInfo fetches and displays information based on the specified parameters.
 func fetchAndDisplayInfo(url, header string, params []string, elementType string) error {
-	// utils.DisplayInformationsGUI()
-	// log.Println("Params :", params)
 	w := utils.SetTabWriterHeader(header)
 
 	// Iteration on all machines / challenges / users argument
@@ -47,41 +62,28 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 		}
 
 		info := utils.ParseJsonMessage(resp, infoKey)
-		// fmt.Println(info)
 		data := info.(map[string]interface{})
 
-		// Fortresses search
-		url = baseAPIURL + "/user/profile/progress/fortress/"
-		respFortresses, err := utils.HtbRequest(http.MethodGet, (url + itemID), proxyParam, nil)
-		if err != nil {
-			return err
+		endpoints := []struct {
+			name string
+			url  string
+		}{
+			{"Fortresses", "/user/profile/progress/fortress/"},
+			{"Endgames", "/user/profile/progress/endgame/"},
+			{"Prolabs", "/user/profile/progress/prolab/"},
+			{"Activity", "/user/profile/activity/"},
 		}
-		infoKey = "profile"
 
-		fortressesInfo := utils.ParseJsonMessage(respFortresses, infoKey)
-		fortressesDataMap := fortressesInfo.(map[string]interface{})
+		dataMaps := make(map[string]map[string]interface{})
 
-		// Endgames search
-		url = baseAPIURL + "/user/profile/progress/endgame/"
-		respEndgames, err := utils.HtbRequest(http.MethodGet, (url + itemID), proxyParam, nil)
-		if err != nil {
-			return err
+		for _, ep := range endpoints {
+			data, err := fetchData(itemID, ep.url, "profile", proxyParam)
+			if err != nil {
+				fmt.Printf("Error fetching data for %s: %v\n", ep.name, err)
+				continue
+			}
+			dataMaps[ep.name] = data
 		}
-		infoKey = "profile"
-
-		endgamesInfo := utils.ParseJsonMessage(respEndgames, infoKey)
-		endgamesDataMap := endgamesInfo.(map[string]interface{})
-
-		// Prolabs search
-		url = baseAPIURL + "/user/profile/progress/prolab/"
-		respProlabs, err := utils.HtbRequest(http.MethodGet, (url + itemID), proxyParam, nil)
-		if err != nil {
-			return err
-		}
-		infoKey = "profile"
-
-		prolabsInfo := utils.ParseJsonMessage(respProlabs, infoKey)
-		prolabsDataMap := prolabsInfo.(map[string]interface{})
 
 		var bodyData string
 		if elementType == "Machine" {
@@ -104,7 +106,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 			}
 			bodyData = fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["category_name"], retiredStatus, data["difficulty"], data["stars"], data["solves"], status, datetime)
 		} else if elementType == "Username" {
-			utils.DisplayInformationsGUI(data, fortressesDataMap, endgamesDataMap, prolabsDataMap)
+			utils.DisplayInformationsGUI(data, dataMaps)
 			os.Exit(0)
 		}
 
