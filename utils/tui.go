@@ -69,7 +69,6 @@ func displayInfoPanel(title string, items []interface{}, formatterFunc func(map[
 	}
 
 	panel.AddItem(textView, 0, 1, false)
-	panel.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), paddingBottom, 0, false)
 
 	return panel
 }
@@ -148,7 +147,6 @@ func DisplayInformationsGUI(profile map[string]interface{}, advancedLabsMap map[
 	userInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Country      : %v[-]", profile["country_name"])).SetDynamicColors(true), 1, 0, false)
 	userInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Subscription : %v[-]", subscription)).SetDynamicColors(true), 1, 0, false)
 	userInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Respects     : %v[-]", profile["respects"])).SetDynamicColors(true), 1, 0, false)
-	userInformationsFlex.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 3, 0, false)
 
 	userRankingInformationsFlex := tview.NewFlex().SetDirection(tview.FlexRow)
 	userRankingInformationsFlex.SetBorder(true).SetTitle("Ranking Informations").SetTitleAlign(tview.AlignLeft)
@@ -158,7 +156,6 @@ func DisplayInformationsGUI(profile map[string]interface{}, advancedLabsMap map[
 	userRankingInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Points     : %v[-]\U0001F396", profile["points"])).SetDynamicColors(true), 1, 0, false)
 	userRankingInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Rank       : %v[-]", profile["rank"])).SetDynamicColors(true), 1, 0, false)
 	userRankingInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Ownership  : %v%% / %v%%[-]", profile["rank_ownership"], rankRequirement)).SetDynamicColors(true), 1, 0, false)
-	userRankingInformationsFlex.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 4, 0, false)
 
 	userMiscInformationsFlex := tview.NewFlex().SetDirection(tview.FlexRow)
 	userMiscInformationsFlex.SetBorder(true).SetTitle("Misc").SetTitleAlign(tview.AlignLeft)
@@ -168,7 +165,6 @@ func DisplayInformationsGUI(profile map[string]interface{}, advancedLabsMap map[
 	userMiscInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]System Owns   : %v[-]", profile["system_owns"])).SetDynamicColors(true), 1, 0, false)
 	userMiscInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Last User     : N/A[-]")).SetDynamicColors(true), 1, 0, false)
 	userMiscInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Last System   : N/A[-]")).SetDynamicColors(true), 1, 0, false)
-	userMiscInformationsFlex.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 4, 0, false)
 
 	userInformationsContainer := tview.NewFlex().
 		SetDirection(tview.FlexRow).
