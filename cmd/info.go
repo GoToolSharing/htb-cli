@@ -20,6 +20,7 @@ var usernameParam []string
 // Retrieves data for user profile
 func fetchData(itemID, endpoint, infoKey, proxyParam string) (map[string]interface{}, error) {
 	url := baseAPIURL + endpoint + itemID
+	log.Println("URL :", url)
 
 	resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
 	if err != nil {
@@ -61,6 +62,9 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 		} else {
 			return fmt.Errorf("infoKey not defined")
 		}
+
+		log.Println("URL :", url)
+		log.Println("InfoKey :", infoKey)
 
 		info := utils.ParseJsonMessage(resp, infoKey)
 		data := info.(map[string]interface{})
@@ -108,7 +112,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 			bodyData = fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n", data["name"], data["category_name"], retiredStatus, data["difficulty"], data["stars"], data["solves"], status, datetime)
 		} else if elementType == "Username" {
 			utils.DisplayInformationsGUI(data, dataMaps)
-			os.Exit(0)
+			return nil
 		}
 
 		utils.SetTabWriterData(w, bodyData)
@@ -138,18 +142,27 @@ func coreInfoCmd() error {
 
 	// No arguments provided
 	if len(machineParam) == 0 && len(usernameParam) == 0 && len(challengeParam) == 0 {
-		isConfirmed := utils.AskConfirmation("Do you want to check for active "+strings.ToLower("machine")+"?", batchParam)
+		isConfirmed := utils.AskConfirmation("Do you want to check for active machine ?", batchParam)
 		if isConfirmed {
 			err := displayActiveMachine(machineHeader)
 			if err != nil {
 				log.Fatal(err)
 			}
 		}
-		// TODO: Get current account
-		// err := fetchAndDisplayInfo(baseAPIURL+"/user/profile/basic/", usernameHeader, []string{"qu35t3190"}, "Username")
-		// if err != nil {
-		// 	return err
-		// }
+		// Get current account
+		resp, err := utils.HtbRequest(http.MethodGet, baseAPIURL+"/user/info", proxyParam, nil)
+		if err != nil {
+			return err
+		}
+		info := utils.ParseJsonMessage(resp, "info")
+		infoMap, _ := info.(map[string]interface{})
+		newInfo := infoType{
+			APIURL: baseAPIURL + "/user/profile/basic/",
+			Header: "",
+			Params: []string{infoMap["name"].(string)},
+			Name:   "Username",
+		}
+		infos = append(infos, newInfo)
 	}
 
 	for _, info := range infos {
