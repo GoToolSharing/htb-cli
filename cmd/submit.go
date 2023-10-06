@@ -1,11 +1,11 @@
 package cmd
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/GoToolSharing/htb-cli/utils"
@@ -17,56 +17,97 @@ var machineNameParam string
 var challengeNameParam string
 var flagParam string
 
+// coreSubmitCmd handles the submission of flags for machines or challenges, returning a status message or error.
+func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNameParam string, flagParam string, proxyParam string) (string, error) {
+	if difficultyParam < 1 || difficultyParam > 10 {
+		return "", errors.New("difficulty must be set between 1 and 10")
+	}
+
+	// Common payload elements
+	difficultyString := strconv.Itoa(difficultyParam * 10)
+	payload := map[string]string{
+		"flag":       flagParam,
+		"difficulty": difficultyString,
+	}
+
+	url := ""
+
+	if challengeNameParam != "" {
+		log.Println("Challenge submit requested!")
+		challengeID, err := utils.SearchItemIDByName(challengeNameParam, proxyParam, "Challenge", batchParam)
+		if err != nil {
+			return "", err
+		}
+		url = baseAPIURL + "/challenge/own"
+		payload["challenge_id"] = challengeID
+	} else if machineNameParam != "" {
+		log.Println("Machine submit requested!")
+		machineID, err := utils.SearchItemIDByName(machineNameParam, proxyParam, "Machine", batchParam)
+		if err != nil {
+			return "", err
+		}
+		machineType := utils.GetMachineType(machineID, proxyParam)
+		log.Printf("Machine Type: %s", machineType)
+
+		if machineType == "release" {
+			url = baseAPIURL + "/arena/own"
+		} else {
+			url = baseAPIURL + "/machine/own"
+
+		}
+		payload["id"] = machineID
+	} else if machineNameParam == "" && challengeNameParam == "" {
+		machineID := utils.GetActiveMachineID(proxyParam)
+		if machineID == "" {
+			return "No machine is running", nil
+		}
+		machineType := utils.GetMachineType(machineID, proxyParam)
+		log.Printf("Machine Type: %s", machineType)
+
+		if machineType == "release" {
+			url = baseAPIURL + "/arena/own"
+		} else {
+			url = baseAPIURL + "/machine/own"
+
+		}
+		payload["id"] = machineID
+	}
+
+	log.Println("Flag :", flagParam)
+	log.Println("Difficulty :", difficultyString)
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return "", fmt.Errorf("failed to create JSON data: %w", err)
+	}
+
+	resp, err := utils.HtbRequest(http.MethodPost, url, proxyParam, jsonData)
+	if err != nil {
+		return "", err
+	}
+
+	message, ok := utils.ParseJsonMessage(resp, "message").(string)
+	if !ok {
+		return "", errors.New("unexpected response format")
+	}
+	return message, nil
+}
+
+// submitCmd defines the "submit" command for submitting flags for machines or challenges.
 var submitCmd = &cobra.Command{
 	Use:   "submit",
-	Short: "Submit credentials (User and Root Flags)",
-	Long:  "This command allows for the submission of user and root flags discovered on vulnerable machines.",
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		if verbose {
-			log.SetOutput(os.Stdout)
-		} else {
-			log.SetOutput(io.Discard)
-		}
-		if machineNameParam == "" && challengeNameParam == "" {
-			return fmt.Errorf("either -f or -c is required")
-		}
-		return nil
-	},
+	Short: "Submit credentials (machines / challenges / arena)",
+	Long:  "This command allows for the submission of user and root flags discovered on vulnerable machines / challenges",
 	Run: func(cmd *cobra.Command, args []string) {
-		if difficultyParam < 1 || difficultyParam > 10 {
-			fmt.Println("Difficulty must set between 1 and 10")
-			os.Exit(1)
-		}
-
-		url := ""
-		var jsonData = []byte("")
-		difficultyString := strconv.Itoa(difficultyParam * 10)
-		if machineNameParam != "" {
-			log.Println("Machine submit requested !")
-			machine_id := utils.SearchItemIDByName(machineNameParam, proxyParam, "Machine")
-			// TODO: Add current machine ID
-			// machine_id := utils.GetActiveMachineID(proxyParam)
-			// log.Println("Machine ID :", machine_id)
-			url = "https://www.hackthebox.com/api/v4/machine/own"
-			jsonData = []byte(`{"flag": "` + flagParam + `", "id": ` + machine_id + `, "difficulty": ` + difficultyString + `}`)
-		} else if challengeNameParam != "" {
-			log.Println("Challenge submit requested !")
-			challenge_id := utils.SearchItemIDByName(challengeNameParam, proxyParam, "Challenge")
-			url = "https://www.hackthebox.com/api/v4/challenge/own"
-			jsonData = []byte(`{"flag": "` + flagParam + `", "challenge_id": ` + challenge_id + `, "difficulty": ` + difficultyString + `}`)
-		}
-
-		log.Println("Flag :", flagParam)
-		log.Println("Difficulty :", difficultyString)
-		resp, err := utils.HtbRequest(http.MethodPost, url, proxyParam, jsonData)
+		output, err := coreSubmitCmd(difficultyParam, machineNameParam, challengeNameParam, flagParam, proxyParam)
 		if err != nil {
 			log.Fatal(err)
 		}
-		message := utils.ParseJsonMessage(resp, "message")
-		fmt.Println(message)
+		fmt.Println(output)
 	},
 }
 
+// init adds the submitCmd to rootCmd and sets flags for the "submit" command.
 func init() {
 	rootCmd.AddCommand(submitCmd)
 	submitCmd.Flags().StringVarP(&machineNameParam, "machine_name", "m", "", "Machine Name")

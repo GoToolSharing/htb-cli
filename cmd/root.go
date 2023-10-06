@@ -10,6 +10,9 @@ import (
 
 var verbose bool
 var proxyParam string
+var batchParam bool
+
+const baseAPIURL = "https://www.hackthebox.com/api/v4"
 
 var rootCmd = &cobra.Command{
 	Use:   "htb-cli",
@@ -35,4 +38,5 @@ func init() {
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose mode")
 	rootCmd.PersistentFlags().StringVarP(&proxyParam, "proxy", "p", "", "Configure a URL for an HTTP proxy")
+	rootCmd.PersistentFlags().BoolVarP(&batchParam, "batch", "b", false, "Don't ask questions")
 }
