@@ -62,8 +62,8 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 	}
 
 	ip := "Undefined"
-	switch userSubscription {
-	case "vip+":
+	switch {
+	case userSubscription == "vip+" || machineType == "release":
 		s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 		setupSignalHandler(s)
 		s.Suffix = " Waiting for the machine to start in order to fetch the IP address (this might take a while)."
