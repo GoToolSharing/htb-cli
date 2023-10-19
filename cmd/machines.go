@@ -86,7 +86,6 @@ func createFlex(info interface{}, title string, isScheduled bool) (*tview.Flex, 
 			formattedDate := parsedDate.Format("02 January 2006")
 
 			userEmoji := CrossMark + "User"
-			log.Println(data)
 			if value, ok := data["authUserInUserOwns"]; ok && value != nil {
 				if value.(bool) {
 					userEmoji = CheckMark + "User"
@@ -96,7 +95,7 @@ func createFlex(info interface{}, title string, isScheduled bool) (*tview.Flex, 
 			rootEmoji := CrossMark + "Root"
 			if value, ok := data["authUserInRootOwns"]; ok && value != nil {
 				if value.(bool) {
-					userEmoji = CheckMark + "Root"
+					rootEmoji = CheckMark + "Root"
 				}
 			}
 

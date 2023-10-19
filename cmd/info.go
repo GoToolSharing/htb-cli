@@ -220,7 +220,6 @@ func displayActiveMachine(header string) error {
 			return err
 		}
 		info := utils.ParseJsonMessage(resp, "info")
-		log.Println(info)
 
 		data := info.(map[string]interface{})
 		status := utils.SetStatus(data)
