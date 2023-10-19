@@ -396,7 +396,6 @@ func GetInformationsFromActiveMachine(proxyParam string) (map[string]interface{}
 		return nil, err
 	}
 	info := ParseJsonMessage(resp, "info")
-	log.Println(info)
 
 	data := info.(map[string]interface{})
 
