@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/GoToolSharing/htb-cli/utils"
+	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
 )
 
@@ -63,17 +64,23 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 	ip := "Undefined"
 	switch userSubscription {
 	case "vip+":
-		fmt.Println("Waiting for the machine to start in order to fetch the IP address (this might take a while).")
+		s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
+		setupSignalHandler(s)
+		s.Suffix = " Waiting for the machine to start in order to fetch the IP address (this might take a while)."
+		s.Start()
+		defer s.Stop()
 		timeout := time.After(10 * time.Minute)
 	Loop:
 		for {
 			select {
 			case <-timeout:
 				fmt.Println("Timeout (10 min) ! Exiting")
+				s.Stop()
 				return "", nil
 			default:
 				ip = utils.GetActiveMachineIP(proxyParam)
 				if ip != "" {
+					s.Stop()
 					break Loop
 				}
 				time.Sleep(3 * time.Second)
