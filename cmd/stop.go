@@ -25,9 +25,7 @@ func buildMachineStopRequest(machineType, userSubscription, machineID, proxyPara
 	}
 
 	switch userSubscription {
-	case "vip":
-		apiEndpoint = vipAPI
-	case "vip+":
+	case "vip", "vip+":
 		apiEndpoint = vipAPI
 	default:
 		apiEndpoint = defaultAPI

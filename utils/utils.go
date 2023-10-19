@@ -321,8 +321,8 @@ func GetActiveMachineIP(proxyURL string) string {
 		return ""
 	}
 	log.Println("Active infos :", info)
-	if info.(map[string]interface{})["ip"] != nil {
-		return info.(map[string]interface{})["ip"].(string)
+	if ipValue, ok := info.(map[string]interface{})["ip"].(string); ok {
+		return ipValue
 	}
 	return ""
 }
