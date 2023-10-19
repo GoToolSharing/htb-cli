@@ -86,6 +86,8 @@ func displayInfo(dataMaps map[string]map[string]interface{}, dataMapKey string, 
 		formatterFunc = func(item map[string]interface{}) string {
 			var object_type interface{}
 			switch item["object_type"].(string) {
+			case "fortress":
+				object_type = item["flag_title"]
 			case "challenge":
 				object_type = item["challenge_category"]
 			case "machine":
@@ -95,7 +97,7 @@ func displayInfo(dataMaps map[string]map[string]interface{}, dataMapKey string, 
 				case "user":
 					object_type = "User"
 				default:
-					object_type = item["type"]
+					object_type = item["type"].(string)
 				}
 			}
 			return fmt.Sprintf("[::b]Owned %v - %s %s - %s - [green]+[%vpts][-]", object_type, item["name"], item["object_type"], item["date_diff"], item["points"])
