@@ -320,6 +320,7 @@ func GetActiveMachineIP(proxyURL string) string {
 	if info == nil {
 		return ""
 	}
+	log.Println(info)
 	return info.(map[string]interface{})["ip"].(string)
 }
 
