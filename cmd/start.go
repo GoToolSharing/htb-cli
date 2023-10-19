@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/GoToolSharing/htb-cli/utils"
 	"github.com/spf13/cobra"
@@ -62,6 +63,8 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 	ip := "Undefined"
 	switch userSubscription {
 	case "vip+":
+		fmt.Println("Waiting for machine start to retrieve IP address (10s)")
+		time.Sleep(10 * time.Second)
 		ip = utils.GetActiveMachineIP(proxyParam)
 	default:
 		// Get IP address from active machine
