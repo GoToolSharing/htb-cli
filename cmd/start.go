@@ -59,12 +59,20 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 		return message, nil
 	}
 
-	// Get IP address from active machine
-	activeMachineData, err := utils.GetInformationsFromActiveMachine(proxyParam)
-	if err != nil {
-		return "", err
+	ip := "Undefined"
+	switch userSubscription {
+	case "vip+":
+		ip = utils.GetActiveMachineIP(proxyParam)
+	default:
+		// Get IP address from active machine
+		activeMachineData, err := utils.GetInformationsFromActiveMachine(proxyParam)
+		if err != nil {
+			return "", err
+		}
+		ip = activeMachineData["ip"].(string)
 	}
-	message = fmt.Sprintf("%s\nTarget: %s", message, activeMachineData["ip"])
+
+	message = fmt.Sprintf("%s\nTarget: %s", message, ip)
 	return message, nil
 }
 

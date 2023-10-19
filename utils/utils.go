@@ -309,6 +309,20 @@ func GetActiveMachineID(proxyURL string) string {
 	return fmt.Sprintf("%.0f", info.(map[string]interface{})["id"].(float64))
 }
 
+// GetActiveMachineIP returns the ip of the active machine
+func GetActiveMachineIP(proxyURL string) string {
+	url := "https://www.hackthebox.com/api/v4/machine/active"
+	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	info := ParseJsonMessage(resp, "info")
+	if info == nil {
+		return ""
+	}
+	return info.(map[string]interface{})["ip"].(string)
+}
+
 // HtbRequest makes an HTTP request to the Hackthebox API
 func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte) (*http.Response, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
