@@ -33,7 +33,7 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 	case machineType == "release":
 		url = baseAPIURL + "/arena/start"
 		jsonData = []byte("{}")
-	case userSubscription == "vip":
+	case userSubscription == "vip" || userSubscription == "vip+":
 		url = baseAPIURL + "/vm/spawn"
 		jsonData, err = json.Marshal(map[string]string{"machine_id": machineID})
 		if err != nil {
