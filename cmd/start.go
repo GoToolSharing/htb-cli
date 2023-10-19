@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/GoToolSharing/htb-cli/utils"
 	"github.com/spf13/cobra"
@@ -52,6 +53,10 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 	message, ok := utils.ParseJsonMessage(resp, "message").(string)
 	if !ok {
 		return "", fmt.Errorf("unexpected response format")
+	}
+
+	if strings.Contains(message, "You must stop") {
+		return message, nil
 	}
 
 	// Get IP address from active machine
