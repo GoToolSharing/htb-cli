@@ -1,6 +1,4 @@
 # htb-cli
-![Coverage](https://img.shields.io/badge/Coverage-12.0%25-red)
-
 ![Workflows (main)](https://github.com/GoToolSharing/htb-cli/actions/workflows/go.yml/badge.svg?branch=main)
 ![Workflows (dev)](https://github.com/GoToolSharing/htb-cli/actions/workflows/go.yml/badge.svg?branch=dev)
 ![GitHub go.mod Go version (main)](https://img.shields.io/github/go-mod/go-version/GoToolSharing/htb-cli/main)
