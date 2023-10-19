@@ -320,8 +320,11 @@ func GetActiveMachineIP(proxyURL string) string {
 	if info == nil {
 		return ""
 	}
-	log.Println(info)
-	return info.(map[string]interface{})["ip"].(string)
+	log.Println("Active infos :", info)
+	if info.(map[string]interface{})["ip"] != nil {
+		return info.(map[string]interface{})["ip"].(string)
+	}
+	return ""
 }
 
 // HtbRequest makes an HTTP request to the Hackthebox API

@@ -63,9 +63,22 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 	ip := "Undefined"
 	switch userSubscription {
 	case "vip+":
-		fmt.Println("Waiting for machine start to retrieve IP address (10s)")
-		time.Sleep(10 * time.Second)
-		ip = utils.GetActiveMachineIP(proxyParam)
+		fmt.Println("Waiting for the machine to start in order to fetch the IP address (this might take a while).")
+		timeout := time.After(10 * time.Minute)
+	Loop:
+		for {
+			select {
+			case <-timeout:
+				fmt.Println("Timeout (10 min) ! Exiting")
+				return "", nil
+			default:
+				ip = utils.GetActiveMachineIP(proxyParam)
+				if ip != "" {
+					break Loop
+				}
+				time.Sleep(3 * time.Second)
+			}
+		}
 	default:
 		// Get IP address from active machine
 		activeMachineData, err := utils.GetInformationsFromActiveMachine(proxyParam)
