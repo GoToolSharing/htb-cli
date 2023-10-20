@@ -79,7 +79,7 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 				return "", nil
 			default:
 				ip = utils.GetActiveMachineIP(proxyParam)
-				if ip != "" {
+				if ip != "Undefined" {
 					s.Stop()
 					break Loop
 				}

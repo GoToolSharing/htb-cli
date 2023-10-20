@@ -230,7 +230,20 @@ func displayActiveMachine(header string) error {
 			return err
 		}
 
-		ip := getIPStatus(data)
+		machineType := utils.GetMachineType(machineID, proxyParam)
+		log.Printf("Machine Type: %s", machineType)
+
+		userSubscription := utils.GetUserSubscription(proxyParam)
+		log.Printf("User subscription: %s", userSubscription)
+
+		ip := "Undefined"
+
+		switch {
+		case userSubscription == "vip+" || machineType == "release":
+			ip = utils.GetActiveMachineIP(proxyParam)
+		default:
+			ip = getIPStatus(data).(string)
+		}
 
 		bodyData := fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n",
 			data["name"], data["os"], retiredStatus,

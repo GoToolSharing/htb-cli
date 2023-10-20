@@ -41,15 +41,6 @@ type Root struct {
 	Usernames  interface{} `json:"users"`
 }
 
-// Function that removes the output from the console for unit tests.
-// TODO: Move into a utils-tests.go file
-func SetOutputTest() (*os.File, *os.File) {
-	log.SetOutput(io.Discard)
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-	return r, w
-}
-
 // SetTabWriterHeader will display the information in an array
 func SetTabWriterHeader(header string) *tabwriter.Writer {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
@@ -324,7 +315,7 @@ func GetActiveMachineIP(proxyURL string) string {
 	if ipValue, ok := info.(map[string]interface{})["ip"].(string); ok {
 		return ipValue
 	}
-	return ""
+	return "Undefined"
 }
 
 // HtbRequest makes an HTTP request to the Hackthebox API
