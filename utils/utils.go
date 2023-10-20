@@ -30,18 +30,15 @@ type Challenge struct {
 	Value string `json:"value"`
 }
 
+type Username struct {
+	ID    string `json:"id"`
+	Value string `json:"value"`
+}
+
 type Root struct {
 	Machines   interface{} `json:"machines"`
 	Challenges interface{} `json:"challenges"`
-}
-
-// Function that removes the output from the console for unit tests.
-// TODO: Move into a utils-tests.go file
-func SetOutputTest() (*os.File, *os.File) {
-	log.SetOutput(io.Discard)
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-	return r, w
+	Usernames  interface{} `json:"users"`
 }
 
 // SetTabWriterHeader will display the information in an array
@@ -57,15 +54,18 @@ func SetTabWriterData(w *tabwriter.Writer, data string) {
 }
 
 // AskConfirmation will request confirmation from the user
-func AskConfirmation(message string) bool {
-	var confirmation bool
-	prompt := &survey.Confirm{
-		Message: message,
+func AskConfirmation(message string, batchParam bool) bool {
+	if !batchParam {
+		var confirmation bool
+		prompt := &survey.Confirm{
+			Message: message,
+		}
+		if err := survey.AskOne(prompt, &confirmation); err != nil {
+			return false
+		}
+		return confirmation
 	}
-	if err := survey.AskOne(prompt, &confirmation); err != nil {
-		return false
-	}
-	return confirmation
+	return true
 }
 
 // GetHTBToken checks whether the HTB_TOKEN environment variable exists
@@ -78,8 +78,8 @@ func GetHTBToken() string {
 	return os.Getenv("HTB_TOKEN")
 }
 
-// SearchItemIDByName will return the id of an item (machine / challenge) based on its name
-func SearchItemIDByName(item string, proxyURL string, element_type string) (string, error) {
+// SearchItemIDByName will return the id of an item (machine / challenge / user) based on its name
+func SearchItemIDByName(item string, proxyURL string, element_type string, batchParam bool) (string, error) {
 	url := "https://www.hackthebox.com/api/v4/search/fetch?query=" + item
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
@@ -109,18 +109,11 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) (stri
 				fmt.Println("error:", err)
 			}
 			log.Println("Machine found :", machines[0].Value)
-			var confirmation bool
-			confirmation_message := "The following machine was found : " + machines[0].Value
-			prompt := &survey.Confirm{
-				Message: confirmation_message,
+			isConfirmed := AskConfirmation("The following machine was found : "+machines[0].Value, batchParam)
+			if isConfirmed {
+				return machines[0].ID, nil
 			}
-			if err := survey.AskOne(prompt, &confirmation); err != nil {
-				log.Fatal(err)
-			}
-			if !confirmation {
-				log.Fatal("Canceled")
-			}
-			return machines[0].ID, nil
+			os.Exit(0)
 		case map[string]interface{}:
 			// Checking if machines array is empty
 			if len(root.Machines.(map[string]interface{})) == 0 {
@@ -134,18 +127,11 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) (stri
 				fmt.Println("error:", err)
 			}
 			log.Println("Machine found :", machines["0"].Value)
-			var confirmation bool
-			confirmation_message := "The following machine was found : " + machines["0"].Value
-			prompt := &survey.Confirm{
-				Message: confirmation_message,
+			isConfirmed := AskConfirmation("The following machine was found : "+machines["0"].Value, batchParam)
+			if isConfirmed {
+				return machines["0"].ID, nil
 			}
-			if err := survey.AskOne(prompt, &confirmation); err != nil {
-				log.Fatal(err)
-			}
-			if !confirmation {
-				log.Fatal("Canceled")
-			}
-			return machines["0"].ID, nil
+			os.Exit(0)
 		default:
 			return "", fmt.Errorf("No machine was found")
 		}
@@ -164,18 +150,11 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) (stri
 				fmt.Println("error:", err)
 			}
 			log.Println("Challenge found :", challenges[0].Value)
-			var confirmation bool
-			confirmation_message := "The following challenge was found : " + challenges[0].Value
-			prompt := &survey.Confirm{
-				Message: confirmation_message,
+			isConfirmed := AskConfirmation("The following challenge was found : "+challenges[0].Value, batchParam)
+			if isConfirmed {
+				return challenges[0].ID, nil
 			}
-			if err := survey.AskOne(prompt, &confirmation); err != nil {
-				log.Fatal(err)
-			}
-			if !confirmation {
-				log.Fatal("Canceled")
-			}
-			return challenges[0].ID, nil
+			os.Exit(0)
 		case map[string]interface{}:
 			// Checking if challenges array is empty
 			if len(root.Challenges.(map[string]interface{})) == 0 {
@@ -189,20 +168,54 @@ func SearchItemIDByName(item string, proxyURL string, element_type string) (stri
 				fmt.Println("error:", err)
 			}
 			log.Println("Challenge found :", challenges["0"].Value)
-			var confirmation bool
-			confirmation_message := "The following challenge was found : " + challenges["0"].Value
-			prompt := &survey.Confirm{
-				Message: confirmation_message,
+			isConfirmed := AskConfirmation("The following challenge was found : "+challenges["0"].Value, batchParam)
+			if isConfirmed {
+				return challenges["0"].ID, nil
 			}
-			if err := survey.AskOne(prompt, &confirmation); err != nil {
-				log.Fatal(err)
-			}
-			if !confirmation {
-				log.Fatal("Canceled")
-			}
-			return challenges["0"].ID, nil
+			os.Exit(0)
 		default:
 			log.Fatal("No challenge found")
+		}
+	} else if element_type == "Username" {
+		switch root.Usernames.(type) {
+		case []interface{}:
+			// Checking if usernames array is empty
+			if len(root.Usernames.([]interface{})) == 0 {
+				fmt.Println("No username was found")
+				return "", fmt.Errorf("error: No username was found")
+			}
+			var usernames []Username
+			usernameData, _ := json.Marshal(root.Usernames)
+			err := json.Unmarshal(usernameData, &usernames)
+			if err != nil {
+				fmt.Println("error:", err)
+			}
+			log.Println("Username found :", usernames[0].Value)
+			isConfirmed := AskConfirmation("The following username was found : "+usernames[0].Value, batchParam)
+			if isConfirmed {
+				return usernames[0].ID, nil
+			}
+			os.Exit(0)
+		case map[string]interface{}:
+			// Checking if usernames array is empty
+			if len(root.Usernames.(map[string]interface{})) == 0 {
+				fmt.Println("No username was found")
+				return "", fmt.Errorf("error: No username was found")
+			}
+			var usernames map[string]Username
+			usernameData, _ := json.Marshal(root.Usernames)
+			err := json.Unmarshal(usernameData, &usernames)
+			if err != nil {
+				fmt.Println("error:", err)
+			}
+			log.Println("Username found :", usernames["0"].Value)
+			isConfirmed := AskConfirmation("The following username was found : "+usernames["0"].Value, batchParam)
+			if isConfirmed {
+				return usernames["0"].ID, nil
+			}
+			os.Exit(0)
+		default:
+			log.Fatal("No username found")
 		}
 	} else {
 		log.Fatal("Bad element_type")
@@ -287,6 +300,24 @@ func GetActiveMachineID(proxyURL string) string {
 	return fmt.Sprintf("%.0f", info.(map[string]interface{})["id"].(float64))
 }
 
+// GetActiveMachineIP returns the ip of the active machine
+func GetActiveMachineIP(proxyURL string) string {
+	url := "https://www.hackthebox.com/api/v4/machine/active"
+	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	info := ParseJsonMessage(resp, "info")
+	if info == nil {
+		return ""
+	}
+	log.Println("Active infos :", info)
+	if ipValue, ok := info.(map[string]interface{})["ip"].(string); ok {
+		return ipValue
+	}
+	return "Undefined"
+}
+
 // HtbRequest makes an HTTP request to the Hackthebox API
 func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte) (*http.Response, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
@@ -357,4 +388,25 @@ func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte
 	}
 	s.Stop()
 	return resp, nil
+}
+
+func GetInformationsFromActiveMachine(proxyParam string) (map[string]interface{}, error) {
+	machineID := GetActiveMachineID(proxyParam)
+
+	if machineID == "" {
+		fmt.Println("No machine is running")
+		return nil, nil
+	}
+	log.Println("Machine ID:", machineID)
+
+	url := "https://www.hackthebox.com/api/v4/machine/profile/" + machineID
+	resp, err := HtbRequest(http.MethodGet, url, proxyParam, nil)
+	if err != nil {
+		return nil, err
+	}
+	info := ParseJsonMessage(resp, "info")
+
+	data := info.(map[string]interface{})
+
+	return data, nil
 }

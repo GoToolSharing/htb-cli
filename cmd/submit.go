@@ -19,9 +19,6 @@ var flagParam string
 
 // coreSubmitCmd handles the submission of flags for machines or challenges, returning a status message or error.
 func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNameParam string, flagParam string, proxyParam string) (string, error) {
-	if machineNameParam == "" && challengeNameParam == "" {
-		return "", errors.New("either machine_name (-m) or challenge_name (-c) must be provided")
-	}
 	if difficultyParam < 1 || difficultyParam > 10 {
 		return "", errors.New("difficulty must be set between 1 and 10")
 	}
@@ -29,30 +26,51 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 	// Common payload elements
 	difficultyString := strconv.Itoa(difficultyParam * 10)
 	payload := map[string]string{
-		"flag":      flagParam,
+		"flag":       flagParam,
 		"difficulty": difficultyString,
 	}
 
 	url := ""
 
-	// Determine the API endpoint and payload based on input parameters.
-	switch {
-	case machineNameParam != "":
-		log.Println("Machine submit requested!")
-		machineID, err := utils.SearchItemIDByName(machineNameParam, proxyParam, "Machine")
-		if err != nil {
-			return "", err
-		}
-		url = baseAPIURL + "/machine/own"
-		payload["id"] = machineID
-	case challengeNameParam != "":
+	if challengeNameParam != "" {
 		log.Println("Challenge submit requested!")
-		challengeID, err := utils.SearchItemIDByName(challengeNameParam, proxyParam, "Challenge")
+		challengeID, err := utils.SearchItemIDByName(challengeNameParam, proxyParam, "Challenge", batchParam)
 		if err != nil {
 			return "", err
 		}
 		url = baseAPIURL + "/challenge/own"
 		payload["challenge_id"] = challengeID
+	} else if machineNameParam != "" {
+		log.Println("Machine submit requested!")
+		machineID, err := utils.SearchItemIDByName(machineNameParam, proxyParam, "Machine", batchParam)
+		if err != nil {
+			return "", err
+		}
+		machineType := utils.GetMachineType(machineID, proxyParam)
+		log.Printf("Machine Type: %s", machineType)
+
+		if machineType == "release" {
+			url = baseAPIURL + "/arena/own"
+		} else {
+			url = baseAPIURL + "/machine/own"
+
+		}
+		payload["id"] = machineID
+	} else if machineNameParam == "" && challengeNameParam == "" {
+		machineID := utils.GetActiveMachineID(proxyParam)
+		if machineID == "" {
+			return "No machine is running", nil
+		}
+		machineType := utils.GetMachineType(machineID, proxyParam)
+		log.Printf("Machine Type: %s", machineType)
+
+		if machineType == "release" {
+			url = baseAPIURL + "/arena/own"
+		} else {
+			url = baseAPIURL + "/machine/own"
+
+		}
+		payload["id"] = machineID
 	}
 
 	log.Println("Flag :", flagParam)
@@ -78,7 +96,7 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 // submitCmd defines the "submit" command for submitting flags for machines or challenges.
 var submitCmd = &cobra.Command{
 	Use:   "submit",
-	Short: "Submit credentials (machines & challenges)",
+	Short: "Submit credentials (machines / challenges / arena)",
 	Long:  "This command allows for the submission of user and root flags discovered on vulnerable machines / challenges",
 	Run: func(cmd *cobra.Command, args []string) {
 		output, err := coreSubmitCmd(difficultyParam, machineNameParam, challengeNameParam, flagParam, proxyParam)

@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/GoToolSharing/htb-cli/utils"
+	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +17,7 @@ var machineChoosen string
 
 // coreStartCmd starts a specified machine and returns a status message and any error encountered.
 func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
-	machineID, err := utils.SearchItemIDByName(machineChoosen, proxyParam, "Machine")
+	machineID, err := utils.SearchItemIDByName(machineChoosen, proxyParam, "Machine", batchParam)
 	if err != nil {
 		return "", err
 	}
@@ -33,7 +36,7 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 	case machineType == "release":
 		url = baseAPIURL + "/arena/start"
 		jsonData = []byte("{}")
-	case userSubscription == "vip":
+	case userSubscription == "vip" || userSubscription == "vip+":
 		url = baseAPIURL + "/vm/spawn"
 		jsonData, err = json.Marshal(map[string]string{"machine_id": machineID})
 		if err != nil {
@@ -53,6 +56,46 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 	if !ok {
 		return "", fmt.Errorf("unexpected response format")
 	}
+
+	if strings.Contains(message, "You must stop") {
+		return message, nil
+	}
+
+	ip := "Undefined"
+	switch {
+	case userSubscription == "vip+" || machineType == "release":
+		s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
+		setupSignalHandler(s)
+		s.Suffix = " Waiting for the machine to start in order to fetch the IP address (this might take a while)."
+		s.Start()
+		defer s.Stop()
+		timeout := time.After(10 * time.Minute)
+	Loop:
+		for {
+			select {
+			case <-timeout:
+				fmt.Println("Timeout (10 min) ! Exiting")
+				s.Stop()
+				return "", nil
+			default:
+				ip = utils.GetActiveMachineIP(proxyParam)
+				if ip != "Undefined" {
+					s.Stop()
+					break Loop
+				}
+				time.Sleep(6 * time.Second)
+			}
+		}
+	default:
+		// Get IP address from active machine
+		activeMachineData, err := utils.GetInformationsFromActiveMachine(proxyParam)
+		if err != nil {
+			return "", err
+		}
+		ip = activeMachineData["ip"].(string)
+	}
+
+	message = fmt.Sprintf("%s\nTarget: %s", message, ip)
 	return message, nil
 }
 
