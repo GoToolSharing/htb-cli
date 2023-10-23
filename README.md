@@ -24,6 +24,18 @@
 
 `go install github.com/GoToolSharing/htb-cli@latest`
 
+## Completion
+
+```bash
+❯ htb-cli completion zsh > ~/.local/htb-cli-completion
+❯ source ~/.local/htb-cli-completion
+```
+
+```bash
+❯ htb-cli [TAB]
+help        -- Help about any command
+```
+
 ## Configuration
 
 In order to use `htb-cli`, you need to generate a **HackTheBox application token**. This token can be generated via your account configuration page: https://app.hackthebox.com/profile/settings, then by clicking on `Create App Token`.
