@@ -20,6 +20,10 @@ import (
 	"github.com/briandowns/spinner"
 )
 
+var homeDir = os.Getenv("HOME")
+
+var baseDirectory = homeDir + "/.local/htb-cli"
+
 type Machine struct {
 	ID    string `json:"id"`
 	Value string `json:"value"`

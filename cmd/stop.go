@@ -38,6 +38,7 @@ func buildMachineStopRequest(machineType, userSubscription, machineID, proxyPara
 // coreStopCmd stops the currently active machine.
 // It fetches machine's ID, its type, and user's subscription to determine how to stop the machine.
 func coreStopCmd(proxyParam string) (string, error) {
+	utils.StopVPN()
 	machineID := utils.GetActiveMachineID(proxyParam)
 	if machineID == "" {
 		return "No machine is running", nil
@@ -60,6 +61,8 @@ func coreStopCmd(proxyParam string) (string, error) {
 	if !ok {
 		return "", fmt.Errorf("error parsing message from response")
 	}
+
+	utils.StopVPN()
 
 	return message, nil
 }
