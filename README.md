@@ -7,6 +7,8 @@
 ![GitHub release](https://img.shields.io/github/v/release/GoToolSharing/htb-cli)
 ![GitHub Repo stars](https://img.shields.io/github/stars/GoToolSharing/htb-cli)
 
+<a target="_blank" rel="noopener noreferrer" href="https://twitter.com/QU35T_TV" title="Follow"><img src="https://img.shields.io/twitter/follow/QU35T_TV?label=QU35T_TV&style=social" alt="Twitter QU35T_TV"></a>
+
 <div>
   <img alt="current version" src="https://img.shields.io/badge/linux-supported-success">
   <img alt="current version" src="https://img.shields.io/badge/windows-supported-success">

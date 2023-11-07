@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/utils"
 	"github.com/spf13/cobra"
 )
@@ -102,6 +103,9 @@ var submitCmd = &cobra.Command{
 		output, err := coreSubmitCmd(difficultyParam, machineNameParam, challengeNameParam, flagParam, proxyParam)
 		if err != nil {
 			log.Fatal(err)
+		}
+		if config.GlobalConf["Discord"] != "False" {
+			utils.SendDiscordWebhook("[SUBMIT] - " + output)
 		}
 		fmt.Println(output)
 	},

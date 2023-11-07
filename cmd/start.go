@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/utils"
 	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
@@ -33,7 +34,7 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 	if !isActive {
 		isConfirmed := utils.AskConfirmation("No active VPN has been detected. Would you like to start it ?", batchParam)
 		if isConfirmed {
-			utils.StartVPN(BaseDirectory + "/lab_QU35T3190.ovpn")
+			utils.StartVPN(config.BaseDirectory + "/lab_QU35T3190.ovpn")
 		}
 	}
 
@@ -116,6 +117,9 @@ var startCmd = &cobra.Command{
 		output, err := coreStartCmd(machineChoosen, proxyParam)
 		if err != nil {
 			log.Fatalf("Error: %v", err)
+		}
+		if config.GlobalConf["Discord"] != "False" {
+			utils.SendDiscordWebhook("[START] - " + output)
 		}
 		fmt.Println(output)
 	},

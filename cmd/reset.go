@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/utils"
 	"github.com/spf13/cobra"
 )
@@ -18,11 +19,11 @@ func coreResetCmd(proxyParam string) (string, error) {
 		return "No active machine found", nil
 	}
 	log.Printf("Machine ID: %s", machineID)
-	
+
 	// Retrieve the type of the machine.
 	machineType := utils.GetMachineType(machineID, "")
 	log.Printf("Machine Type: %s", machineType)
-	
+
 	// Determine the API endpoint and construct JSON data based on the machine type.
 	var endpoint string
 	switch machineType {
@@ -63,6 +64,9 @@ var resetCmd = &cobra.Command{
 		output, err := coreResetCmd(proxyParam)
 		if err != nil {
 			log.Fatalf("Error: %v", err)
+		}
+		if config.GlobalConf["Discord"] != "False" {
+			utils.SendDiscordWebhook("[RESET] - " + output)
 		}
 		fmt.Println(output)
 	},

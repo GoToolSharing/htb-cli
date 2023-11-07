@@ -346,7 +346,7 @@ func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte
 		log.Fatalln(err)
 	}
 
-	req.Header.Set("User-Agent", "HTB-Tool")
+	req.Header.Set("User-Agent", "htb-cli")
 	req.Header.Set("Authorization", "Bearer "+JWT_TOKEN)
 
 	if method == http.MethodPost {

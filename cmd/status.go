@@ -13,6 +13,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/GoToolSharing/htb-cli/utils"
 	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
 )
@@ -67,7 +69,7 @@ func fetchStatus(client *http.Client) (string, error) {
 		return "", err
 	}
 
-	req.Header.Set("User-Agent", "HTB-Tool")
+	req.Header.Set("User-Agent", "htb-cli")
 	req.Header.Set("Host", "status.hackthebox.com")
 
 	resp, err := client.Do(req)
@@ -91,7 +93,7 @@ func fetchStatus(client *http.Client) (string, error) {
 }
 
 // coreStatusCmd is the main function that orchestrates client creation, fetching the status, and displaying the status.
-func coreStatusCmd(proxyParam string) error {
+func coreStatusCmd(proxyParam string) (string, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 	setupSignalHandler(s)
 	s.Start()
@@ -99,15 +101,14 @@ func coreStatusCmd(proxyParam string) error {
 
 	client, err := createClient(proxyParam)
 	if err != nil {
-		return err
+		return "", err
 	}
 	description, err := fetchStatus(client)
 	if err != nil {
-		return err
+		return "", err
 	}
 	s.Stop()
-	fmt.Println(description)
-	return nil
+	return description, nil
 }
 
 // statusCmd defines the Cobra command to display the status of HackTheBox servers.
@@ -115,10 +116,14 @@ var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Displays the status of hackthebox servers",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := coreStatusCmd(proxyParam)
+		output, err := coreStatusCmd(proxyParam)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Error: %v", err)
 		}
+		if config.GlobalConf["Discord"] != "False" {
+			utils.SendDiscordWebhook("[STATUS] - " + output)
+		}
+		fmt.Println(output)
 	},
 }
 
