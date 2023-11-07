@@ -6,20 +6,22 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/utils"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 var difficultyParam int
 var machineNameParam string
 var challengeNameParam string
-var flagParam string
 
 // coreSubmitCmd handles the submission of flags for machines or challenges, returning a status message or error.
-func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNameParam string, flagParam string, proxyParam string) (string, error) {
+func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNameParam string, proxyParam string) (string, error) {
 	if difficultyParam < 1 || difficultyParam > 10 {
 		return "", errors.New("difficulty must be set between 1 and 10")
 	}
@@ -27,7 +29,6 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 	// Common payload elements
 	difficultyString := strconv.Itoa(difficultyParam * 10)
 	payload := map[string]string{
-		"flag":       flagParam,
 		"difficulty": difficultyString,
 	}
 
@@ -74,7 +75,17 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 		payload["id"] = machineID
 	}
 
-	log.Println("Flag :", flagParam)
+	fmt.Print("Flag : ")
+	flagByte, err := term.ReadPassword(int(os.Stdin.Fd()))
+	if err != nil {
+		fmt.Println("Error reading password")
+		return "", fmt.Errorf("error reading password")
+	}
+	flagOriginal := string(flagByte)
+	flag := strings.ReplaceAll(flagOriginal, " ", "")
+	payload["flag"] = flag
+
+	log.Println("Flag :", flag)
 	log.Println("Difficulty :", difficultyString)
 
 	jsonData, err := json.Marshal(payload)
@@ -100,7 +111,7 @@ var submitCmd = &cobra.Command{
 	Short: "Submit credentials (machines / challenges / arena)",
 	Long:  "This command allows for the submission of user and root flags discovered on vulnerable machines / challenges",
 	Run: func(cmd *cobra.Command, args []string) {
-		output, err := coreSubmitCmd(difficultyParam, machineNameParam, challengeNameParam, flagParam, proxyParam)
+		output, err := coreSubmitCmd(difficultyParam, machineNameParam, challengeNameParam, proxyParam)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -116,7 +127,6 @@ func init() {
 	rootCmd.AddCommand(submitCmd)
 	submitCmd.Flags().StringVarP(&machineNameParam, "machine_name", "m", "", "Machine Name")
 	submitCmd.Flags().StringVarP(&challengeNameParam, "challenge_name", "c", "", "Challenge Name")
-	submitCmd.Flags().StringVarP(&flagParam, "flag", "f", "", "Flag")
 	submitCmd.Flags().IntVarP(&difficultyParam, "difficulty", "d", 0, "Difficulty")
 	submitCmd.MarkFlagRequired("difficulty")
 	submitCmd.MarkFlagRequired("flag")

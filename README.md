@@ -195,21 +195,23 @@ The `submit` command is used to submit a flag. Currently, the following submissi
 If there is no `--machine` or `--challenge` flag, submission will be made on the current active machine. Otherwise, this can be specified with the `--machine` and `--challenge` flags.
 
 ```bash
-❯ htb-cli submit -f flag4testing -d 3
+❯ htb-cli submit -d 3
 
 No machine is running
 ```
 
 ```bash
-❯ htb-cli submit -c test -f flag4testing -d 3
+❯ htb-cli submit -c test -d 3
 
 ? The following challenge was found : Leet Test Yes
+Flag :
 Incorrect flag
 ```
 
 ```bash
-❯ htb-cli submit -m Sau -f flag4testing -d 3
+❯ htb-cli submit -m Sau -d 3
 
 ? The following machine was found : Sau Yes
+Flag :
 Incorrect flag!
 ```
