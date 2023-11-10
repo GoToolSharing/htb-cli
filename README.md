@@ -111,13 +111,7 @@ Global Flags:
   -v, --verbose        Verbose mode
 ```
 
-```bash
-❯ htb-cli info
-
-? Do you want to check for active machine ? No
-
-? The following username was found : QU35T3190 Yes
-```
+![Sherlock_1](./assets/info_1.gif)
 
 ```bash
 ❯ htb-cli info -c test -m Sau -u Yakei
@@ -140,6 +134,8 @@ The command requires no arguments.
 ```bash
 ❯ htb-cli machines
 ```
+
+![Sherlock_1](./assets/machine_1.gif)
 
 ### start
 
