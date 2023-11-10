@@ -25,8 +25,8 @@ jobs:
       uses: golangci/golangci-lint-action@v3
       with:
         version: latest
-        config: .golangci.yml
-        cache: false
+        skip-pkg-cach: true
+        skip-build-cache: true
 
     - name: Upload lint results
       uses: actions/upload-artifact@v2
