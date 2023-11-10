@@ -78,8 +78,8 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 	fmt.Print("Flag : ")
 	flagByte, err := term.ReadPassword(int(os.Stdin.Fd()))
 	if err != nil {
-		fmt.Println("Error reading password")
-		return "", fmt.Errorf("error reading password")
+		fmt.Println("Error reading flag")
+		return "", fmt.Errorf("error reading flag")
 	}
 	flagOriginal := string(flagByte)
 	flag := strings.ReplaceAll(flagOriginal, " ", "")
@@ -127,6 +127,7 @@ func init() {
 	rootCmd.AddCommand(submitCmd)
 	submitCmd.Flags().StringVarP(&machineNameParam, "machine_name", "m", "", "Machine Name")
 	submitCmd.Flags().StringVarP(&challengeNameParam, "challenge_name", "c", "", "Challenge Name")
+	// submitCmd.Flags().StringVarP(&challengeNameParam, "sherlock_name", "s", "", "Sherlock name")
 	submitCmd.Flags().IntVarP(&difficultyParam, "difficulty", "d", 0, "Difficulty")
 	submitCmd.MarkFlagRequired("difficulty")
 	submitCmd.MarkFlagRequired("flag")

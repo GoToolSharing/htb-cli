@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var sherlockNameParam string
+
 const (
 	sherlocksURL            = baseAPIURL + "/sherlocks?state=active"
 	retiredSherlocksURL     = baseAPIURL + "/sherlocks?state=retired"
@@ -112,6 +114,19 @@ var sherlocksCmd = &cobra.Command{
 	Use:   "sherlocks",
 	Short: "Displays active sherlocks and next sherlocks to be released",
 	Run: func(cmd *cobra.Command, args []string) {
+		if sherlockNameParam != "" {
+			sherlockID, err := utils.SearchSherlockIDByName(proxyParam, sherlockNameParam)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			log.Println("SherlockID :", sherlockID)
+
+			utils.GetSherlockGeneralInformations(proxyParam, sherlockID)
+
+			utils.GetSherlockTasks(proxyParam, sherlockID)
+			return
+		}
 		app := tview.NewApplication()
 
 		getAndDisplayFlex := func(url, title string, isScheduled bool, flex *tview.Flex) error {
@@ -161,4 +176,5 @@ var sherlocksCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(sherlocksCmd)
+	sherlocksCmd.Flags().StringVarP(&sherlockNameParam, "sherlock_name", "s", "", "Sherlock Name")
 }
