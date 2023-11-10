@@ -26,6 +26,7 @@ jobs:
       with:
         version: latest
         config: .golangci.yml
+        cache: false
 
     - name: Upload lint results
       uses: actions/upload-artifact@v2
