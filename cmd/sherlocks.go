@@ -11,6 +11,7 @@ import (
 )
 
 var sherlockNameParam string
+var sherlockDownloadPath string
 
 const (
 	sherlocksURL            = baseAPIURL + "/sherlocks?state=active"
@@ -122,7 +123,7 @@ var sherlocksCmd = &cobra.Command{
 			}
 			log.Println("SherlockID :", sherlockID)
 
-			utils.GetSherlockGeneralInformations(proxyParam, sherlockID)
+			utils.GetSherlockGeneralInformations(proxyParam, sherlockID, sherlockDownloadPath)
 
 			ret := false
 
@@ -134,7 +135,7 @@ var sherlocksCmd = &cobra.Command{
 				}
 			}
 
-			fmt.Println("No tasks left")
+			fmt.Println("\nNo tasks left")
 
 			return
 		}
@@ -188,4 +189,5 @@ var sherlocksCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(sherlocksCmd)
 	sherlocksCmd.Flags().StringVarP(&sherlockNameParam, "sherlock_name", "s", "", "Sherlock Name")
+	sherlocksCmd.Flags().StringVarP(&sherlockDownloadPath, "download", "d", "", "Download Sherlock Resources")
 }
