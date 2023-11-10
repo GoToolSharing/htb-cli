@@ -127,10 +127,11 @@ func init() {
 	rootCmd.AddCommand(submitCmd)
 	submitCmd.Flags().StringVarP(&machineNameParam, "machine_name", "m", "", "Machine Name")
 	submitCmd.Flags().StringVarP(&challengeNameParam, "challenge_name", "c", "", "Challenge Name")
-	// submitCmd.Flags().StringVarP(&challengeNameParam, "sherlock_name", "s", "", "Sherlock name")
 	submitCmd.Flags().IntVarP(&difficultyParam, "difficulty", "d", 0, "Difficulty")
-	submitCmd.MarkFlagRequired("difficulty")
-	submitCmd.MarkFlagRequired("flag")
+	err := submitCmd.MarkFlagRequired("difficulty")
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 // Fortresses

@@ -42,18 +42,6 @@ func sgetColorFromDifficultyText(difficultyText string) string {
 	}
 }
 
-// sgetOSEmoji returns an emoji corresponding to the given operating system
-func sgetOSEmoji(os string) string {
-	switch os {
-	case "Linux":
-		return SPenguin
-	case "Windows":
-		return SComputer
-	default:
-		return ""
-	}
-}
-
 // screateFlex creates and returns a Flex view with machine information
 func screateFlex(info interface{}, title string, isScheduled bool) (*tview.Flex, error) {
 	log.Println("Info :", info)
@@ -70,7 +58,6 @@ func screateFlex(info interface{}, title string, isScheduled bool) (*tview.Flex,
 			key = data["difficulty"].(string)
 		}
 		color := sgetColorFromDifficultyText(key)
-		// osEmoji := sgetOSEmoji(data["os"].(string))
 
 		var formatString string
 

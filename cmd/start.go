@@ -129,5 +129,9 @@ var startCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(startCmd)
 	startCmd.Flags().StringVarP(&machineChoosen, "machine", "m", "", "Machine name")
-	startCmd.MarkFlagRequired("machine")
+	err := startCmd.MarkFlagRequired("machine")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -14,13 +15,29 @@ var completionCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		switch args[0] {
 		case "bash":
-			cmd.Root().GenBashCompletion(os.Stdout)
+			err := cmd.Root().GenBashCompletion(os.Stdout)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		case "zsh":
-			cmd.Root().GenZshCompletion(os.Stdout)
+			err := cmd.Root().GenZshCompletion(os.Stdout)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		case "fish":
-			cmd.Root().GenFishCompletion(os.Stdout, true)
+			err := cmd.Root().GenFishCompletion(os.Stdout, true)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		case "powershell":
-			cmd.Root().GenPowerShellCompletionWithDesc(os.Stdout)
+			err := cmd.Root().GenPowerShellCompletionWithDesc(os.Stdout)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		}
 	},
 }

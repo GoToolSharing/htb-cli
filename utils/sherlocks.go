@@ -70,7 +70,8 @@ func downloadSherlockFile(proxyURL string, url string, downloadPath string) erro
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("error: Status code:", resp.StatusCode)
+		fmt.Println("error: Status code:", resp.StatusCode)
+		return nil
 	}
 
 	outFile, err := os.Create(downloadPath)
@@ -84,7 +85,8 @@ func downloadSherlockFile(proxyURL string, url string, downloadPath string) erro
 		log.Fatal(err)
 	}
 
-	fmt.Println("Archive downloaded successfully. The password for unlock is: hacktheblue\n")
+	fmt.Println("Archive downloaded successfully. The password for unlock is: hacktheblue")
+	fmt.Println("")
 	return nil
 }
 
