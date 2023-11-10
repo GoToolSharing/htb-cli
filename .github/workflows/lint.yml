@@ -1,0 +1,46 @@
+run:
+  timeout: "5m"
+  issue-exit-code: 1
+  tests: false
+  skip-dirs-use-default: true
+  allow-parallel-runners: false
+  go: "1.19"
+output:
+  print-issued-lines: true
+  print-linter-name: true
+  unique-by-line: true
+  path-prefix: ""
+linters:
+  enable-all: false
+  disable-all: true
+  enable:
+    # Defaults linters
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    # - unused
+    # Non Default linters
+    - asciicheck
+    - bodyclose
+    - cyclop
+    - decorder
+    - dupl
+    - dupword
+    - errchkjson
+    - goconst
+    - gocritic
+    - goerr113
+    - gofmt
+    - gosec
+    - loggercheck
+    - paralleltest
+    - prealloc
+    - revive
+linters-settings:
+  cyclop:
+    skip-tests: true
+    max-complexity: 15
+    package-average: 0
