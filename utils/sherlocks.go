@@ -39,9 +39,9 @@ type SherlockNameID struct {
 	ID   int
 }
 
-func downloadSherlockFile(proxyURL string, sherlockID string, downloadPath string) {
-	url := "https://www.hackthebox.com/api/v4/sherlocks/" + sherlockID + "/download"
-	// url := "https://www.hackthebox.com/api/v4/challenge/download/196"
+func getSherlockDownloadLink(proxyURL string, sherlockID string) (string, error) {
+	url := "https://www.hackthebox.com/api/v4/sherlocks/" + sherlockID + "/download_link"
+
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -49,10 +49,24 @@ func downloadSherlockFile(proxyURL string, sherlockID string, downloadPath strin
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		message := ParseJsonMessage(resp, "message")
-		fmt.Println("[DOWNLOAD] - Cannot download the file\n")
-		log.Println("File content :", message)
-		return
+		return "", fmt.Errorf("error: Status code:", resp.StatusCode)
+	}
+
+	data := ParseJsonMessage(resp, "data").(map[string]interface{})
+
+	log.Println("Download URL :", data["url"].(string))
+	return data["url"].(string), nil
+}
+
+func downloadSherlockFile(proxyURL string, url string, downloadPath string) error {
+	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("error: Status code:", resp.StatusCode)
 	}
 
 	outFile, err := os.Create(downloadPath)
@@ -66,12 +80,8 @@ func downloadSherlockFile(proxyURL string, sherlockID string, downloadPath strin
 		log.Fatal(err)
 	}
 
-	fmt.Println("Archive downloaded successfully")
-
-	// message := ParseJsonMessage(resp, "message")
-	// jsonData, _ := io.ReadAll(resp.Body)
-
-	// fmt.Println("File content :", message)
+	fmt.Println("Archive downloaded successfully. The password for unlock is: hacktheblue\n")
+	return nil
 }
 
 func submitTask(proxyURL string, sherlockID string, taskID string, flag string) (string, error) {
@@ -140,7 +150,7 @@ func GetSherlockTasks(proxyURL string, sherlockID string) (bool, error) {
 	return true, nil
 }
 
-func GetSherlockGeneralInformations(proxyURL string, sherlockID string, sherlockDownloadPath string) {
+func GetSherlockGeneralInformations(proxyURL string, sherlockID string, sherlockDownloadPath string) error {
 	url := "https://www.hackthebox.com/api/v4/sherlocks/" + sherlockID + "/play"
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
@@ -151,13 +161,18 @@ func GetSherlockGeneralInformations(proxyURL string, sherlockID string, sherlock
 	info := ParseJsonMessage(resp, "data").(map[string]interface{})
 
 	if sherlockDownloadPath != "" {
-		downloadSherlockFile(proxyURL, sherlockID, sherlockDownloadPath)
+		url, err := getSherlockDownloadLink(proxyURL, sherlockID)
+		if err != nil {
+			return err
+		}
+		downloadSherlockFile(proxyURL, url, sherlockDownloadPath)
 	}
 
 	log.Println(info)
 	fmt.Println("Scenario :", info["scenario"])
 	fmt.Println("\nFile :", info["file_name"])
 	fmt.Println("File Size :", info["file_size"])
+	return nil
 }
 
 func SearchSherlockIDByName(proxyURL string, sherlockSearch string) (string, error) {

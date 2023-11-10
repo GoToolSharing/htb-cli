@@ -123,8 +123,12 @@ var sherlocksCmd = &cobra.Command{
 			}
 			log.Println("SherlockID :", sherlockID)
 
-			utils.GetSherlockGeneralInformations(proxyParam, sherlockID, sherlockDownloadPath)
+			err = utils.GetSherlockGeneralInformations(proxyParam, sherlockID, sherlockDownloadPath)
 
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 			ret := false
 
 			for !ret {
