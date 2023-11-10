@@ -81,6 +81,18 @@ Flags:
 Use "htb-cli [command] --help" for more information about a command.
 ```
 
+### sherlocks
+
+The `sherlocks` command lets you interact with HackTheBox's `blue team` mode.
+If no argument is given, you'll get information on `active`, `retired` and `soon-to-be-released` sherlocks.
+
+![Sherlock_1](./assets/sherlocks_1.gif)
+
+You can add the `-s` argument to search for a sherlock with its name or part of its name, and the fuzzy finder will do the rest !
+Another optional argument is `--download` or `-d`, which allows you to download the resource associated with the sherlock.
+
+![Sherlock_2](./assets/sherlocks_2.gif)
+
 ### info
 
 The `info` command will retrieve information from the active machine (if any) and display it. If no argument is supplied, the logged-in user's information will be displayed.

@@ -42,6 +42,10 @@ type SherlockNameID struct {
 func getSherlockDownloadLink(proxyURL string, sherlockID string) (string, error) {
 	url := "https://www.hackthebox.com/api/v4/sherlocks/" + sherlockID + "/download_link"
 
+	// url := "https://www.hackthebox.com/api/v4/challenge/download/196"
+
+	// return url, nil
+
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -49,7 +53,7 @@ func getSherlockDownloadLink(proxyURL string, sherlockID string) (string, error)
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("error: Status code:", resp.StatusCode)
+		return "", fmt.Errorf("error: Sherlock is not available for now")
 	}
 
 	data := ParseJsonMessage(resp, "data").(map[string]interface{})
@@ -175,7 +179,7 @@ func GetSherlockGeneralInformations(proxyURL string, sherlockID string, sherlock
 	return nil
 }
 
-func SearchSherlockIDByName(proxyURL string, sherlockSearch string) (string, error) {
+func SearchSherlockIDByName(proxyURL string, sherlockSearch string, batchParam bool) (string, error) {
 	url := "https://www.hackthebox.com/api/v4/sherlocks"
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
@@ -210,8 +214,10 @@ func SearchSherlockIDByName(proxyURL string, sherlockSearch string) (string, err
 
 	for _, match := range matches {
 		matchedNameID := nameIDs[match.Index]
-		log.Printf("Found: %s with ID: %d\n", matchedNameID.Name, matchedNameID.ID)
-		return strconv.Itoa(matchedNameID.ID), nil
+		isConfirmed := AskConfirmation("The following sherlock was found : "+matchedNameID.Name, batchParam)
+		if isConfirmed {
+			return strconv.Itoa(matchedNameID.ID), nil
+		}
 	}
 
 	return "", fmt.Errorf("error: Nothing was found")

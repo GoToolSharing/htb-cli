@@ -116,7 +116,7 @@ var sherlocksCmd = &cobra.Command{
 	Short: "Displays active sherlocks and next sherlocks to be released",
 	Run: func(cmd *cobra.Command, args []string) {
 		if sherlockNameParam != "" {
-			sherlockID, err := utils.SearchSherlockIDByName(proxyParam, sherlockNameParam)
+			sherlockID, err := utils.SearchSherlockIDByName(proxyParam, sherlockNameParam, batchParam)
 			if err != nil {
 				fmt.Println(err)
 				return
