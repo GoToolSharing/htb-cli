@@ -121,7 +121,11 @@ var statusCmd = &cobra.Command{
 			log.Fatalf("Error: %v", err)
 		}
 		if config.GlobalConf["Discord"] != "False" {
-			utils.SendDiscordWebhook("[STATUS] - " + output)
+			err := utils.SendDiscordWebhook("[STATUS] - " + output)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		}
 		fmt.Println(output)
 	},

@@ -119,7 +119,11 @@ var startCmd = &cobra.Command{
 			log.Fatalf("Error: %v", err)
 		}
 		if config.GlobalConf["Discord"] != "False" {
-			utils.SendDiscordWebhook("[START] - " + output)
+			err := utils.SendDiscordWebhook("[START] - " + output)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		}
 		fmt.Println(output)
 	},

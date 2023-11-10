@@ -126,7 +126,7 @@ func GetSherlockTasks(proxyURL string, sherlockID string) (bool, error) {
 	var parsedData SherlockDataTasks
 	err = json.Unmarshal([]byte(jsonData), &parsedData)
 	if err != nil {
-		return true, fmt.Errorf("error parsing JSON: ", err)
+		return true, fmt.Errorf("error parsing JSON: %w", err)
 	}
 
 	for _, task := range parsedData.Tasks {
@@ -171,7 +171,10 @@ func GetSherlockGeneralInformations(proxyURL string, sherlockID string, sherlock
 		if err != nil {
 			return err
 		}
-		downloadSherlockFile(proxyURL, url, sherlockDownloadPath)
+		err = downloadSherlockFile(proxyURL, url, sherlockDownloadPath)
+		if err != nil {
+			return err
+		}
 	}
 
 	log.Println(info)

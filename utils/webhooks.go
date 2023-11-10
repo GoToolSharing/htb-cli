@@ -17,15 +17,19 @@ import (
 	"github.com/briandowns/spinner"
 )
 
-func SendDiscordWebhook(message string) {
+func SendDiscordWebhook(message string) error {
 	payload := map[string]string{
 		"content": message,
 	}
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
-		fmt.Errorf("failed to create JSON data: %w", err)
+		return fmt.Errorf("failed to create JSON data: %w", err)
 	}
-	HTTPRequest(http.MethodPost, config.GlobalConf["Discord"], "", jsonData)
+	_, err = HTTPRequest(http.MethodPost, config.GlobalConf["Discord"], "", jsonData)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // HTTPRequest makes an HTTP request

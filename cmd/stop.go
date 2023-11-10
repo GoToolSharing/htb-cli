@@ -84,7 +84,11 @@ var stopCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		if config.GlobalConf["Discord"] != "False" {
-			utils.SendDiscordWebhook("[STOP] - " + output)
+			err := utils.SendDiscordWebhook("[STOP] - " + output)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		}
 		fmt.Println(output)
 	},

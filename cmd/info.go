@@ -211,8 +211,8 @@ func displayActiveMachine(header string) error {
 		log.Println("Active machine found !")
 		log.Println("Machine ID:", machineID)
 
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
-		w = utils.SetTabWriterHeader(header)
+		tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
+		w := utils.SetTabWriterHeader(header)
 
 		url := "https://www.hackthebox.com/api/v4/machine/profile/" + machineID
 		resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
@@ -237,7 +237,7 @@ func displayActiveMachine(header string) error {
 		log.Printf("User subscription: %s", userSubscription)
 
 		ip := "Undefined"
-
+		_ = ip
 		switch {
 		case userSubscription == "vip+" || machineType == "release":
 			ip = utils.GetActiveMachineIP(proxyParam)

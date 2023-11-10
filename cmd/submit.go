@@ -116,7 +116,11 @@ var submitCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		if config.GlobalConf["Discord"] != "False" {
-			utils.SendDiscordWebhook("[SUBMIT] - " + output)
+			err := utils.SendDiscordWebhook("[SUBMIT] - " + output)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		}
 		fmt.Println(output)
 	},

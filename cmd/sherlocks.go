@@ -65,32 +65,34 @@ func screateFlex(info interface{}, title string, isScheduled bool) (*tview.Flex,
 		if isScheduled {
 			formatString = fmt.Sprintf("%-15s %s%-10s[-]",
 				data["name"], color, data["difficulty"])
-		} else {
-			// Convert and format date
-			// parsedDate, err := time.Parse(time.RFC3339Nano, data["release"].(string))
-			// if err != nil {
-			// 	return nil, fmt.Errorf("error parsing date: %v", err)
-			// }
-			// formattedDate := parsedDate.Format("02 January 2006")
-
-			// userEmoji := SherlocksCrossMark + "User"
-			// if value, ok := data["authUserInUserOwns"]; ok && value != nil {
-			// 	if value.(bool) {
-			// 		userEmoji = SherlocksCheckMark + "User"
-			// 	}
-			// }
-
-			// rootEmoji := SherlocksCrossMark + "Root"
-			// if value, ok := data["authUserInRootOwns"]; ok && value != nil {
-			// 	if value.(bool) {
-			// 		rootEmoji = SherlocksCheckMark + "Root"
-			// 	}
-			// }
-
-			// formatString = fmt.Sprintf("%-15s %s%-10s[-] %-5v %-5v %-7v %-30s",
-			// 	data["name"], color, data["difficultyText"],
-			// 	data["star"], userEmoji, rootEmoji, formattedDate)
 		}
+		// else {
+
+		// Convert and format date
+		// parsedDate, err := time.Parse(time.RFC3339Nano, data["release"].(string))
+		// if err != nil {
+		// 	return nil, fmt.Errorf("error parsing date: %v", err)
+		// }
+		// formattedDate := parsedDate.Format("02 January 2006")
+
+		// userEmoji := SherlocksCrossMark + "User"
+		// if value, ok := data["authUserInUserOwns"]; ok && value != nil {
+		// 	if value.(bool) {
+		// 		userEmoji = SherlocksCheckMark + "User"
+		// 	}
+		// }
+
+		// rootEmoji := SherlocksCrossMark + "Root"
+		// if value, ok := data["authUserInRootOwns"]; ok && value != nil {
+		// 	if value.(bool) {
+		// 		rootEmoji = SherlocksCheckMark + "Root"
+		// 	}
+		// }
+
+		// formatString = fmt.Sprintf("%-15s %s%-10s[-] %-5v %-5v %-7v %-30s",
+		// 	data["name"], color, data["difficultyText"],
+		// 	data["star"], userEmoji, rootEmoji, formattedDate)
+		// }
 
 		flex.AddItem(tview.NewTextView().SetText(formatString).SetDynamicColors(true), 1, 0, false)
 	}

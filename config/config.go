@@ -96,7 +96,7 @@ func Init() error {
 	if _, err := os.Stat(confFilePath); os.IsNotExist(err) {
 		file, err := os.Create(confFilePath)
 		if err != nil {
-			fmt.Errorf("Error creating file: %v", err)
+			return fmt.Errorf("error creating file: %w", err)
 		}
 		defer file.Close()
 

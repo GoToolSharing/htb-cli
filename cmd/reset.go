@@ -66,7 +66,11 @@ var resetCmd = &cobra.Command{
 			log.Fatalf("Error: %v", err)
 		}
 		if config.GlobalConf["Discord"] != "False" {
-			utils.SendDiscordWebhook("[RESET] - " + output)
+			err := utils.SendDiscordWebhook("[RESET] - " + output)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		}
 		fmt.Println(output)
 	},

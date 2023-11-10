@@ -54,7 +54,7 @@ func SetTabWriterHeader(header string) *tabwriter.Writer {
 
 // SetTabWriterData will write the contents of each array cell
 func SetTabWriterData(w *tabwriter.Writer, data string) {
-	fmt.Fprintf(w, data)
+	fmt.Fprint(w, data)
 }
 
 // AskConfirmation will request confirmation from the user

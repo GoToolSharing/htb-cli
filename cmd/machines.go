@@ -63,6 +63,7 @@ func createFlex(info interface{}, title string, isScheduled bool) (*tview.Flex, 
 		// Determining the color according to difficulty
 
 		key := "Undefined"
+		_ = key
 		if title == "Scheduled" {
 			key = data["difficulty_text"].(string)
 		} else {
