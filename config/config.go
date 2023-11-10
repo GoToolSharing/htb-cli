@@ -100,10 +100,12 @@ func Init() error {
 		}
 		defer file.Close()
 
-		configContent := `Logging = False
-Batch = False
-Proxy = False
-Discord = False`
+		// 		configContent := `Logging = False
+		// Batch = False
+		// Proxy = False
+		// Discord = False`
+
+		configContent := `Discord = False`
 
 		writer := bufio.NewWriter(file)
 		_, err = writer.WriteString(configContent)
