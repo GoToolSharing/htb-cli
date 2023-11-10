@@ -124,7 +124,18 @@ var sherlocksCmd = &cobra.Command{
 
 			utils.GetSherlockGeneralInformations(proxyParam, sherlockID)
 
-			utils.GetSherlockTasks(proxyParam, sherlockID)
+			ret := false
+
+			for !ret {
+				ret, err = utils.GetSherlockTasks(proxyParam, sherlockID)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+			}
+
+			fmt.Println("No tasks left")
+
 			return
 		}
 		app := tview.NewApplication()
