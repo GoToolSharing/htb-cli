@@ -12,6 +12,7 @@ import (
 
 var sherlockNameParam string
 var sherlockDownloadPath string
+var sherlockTaskID int
 
 const (
 	sherlocksURL            = baseAPIURL + "/sherlocks?state=active"
@@ -112,24 +113,34 @@ var sherlocksCmd = &cobra.Command{
 			}
 			log.Println("SherlockID :", sherlockID)
 
+			if sherlockTaskID != 0 {
+				err := utils.GetSherlockTaskByID(proxyParam, sherlockID, sherlockTaskID)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				return
+			}
+
 			err = utils.GetSherlockGeneralInformations(proxyParam, sherlockID, sherlockDownloadPath)
 
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
-			ret := false
 
-			for !ret {
-				ret, err = utils.GetSherlockTasks(proxyParam, sherlockID)
-				if err != nil {
-					fmt.Println(err)
-					return
+			data, err := utils.GetSherlockTasks(proxyParam, sherlockID)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			for _, task := range data.Tasks {
+				if task.Completed {
+					fmt.Printf("\n%s (DONE) :\n%s\n\n", task.Title, task.Description)
+				} else {
+					fmt.Printf("\n%s :\n%s\n\n", task.Title, task.Description)
 				}
 			}
-
-			fmt.Println("\nNo tasks left")
-
 			return
 		}
 		app := tview.NewApplication()
@@ -183,4 +194,5 @@ func init() {
 	rootCmd.AddCommand(sherlocksCmd)
 	sherlocksCmd.Flags().StringVarP(&sherlockNameParam, "sherlock_name", "s", "", "Sherlock Name")
 	sherlocksCmd.Flags().StringVarP(&sherlockDownloadPath, "download", "d", "", "Download Sherlock Resources")
+	sherlocksCmd.Flags().IntVarP(&sherlockTaskID, "task", "t", 0, "Task ID")
 }

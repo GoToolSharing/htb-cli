@@ -11,6 +11,28 @@ import (
 	"time"
 )
 
+func DownloadVPN(proxyURL string) error {
+	url := "https://www.hackthebox.com/api/v4/connections/servers?product=labs"
+	// url := "https://www.hackthebox.com/api/v4/connections/servers?product=starting_point"
+	// url := "https://www.hackthebox.com/api/v4/connections/servers?product=endgames"
+	// url := "https://www.hackthebox.com/api/v4/connections/servers?product=fortresses"
+	// url := "https://www.hackthebox.com/api/v4/connections/servers?product=competitive"
+
+	// {"status":true,"data":{"disabled":false,"assigned":{"id":18,"friendly_name":"EU VIP 7","current_clients":8,"location":"EU","location_type_friendly":"EU - VIP"},"options":{"EU":{"EU - Free"
+	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println("error:", resp.StatusCode)
+		return nil
+	}
+
+	return nil
+}
+
 func StartVPN(configPath string) string {
 	fmt.Println("VPN is starting...")
 	pidFile := baseDirectory + "/lab-vpn.pid"

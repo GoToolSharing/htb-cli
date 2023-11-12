@@ -93,6 +93,10 @@ Another optional argument is `--download` or `-d`, which allows you to download 
 
 ![Sherlock_2](./assets/sherlocks_2.gif)
 
+To submit the answers for each task, you can add the `-t` / `--task` flag followed by the task number.
+
+![Sherlock_3](./assets/sherlocks_3.gif)
+
 ### info
 
 The `info` command will retrieve information from the active machine (if any) and display it. If no argument is supplied, the logged-in user's information will be displayed.
