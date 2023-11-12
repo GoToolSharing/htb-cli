@@ -48,6 +48,15 @@ This API token must be set in the **HTB_TOKEN** environment variable. You can ad
 export HTB_TOKEN=eyJ...
 ```
 
+A default configuration file is created the first time the tool is running : `$HOME/.local/htb-cli/default.conf`.
+This is a `Key / Value` configuration file.
+
+### Discord
+
+Integration with `Discord webhooks` can be enabled by modifying the `Discord` key value via a `Discord webhook link`.
+This allows the output of certain commands to be received on a discord server.
+This feature is currently in `beta`, with further enhancements to come.
+
 ## Commands
 
 To exit a tview, press `CTRL + C`.

@@ -30,6 +30,7 @@ type Response struct {
 	Data   Data `json:"data"`
 }
 
+// DownloadVPN downloads VPN configurations from HackTheBox for different server types.
 func DownloadVPN(proxyURL string) error {
 	baseURL := "https://www.hackthebox.com/api/v4/connections/servers?product="
 	urls := []string{
@@ -96,6 +97,7 @@ func DownloadVPN(proxyURL string) error {
 	return nil
 }
 
+// StartVPN starts the VPN connection using an OpenVPN configuration file.
 func StartVPN(configPath string) string {
 	fmt.Println("VPN is starting...")
 	pidFile := baseDirectory + "/lab-vpn.pid"
@@ -116,6 +118,7 @@ func StartVPN(configPath string) string {
 	return ""
 }
 
+// CheckVPN checks the current status of the VPN connection.
 func CheckVPN(proxyURL string) bool {
 	url := "https://www.hackthebox.com/api/v4/connection/status"
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
@@ -156,6 +159,7 @@ func CheckVPN(proxyURL string) bool {
 	return true
 }
 
+// StopVPN attempts to stop the currently active VPN connection.
 func StopVPN() error {
 	fmt.Println("Try to stop the active VPN...")
 	pidFile := baseDirectory + "/lab-vpn.pid"

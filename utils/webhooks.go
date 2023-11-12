@@ -17,6 +17,7 @@ import (
 	"github.com/briandowns/spinner"
 )
 
+// SendDiscordWebhook sends a message to a Discord channel using a webhook URL.
 func SendDiscordWebhook(message string) error {
 	payload := map[string]string{
 		"content": message,
@@ -32,7 +33,7 @@ func SendDiscordWebhook(message string) error {
 	return nil
 }
 
-// HTTPRequest makes an HTTP request
+// HTTPRequest makes an HTTP request with the specified method, URL, proxy settings, and data.
 func HTTPRequest(method string, urlParam string, proxyURL string, jsonData []byte) (bool, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 	sigs := make(chan os.Signal, 1)

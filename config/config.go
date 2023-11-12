@@ -15,6 +15,7 @@ var homeDir = os.Getenv("HOME")
 
 var BaseDirectory = homeDir + "/.local/htb-cli"
 
+// LoadConfig reads a configuration file from a specified filepath and returns a map of key-value pairs.
 func LoadConfig(filepath string) (map[string]string, error) {
 	config := make(map[string]string)
 
@@ -52,6 +53,7 @@ func LoadConfig(filepath string) (map[string]string, error) {
 	return config, nil
 }
 
+// validateConfig checks if the provided key-value pairs in the configuration are valid.
 func validateConfig(key, value string) error {
 	switch key {
 	case "Logging", "Batch":
@@ -71,16 +73,19 @@ func validateConfig(key, value string) error {
 	return nil
 }
 
+// isValidDiscordWebhook checks if a given URL is a valid Discord webhook.
 func isValidDiscordWebhook(u string) bool {
 	parsedURL, err := url.Parse(u)
 	return err == nil && parsedURL.Scheme == "https" && strings.Contains(parsedURL.Host, "discord.com") && strings.Contains(parsedURL.Path, "/api/webhooks/")
 }
 
+// isValidHTTPorHTTPSURL checks if a given URL is valid and uses either the HTTP or HTTPS protocol.
 func isValidHTTPorHTTPSURL(u string) bool {
 	parsedURL, err := url.Parse(u)
 	return err == nil && (parsedURL.Scheme == "http" || parsedURL.Scheme == "https")
 }
 
+// Init initializes the application by setting up necessary directories, creating a default configuration file if it doesn't exist, and loading the configuration.
 func Init() error {
 	if _, err := os.Stat(BaseDirectory); os.IsNotExist(err) {
 		log.Printf("The \"%s\" folder does not exist, creation in progress...\n", BaseDirectory)
@@ -100,11 +105,6 @@ func Init() error {
 		}
 		defer file.Close()
 
-		// 		configContent := `Logging = False
-		// Batch = False
-		// Proxy = False
-		// Discord = False`
-
 		configContent := `Discord = False`
 
 		writer := bufio.NewWriter(file)
@@ -121,7 +121,6 @@ func Init() error {
 		log.Println("Configuration file created successfully.")
 	}
 
-	// Load configuration file
 	log.Println("Loading configuration file...")
 	config, err := LoadConfig(BaseDirectory + "/default.conf")
 	if err != nil {
