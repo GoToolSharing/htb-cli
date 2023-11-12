@@ -41,11 +41,11 @@ type SherlockNameID struct {
 
 // getSherlockDownloadLink constructs and returns the download link for a specific Sherlock challenge.
 func getSherlockDownloadLink(proxyURL string, sherlockID string) (string, error) {
-	// url := "https://www.hackthebox.com/api/v4/sherlocks/" + sherlockID + "/download_link"
+	url := "https://www.hackthebox.com/api/v4/sherlocks/" + sherlockID + "/download_link"
 
-	url := "https://www.hackthebox.com/api/v4/challenge/download/196"
+	// url := "https://www.hackthebox.com/api/v4/challenge/download/196"
 
-	return url, nil
+	// return url, nil
 
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
