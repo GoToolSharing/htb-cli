@@ -30,13 +30,13 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 	userSubscription := utils.GetUserSubscription(proxyParam)
 	log.Printf("User subscription: %s", userSubscription)
 
-	isActive := utils.CheckVPN(proxyParam)
-	if !isActive {
-		isConfirmed := utils.AskConfirmation("No active VPN has been detected. Would you like to start it ?", batchParam)
-		if isConfirmed {
-			utils.StartVPN(config.BaseDirectory + "/lab_QU35T3190.ovpn")
-		}
-	}
+	// isActive := utils.CheckVPN(proxyParam)
+	// if !isActive {
+	// 	isConfirmed := utils.AskConfirmation("No active VPN has been detected. Would you like to start it ?", batchParam)
+	// 	if isConfirmed {
+	// 		utils.StartVPN(config.BaseDirectory + "/lab_QU35T3190.ovpn")
+	// 	}
+	// }
 
 	var url string
 	var jsonData []byte

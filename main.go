@@ -18,7 +18,3 @@ func main() {
 	}
 	cmd.Execute()
 }
-
-///api/v4/access/ovpnfile/18/0
-
-// remote edge-eu-vip-7.hackthebox.eu 1337

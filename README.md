@@ -227,3 +227,34 @@ Incorrect flag
 Flag :
 Incorrect flag!
 ```
+
+### vpn
+
+La commande vpn permet de télécharger les VPNs depuis HackTheBox.
+Le flag --download télécharge tout les VPN qui sont assigné à l'utilisateur.
+
+```bash
+❯ htb-cli vpn --download
+
+VPN : EU_VIP_7 downloaded successfully
+VPN : EU_StartingPoint_VIP_1 downloaded successfully
+VPN : EU_Endgame_VIP_1 downloaded successfully
+VPN : EU_Fortress_1 downloaded successfully
+VPN : EU_Release_Arena_1 downloaded successfully
+
+VPNs are located at the following path : /home/qu35t/.local/htb-cli
+```
+
+```bash
+❯ ls -la ~/.local/htb-cli
+
+total 72
+drwxr-xr-x 2 qu35t qu35t 4096 12 nov.  17:51 .
+drwxr-xr-x 5 qu35t qu35t 4096 10 nov.  14:32 ..
+-rw-r--r-- 1 qu35t qu35t  149  7 nov.  15:12 default.conf
+-rw-r--r-- 1 qu35t qu35t 9328 12 nov.  17:55 EU_Endgame_VIP_1-vpn.ovpn
+-rw-r--r-- 1 qu35t qu35t 8435 12 nov.  17:55 EU_Fortress_1-vpn.ovpn
+-rw-r--r-- 1 qu35t qu35t 9324 12 nov.  17:55 EU_Release_Arena_1-vpn.ovpn
+-rw-r--r-- 1 qu35t qu35t 8454 12 nov.  17:55 EU_StartingPoint_VIP_1-vpn.ovpn
+-rw-r--r-- 1 qu35t qu35t 9324 12 nov.  17:55 EU_VIP_7-vpn.ovpn
+```
