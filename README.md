@@ -230,8 +230,8 @@ Incorrect flag!
 
 ### vpn
 
-La commande vpn permet de télécharger les VPNs depuis HackTheBox.
-Le flag --download télécharge tout les VPN qui sont assigné à l'utilisateur.
+The vpn command downloads VPNs from HackTheBox.
+The `--download` flag downloads all VPNs assigned to the user.
 
 ```bash
 ❯ htb-cli vpn --download
