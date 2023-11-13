@@ -57,6 +57,12 @@ Integration with `Discord webhooks` can be enabled by modifying the `Discord` ke
 This allows the output of certain commands to be received on a discord server.
 This feature is currently in `beta`, with further enhancements to come.
 
+```
+❯ cat ~/.local/htb-cli/default.conf                             
+
+Discord = https://discord.com/api/webhooks/****************/**************************
+```
+
 ## Commands
 
 To exit a tview, press `CTRL + C`.
