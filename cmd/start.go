@@ -18,7 +18,7 @@ import (
 var machineChoosen string
 
 // coreStartCmd starts a specified machine and returns a status message and any error encountered.
-func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
+func coreStartCmd(machineChoosen string) (string, error) {
 	machineID, err := utils.SearchItemIDByName(machineChoosen, "Machine")
 	if err != nil {
 		return "", err
@@ -31,7 +31,7 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 	userSubscription := utils.GetUserSubscription()
 	log.Printf("User subscription: %s", userSubscription)
 
-	// isActive := utils.CheckVPN(proxyParam)
+	// isActive := utils.CheckVPN()
 	// if !isActive {
 	// 	isConfirmed := utils.AskConfirmation("No active VPN has been detected. Would you like to start it ?", batchParam)
 	// 	if isConfirmed {
@@ -115,7 +115,7 @@ var startCmd = &cobra.Command{
 	Short: "Start a machine",
 	Long:  `Starts a Hackthebox machine specified in argument`,
 	Run: func(cmd *cobra.Command, args []string) {
-		output, err := coreStartCmd(machineChoosen, proxyParam)
+		output, err := coreStartCmd(machineChoosen)
 		if err != nil {
 			log.Fatalf("Error: %v", err)
 		}

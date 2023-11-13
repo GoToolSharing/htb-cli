@@ -16,7 +16,7 @@ import (
 )
 
 // coreSubmitCmd handles the submission of flags for machines or challenges, returning a status message or error.
-func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNameParam string) (string, error) {
+func CoreSubmitCmd(difficultyParam int, machineNameParam string, challengeNameParam string) (string, error) {
 	if difficultyParam < 1 || difficultyParam > 10 {
 		return "", errors.New("difficulty must be set between 1 and 10")
 	}

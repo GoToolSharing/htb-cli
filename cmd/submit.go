@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/GoToolSharing/htb-cli/lib/submit"
 	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 	"github.com/spf13/cobra"
 )
@@ -33,7 +34,7 @@ var submitCmd = &cobra.Command{
 			return
 		}
 
-		output, err := submit.coreSubmitCmd(difficultyParam, machineNameParam, challengeNameParam)
+		output, err := submit.CoreSubmitCmd(difficultyParam, machineNameParam, challengeNameParam)
 		if err != nil {
 			log.Fatal(err)
 		}

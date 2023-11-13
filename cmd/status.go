@@ -44,15 +44,15 @@ func setupSignalHandler(s *spinner.Spinner) {
 }
 
 // createClient creates and returns an HTTP client with optional configurations, such as the proxy parameter.
-func createClient(proxyParam string) (*http.Client, error) {
+func createClient() (*http.Client, error) {
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
 	}
 
-	if proxyParam != "" {
-		proxyURLParsed, err := url.Parse(proxyParam)
+	if config.GlobalConfig.ProxyParam != "" {
+		proxyURLParsed, err := url.Parse(config.GlobalConfig.ProxyParam)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing proxy URL: %v", err)
 		}
@@ -93,13 +93,13 @@ func fetchStatus(client *http.Client) (string, error) {
 }
 
 // coreStatusCmd is the main function that orchestrates client creation, fetching the status, and displaying the status.
-func coreStatusCmd(proxyParam string) (string, error) {
+func coreStatusCmd() (string, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 	setupSignalHandler(s)
 	s.Start()
 	defer s.Stop()
 
-	client, err := createClient(proxyParam)
+	client, err := createClient()
 	if err != nil {
 		return "", err
 	}
@@ -116,7 +116,7 @@ var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Displays the status of hackthebox servers",
 	Run: func(cmd *cobra.Command, args []string) {
-		output, err := coreStatusCmd(proxyParam)
+		output, err := coreStatusCmd()
 		if err != nil {
 			log.Fatalf("Error: %v", err)
 		}

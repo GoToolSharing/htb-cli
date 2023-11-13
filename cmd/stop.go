@@ -18,7 +18,7 @@ var (
 )
 
 // buildMachineStopRequest constructs the URL endpoint and JSON data payload for stopping a machine based on its type and user's subscription.
-func buildMachineStopRequest(machineType, userSubscription, machineID, proxyParam string) (string, []byte) {
+func buildMachineStopRequest(machineType string, userSubscription string, machineID string) (string, []byte) {
 	var apiEndpoint string
 	var jsonData []byte
 
@@ -39,7 +39,7 @@ func buildMachineStopRequest(machineType, userSubscription, machineID, proxyPara
 
 // coreStopCmd stops the currently active machine.
 // It fetches machine's ID, its type, and user's subscription to determine how to stop the machine.
-func coreStopCmd(proxyParam string) (string, error) {
+func coreStopCmd() (string, error) {
 	// err := utils.StopVPN()
 	// if err != nil {
 	// 	return "", err
@@ -56,7 +56,7 @@ func coreStopCmd(proxyParam string) (string, error) {
 	userSubscription := utils.GetUserSubscription()
 	log.Println("User subscription:", userSubscription)
 
-	apiEndpoint, jsonData := buildMachineStopRequest(machineType, userSubscription, machineID, proxyParam)
+	apiEndpoint, jsonData := buildMachineStopRequest(machineType, userSubscription, machineID)
 	resp, err := utils.HtbRequest(http.MethodPost, apiEndpoint, jsonData)
 	if err != nil {
 		return "", err
@@ -80,7 +80,7 @@ var stopCmd = &cobra.Command{
 	Use:   "stop",
 	Short: "Stop the current machine",
 	Run: func(cmd *cobra.Command, args []string) {
-		output, err := coreStopCmd(proxyParam)
+		output, err := coreStopCmd()
 		if err != nil {
 			log.Fatal(err)
 		}
