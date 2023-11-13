@@ -9,20 +9,17 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/GoToolSharing/htb-cli/utils"
+	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/GoToolSharing/htb-cli/lib/utils"
 	"github.com/spf13/cobra"
 )
 
-var machineParam []string
-var challengeParam []string
-var usernameParam []string
-
 // Retrieves data for user profile
-func fetchData(itemID, endpoint, infoKey, proxyParam string) (map[string]interface{}, error) {
-	url := baseAPIURL + endpoint + itemID
+func fetchData(itemID string, endpoint string, infoKey string) (map[string]interface{}, error) {
+	url := config.BaseHackTheBoxAPIURL + endpoint + itemID
 	log.Println("URL :", url)
 
-	resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
+	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -41,13 +38,13 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 
 	// Iteration on all machines / challenges / users argument
 	for _, param := range params {
-		itemID, err := utils.SearchItemIDByName(param, proxyParam, elementType, batchParam)
+		itemID, err := utils.SearchItemIDByName(param, elementType)
 		if err != nil {
 			fmt.Println(err)
 			return nil
 		}
 
-		resp, err := utils.HtbRequest(http.MethodGet, (url + itemID), proxyParam, nil)
+		resp, err := utils.HtbRequest(http.MethodGet, (url + itemID), nil)
 		if err != nil {
 			return err
 		}
@@ -82,7 +79,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 		dataMaps := make(map[string]map[string]interface{})
 
 		for _, ep := range endpoints {
-			data, err := fetchData(itemID, ep.url, "profile", proxyParam)
+			data, err := fetchData(itemID, ep.url, "profile")
 			if err != nil {
 				fmt.Printf("Error fetching data for %s: %v\n", ep.name, err)
 				continue
@@ -122,7 +119,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 }
 
 // coreInfoCmd is the core of the info command; it checks the parameters and displays corresponding information.
-func coreInfoCmd() error {
+func coreInfoCmd(machineName []string, challengeName []string, usernameName []string) error {
 	machineHeader := "Name\tOS\tRetired\tDifficulty\tStars\tIP\tStatus\tLast Reset\tRelease"
 	challengeHeader := "Name\tCategory\tRetired\tDifficulty\tStars\tSolves\tStatus\tRelease"
 	usernameHeader := "Name\tUser Owns\tSystem Owns\tUser Bloods\tSystem Bloods\tTeam\tUniversity\tRank\tGlobal Rank\tPoints"
@@ -135,14 +132,14 @@ func coreInfoCmd() error {
 	}
 
 	infos := []infoType{
-		{baseAPIURL + "/machine/profile/", machineHeader, machineParam, "Machine"},
-		{baseAPIURL + "/challenge/info/", challengeHeader, challengeParam, "Challenge"},
-		{baseAPIURL + "/user/profile/basic/", usernameHeader, usernameParam, "Username"},
+		{config.BaseHackTheBoxAPIURL + "/machine/profile/", machineHeader, machineName, "Machine"},
+		{config.BaseHackTheBoxAPIURL + "/challenge/info/", challengeHeader, challengeName, "Challenge"},
+		{config.BaseHackTheBoxAPIURL + "/user/profile/basic/", usernameHeader, usernameName, "Username"},
 	}
 
 	// No arguments provided
-	if len(machineParam) == 0 && len(usernameParam) == 0 && len(challengeParam) == 0 {
-		isConfirmed := utils.AskConfirmation("Do you want to check for active machine ?", batchParam)
+	if len(machineName) == 0 && len(usernameName) == 0 && len(challengeName) == 0 {
+		isConfirmed := utils.AskConfirmation("Do you want to check for active machine ?")
 		if isConfirmed {
 			err := displayActiveMachine(machineHeader)
 			if err != nil {
@@ -150,14 +147,14 @@ func coreInfoCmd() error {
 			}
 		}
 		// Get current account
-		resp, err := utils.HtbRequest(http.MethodGet, baseAPIURL+"/user/info", proxyParam, nil)
+		resp, err := utils.HtbRequest(http.MethodGet, config.BaseHackTheBoxAPIURL+"/user/info", nil)
 		if err != nil {
 			return err
 		}
 		info := utils.ParseJsonMessage(resp, "info")
 		infoMap, _ := info.(map[string]interface{})
 		newInfo := infoType{
-			APIURL: baseAPIURL + "/user/profile/basic/",
+			APIURL: config.BaseHackTheBoxAPIURL + "/user/profile/basic/",
 			Header: "",
 			Params: []string{infoMap["name"].(string)},
 			Name:   "Username",
@@ -168,7 +165,7 @@ func coreInfoCmd() error {
 	for _, info := range infos {
 		if len(info.Params) > 0 {
 			if info.Name == "Machine" {
-				isConfirmed := utils.AskConfirmation("Do you want to check for active "+strings.ToLower(info.Name)+"?", batchParam)
+				isConfirmed := utils.AskConfirmation("Do you want to check for active " + strings.ToLower(info.Name) + "?")
 				if isConfirmed {
 					err := displayActiveMachine(info.Header)
 					if err != nil {
@@ -205,17 +202,17 @@ func getIPStatus(data map[string]interface{}) interface{} {
 
 // displayActiveMachine displays information about the active machine if one is found.
 func displayActiveMachine(header string) error {
-	machineID := utils.GetActiveMachineID(proxyParam)
+	machineID := utils.GetActiveMachineID()
 
 	if machineID != "" {
 		log.Println("Active machine found !")
 		log.Println("Machine ID:", machineID)
 
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
-		w = utils.SetTabWriterHeader(header)
+		tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
+		w := utils.SetTabWriterHeader(header)
 
-		url := "https://www.hackthebox.com/api/v4/machine/profile/" + machineID
-		resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
+		url := fmt.Sprintf("%s/machine/profile/%s", config.BaseHackTheBoxAPIURL, machineID)
+		resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 		if err != nil {
 			return err
 		}
@@ -230,17 +227,17 @@ func displayActiveMachine(header string) error {
 			return err
 		}
 
-		machineType := utils.GetMachineType(machineID, proxyParam)
+		machineType := utils.GetMachineType(machineID)
 		log.Printf("Machine Type: %s", machineType)
 
-		userSubscription := utils.GetUserSubscription(proxyParam)
+		userSubscription := utils.GetUserSubscription()
 		log.Printf("User subscription: %s", userSubscription)
 
 		ip := "Undefined"
-
+		_ = ip
 		switch {
 		case userSubscription == "vip+" || machineType == "release":
-			ip = utils.GetActiveMachineIP(proxyParam)
+			ip = utils.GetActiveMachineIP()
 		default:
 			ip = getIPStatus(data).(string)
 		}
@@ -264,7 +261,24 @@ var infoCmd = &cobra.Command{
 	Short: "Detailed information on challenges and machines",
 	Long:  "Displays detailed information on machines and challenges in a structured table",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := coreInfoCmd()
+		machineParam, err := cmd.Flags().GetStringSlice("machine")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		challengeParam, err := cmd.Flags().GetStringSlice("challenge")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		usernameParam, err := cmd.Flags().GetStringSlice("username")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		err = coreInfoCmd(machineParam, challengeParam, usernameParam)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -274,7 +288,7 @@ var infoCmd = &cobra.Command{
 // init adds the info command to the root command and sets flags specific to this command.
 func init() {
 	rootCmd.AddCommand(infoCmd)
-	infoCmd.Flags().StringSliceVarP(&machineParam, "machine", "m", []string{}, "Machine name")
-	infoCmd.Flags().StringSliceVarP(&challengeParam, "challenge", "c", []string{}, "Challenge name")
-	infoCmd.Flags().StringSliceVarP(&usernameParam, "username", "u", []string{}, "Username")
+	infoCmd.Flags().StringSliceP("machine", "m", []string{}, "Machine name")
+	infoCmd.Flags().StringSliceP("challenge", "c", []string{}, "Challenge name")
+	infoCmd.Flags().StringSliceP("username", "u", []string{}, "Username")
 }

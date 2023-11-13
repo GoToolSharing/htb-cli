@@ -148,7 +148,6 @@ func DisplayInformationsGUI(profile map[string]interface{}, advancedLabsMap map[
 	userInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]University   : %v[-]", universityName)).SetDynamicColors(true), 1, 0, false)
 	userInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Country      : %v[-]", profile["country_name"])).SetDynamicColors(true), 1, 0, false)
 	userInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Subscription : %v[-]", subscription)).SetDynamicColors(true), 1, 0, false)
-	userInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Respects     : %v[-]", profile["respects"])).SetDynamicColors(true), 1, 0, false)
 
 	userRankingInformationsFlex := tview.NewFlex().SetDirection(tview.FlexRow)
 	userRankingInformationsFlex.SetBorder(true).SetTitle("Ranking Informations").SetTitleAlign(tview.AlignLeft)
@@ -165,8 +164,8 @@ func DisplayInformationsGUI(profile map[string]interface{}, advancedLabsMap map[
 	userMiscInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]System Bloods : %v\U0001FA78[-]", profile["system_bloods"])).SetDynamicColors(true), 1, 0, false)
 	userMiscInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]User Owns     : %v[-]", profile["user_owns"])).SetDynamicColors(true), 1, 0, false)
 	userMiscInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]System Owns   : %v[-]", profile["system_owns"])).SetDynamicColors(true), 1, 0, false)
-	userMiscInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Last User     : N/A[-]")).SetDynamicColors(true), 1, 0, false)
-	userMiscInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Last System   : N/A[-]")).SetDynamicColors(true), 1, 0, false)
+	userMiscInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Respects      : %v[-]", profile["respects"])).SetDynamicColors(true), 1, 0, false)
+	userMiscInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Public        : %v[-]", profile["public"])).SetDynamicColors(true), 1, 0, false)
 
 	userInformationsContainer := tview.NewFlex().
 		SetDirection(tview.FlexRow).

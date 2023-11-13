@@ -8,46 +8,54 @@ import (
 	"strings"
 	"time"
 
-	"github.com/GoToolSharing/htb-cli/utils"
+	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
 )
 
-var machineChoosen string
-
 // coreStartCmd starts a specified machine and returns a status message and any error encountered.
-func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
-	machineID, err := utils.SearchItemIDByName(machineChoosen, proxyParam, "Machine", batchParam)
+func coreStartCmd(machineChoosen string) (string, error) {
+	machineID, err := utils.SearchItemIDByName(machineChoosen, "Machine")
 	if err != nil {
 		return "", err
 	}
 	log.Printf("Machine ID: %s", machineID)
 
-	machineType := utils.GetMachineType(machineID, proxyParam)
+	machineType := utils.GetMachineType(machineID)
 	log.Printf("Machine Type: %s", machineType)
 
-	userSubscription := utils.GetUserSubscription(proxyParam)
+	userSubscription := utils.GetUserSubscription()
 	log.Printf("User subscription: %s", userSubscription)
+
+	// isActive := utils.CheckVPN()
+	// if !isActive {
+	// 	isConfirmed := utils.AskConfirmation("No active VPN has been detected. Would you like to start it ?", batchParam)
+	// 	if isConfirmed {
+	// 		utils.StartVPN(config.BaseDirectory + "/lab_QU35T3190.ovpn")
+	// 	}
+	// }
 
 	var url string
 	var jsonData []byte
 
 	switch {
 	case machineType == "release":
-		url = baseAPIURL + "/arena/start"
+		url = config.BaseHackTheBoxAPIURL + "/arena/start"
 		jsonData = []byte("{}")
 	case userSubscription == "vip" || userSubscription == "vip+":
-		url = baseAPIURL + "/vm/spawn"
+		url = config.BaseHackTheBoxAPIURL + "/vm/spawn"
 		jsonData, err = json.Marshal(map[string]string{"machine_id": machineID})
 		if err != nil {
 			return "", fmt.Errorf("failed to create JSON data: %w", err)
 		}
 	default:
-		url = baseAPIURL + "/machine/play/" + machineID
+		url = config.BaseHackTheBoxAPIURL + "/machine/play/" + machineID
 		jsonData = []byte("{}")
 	}
 
-	resp, err := utils.HtbRequest(http.MethodPost, url, proxyParam, jsonData)
+	resp, err := utils.HtbRequest(http.MethodPost, url, jsonData)
 	if err != nil {
 		return "", err
 	}
@@ -78,7 +86,7 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 				s.Stop()
 				return "", nil
 			default:
-				ip = utils.GetActiveMachineIP(proxyParam)
+				ip = utils.GetActiveMachineIP()
 				if ip != "Undefined" {
 					s.Stop()
 					break Loop
@@ -88,7 +96,7 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 		}
 	default:
 		// Get IP address from active machine
-		activeMachineData, err := utils.GetInformationsFromActiveMachine(proxyParam)
+		activeMachineData, err := utils.GetInformationsFromActiveMachine()
 		if err != nil {
 			return "", err
 		}
@@ -105,9 +113,21 @@ var startCmd = &cobra.Command{
 	Short: "Start a machine",
 	Long:  `Starts a Hackthebox machine specified in argument`,
 	Run: func(cmd *cobra.Command, args []string) {
-		output, err := coreStartCmd(machineChoosen, proxyParam)
+		machineChoosen, err := cmd.Flags().GetString("machine")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		output, err := coreStartCmd(machineChoosen)
 		if err != nil {
 			log.Fatalf("Error: %v", err)
+		}
+		if config.ConfigFile["Discord"] != "False" {
+			err := webhooks.SendToDiscord("[START] - " + output)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		}
 		fmt.Println(output)
 	},
@@ -116,6 +136,10 @@ var startCmd = &cobra.Command{
 // init adds the startCmd to rootCmd and sets flags for the "start" command.
 func init() {
 	rootCmd.AddCommand(startCmd)
-	startCmd.Flags().StringVarP(&machineChoosen, "machine", "m", "", "Machine name")
-	startCmd.MarkFlagRequired("machine")
+	startCmd.Flags().StringP("machine", "m", "", "Machine name")
+	err := startCmd.MarkFlagRequired("machine")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }

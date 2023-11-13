@@ -6,15 +6,16 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/GoToolSharing/htb-cli/utils"
+	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/GoToolSharing/htb-cli/lib/utils"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 )
 
 const (
-	machineURL     = baseAPIURL + "/machine/paginated/?per_page=20"
-	retiredURL     = baseAPIURL + "/machine/list/retired/paginated/?per_page=20&sort_by=release-date"
-	scheduledURL   = baseAPIURL + "/machine/unreleased/"
+	machineURL     = config.BaseHackTheBoxAPIURL + "/machine/paginated/?per_page=20"
+	retiredURL     = config.BaseHackTheBoxAPIURL + "/machine/list/retired/paginated/?per_page=20&sort_by=release-date"
+	scheduledURL   = config.BaseHackTheBoxAPIURL + "/machine/unreleased/"
 	activeTitle    = "Active"
 	retiredTitle   = "Retired"
 	scheduledTitle = "Scheduled"
@@ -63,6 +64,7 @@ func createFlex(info interface{}, title string, isScheduled bool) (*tview.Flex, 
 		// Determining the color according to difficulty
 
 		key := "Undefined"
+		_ = key
 		if title == "Scheduled" {
 			key = data["difficulty_text"].(string)
 		} else {
@@ -117,7 +119,7 @@ var machinesCmd = &cobra.Command{
 		app := tview.NewApplication()
 
 		getAndDisplayFlex := func(url, title string, isScheduled bool, flex *tview.Flex) error {
-			resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
+			resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 			if err != nil {
 				return fmt.Errorf("failed to get data from %s: %w", url, err)
 			}

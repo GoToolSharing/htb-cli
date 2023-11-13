@@ -13,6 +13,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
 )
@@ -42,15 +44,15 @@ func setupSignalHandler(s *spinner.Spinner) {
 }
 
 // createClient creates and returns an HTTP client with optional configurations, such as the proxy parameter.
-func createClient(proxyParam string) (*http.Client, error) {
+func createClient() (*http.Client, error) {
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
 	}
 
-	if proxyParam != "" {
-		proxyURLParsed, err := url.Parse(proxyParam)
+	if config.GlobalConfig.ProxyParam != "" {
+		proxyURLParsed, err := url.Parse(config.GlobalConfig.ProxyParam)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing proxy URL: %v", err)
 		}
@@ -67,7 +69,7 @@ func fetchStatus(client *http.Client) (string, error) {
 		return "", err
 	}
 
-	req.Header.Set("User-Agent", "HTB-Tool")
+	req.Header.Set("User-Agent", "htb-cli")
 	req.Header.Set("Host", "status.hackthebox.com")
 
 	resp, err := client.Do(req)
@@ -91,23 +93,22 @@ func fetchStatus(client *http.Client) (string, error) {
 }
 
 // coreStatusCmd is the main function that orchestrates client creation, fetching the status, and displaying the status.
-func coreStatusCmd(proxyParam string) error {
+func coreStatusCmd() (string, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 	setupSignalHandler(s)
 	s.Start()
 	defer s.Stop()
 
-	client, err := createClient(proxyParam)
+	client, err := createClient()
 	if err != nil {
-		return err
+		return "", err
 	}
 	description, err := fetchStatus(client)
 	if err != nil {
-		return err
+		return "", err
 	}
 	s.Stop()
-	fmt.Println(description)
-	return nil
+	return description, nil
 }
 
 // statusCmd defines the Cobra command to display the status of HackTheBox servers.
@@ -115,10 +116,18 @@ var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Displays the status of hackthebox servers",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := coreStatusCmd(proxyParam)
+		output, err := coreStatusCmd()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Error: %v", err)
 		}
+		if config.ConfigFile["Discord"] != "False" {
+			err := webhooks.SendToDiscord("[STATUS] - " + output)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+		}
+		fmt.Println(output)
 	},
 }
 

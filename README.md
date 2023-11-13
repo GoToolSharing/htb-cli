@@ -7,6 +7,8 @@
 ![GitHub release](https://img.shields.io/github/v/release/GoToolSharing/htb-cli)
 ![GitHub Repo stars](https://img.shields.io/github/stars/GoToolSharing/htb-cli)
 
+<a target="_blank" rel="noopener noreferrer" href="https://twitter.com/QU35T_TV" title="Follow"><img src="https://img.shields.io/twitter/follow/QU35T_TV?label=QU35T_TV&style=social" alt="Twitter QU35T_TV"></a>
+
 <div>
   <img alt="current version" src="https://img.shields.io/badge/linux-supported-success">
   <img alt="current version" src="https://img.shields.io/badge/windows-supported-success">
@@ -24,6 +26,18 @@
 
 `go install github.com/GoToolSharing/htb-cli@latest`
 
+## Completion
+
+```bash
+❯ htb-cli completion zsh > ~/.local/htb-cli-completion
+❯ source ~/.local/htb-cli-completion
+```
+
+```bash
+❯ htb-cli [TAB]
+help        -- Help about any command
+```
+
 ## Configuration
 
 In order to use `htb-cli`, you need to generate a **HackTheBox application token**. This token can be generated via your account configuration page: https://app.hackthebox.com/profile/settings, then by clicking on `Create App Token`.
@@ -32,6 +46,21 @@ This API token must be set in the **HTB_TOKEN** environment variable. You can ad
 
 ```
 export HTB_TOKEN=eyJ...
+```
+
+A default configuration file is created the first time the tool is running : `$HOME/.local/htb-cli/default.conf`.
+This is a `Key / Value` configuration file.
+
+### Discord
+
+Integration with `Discord webhooks` can be enabled by modifying the `Discord` key value via a `Discord webhook link`.
+This allows the output of certain commands to be received on a discord server.
+This feature is currently in `beta`, with further enhancements to come.
+
+```
+❯ cat ~/.local/htb-cli/default.conf                             
+
+Discord = https://discord.com/api/webhooks/****************/**************************
 ```
 
 ## Commands
@@ -49,14 +78,19 @@ Usage:
   htb-cli [command]
 
 Available Commands:
+  completion  Generate completion script
   help        Help about any command
   info        Detailed information on challenges and machines
   machines    Displays active / retired machines and next machines to be released
   reset       Reset a machine
+  sherlocks   Play Sherlocks mode (blue team)
   start       Start a machine
   status      Displays the status of hackthebox servers
   stop        Stop the current machine
   submit      Submit credentials (machines / challenges / arena)
+  update      Check for updates
+  version     Displays the current version
+  vpn         Interact with HackTheBox VPNs
 
 Flags:
   -b, --batch          Don't ask questions
@@ -66,6 +100,24 @@ Flags:
 
 Use "htb-cli [command] --help" for more information about a command.
 ```
+
+### sherlocks
+
+The `sherlocks` command lets you interact with HackTheBox's `blue team` mode.
+If no argument is given, you'll get information on `active`, `retired` and `soon-to-be-released` sherlocks.
+
+![Sherlock_1](./assets/sherlocks_1.gif)
+
+You can add the `-s` argument to search for a sherlock with its name or part of its name, and the fuzzy finder will do the rest !
+Another optional argument is `--download` or `-d`, which allows you to download the resource associated with the sherlock.
+
+![Sherlock_2](./assets/sherlocks_2.gif)
+
+To submit the answers for each task, you can add the `-t` / `--task` flag followed by the task number.
+
+![Sherlock_3](./assets/sherlocks_3.gif)
+
+Finally, the `--hint` flag can be added to provide a `hint`. If available, it will be displayed above the masked flag when a task is selected.
 
 ### info
 
@@ -85,13 +137,7 @@ Global Flags:
   -v, --verbose        Verbose mode
 ```
 
-```bash
-❯ htb-cli info
-
-? Do you want to check for active machine ? No
-
-? The following username was found : QU35T3190 Yes
-```
+![Sherlock_1](./assets/info_1.gif)
 
 ```bash
 ❯ htb-cli info -c test -m Sau -u Yakei
@@ -114,6 +160,8 @@ The command requires no arguments.
 ```bash
 ❯ htb-cli machines
 ```
+
+![Sherlock_1](./assets/machine_1.gif)
 
 ### start
 
@@ -181,21 +229,54 @@ The `submit` command is used to submit a flag. Currently, the following submissi
 If there is no `--machine` or `--challenge` flag, submission will be made on the current active machine. Otherwise, this can be specified with the `--machine` and `--challenge` flags.
 
 ```bash
-❯ htb-cli submit -f flag4testing -d 3
+❯ htb-cli submit -d 3
 
 No machine is running
 ```
 
 ```bash
-❯ htb-cli submit -c test -f flag4testing -d 3
+❯ htb-cli submit -c test -d 3
 
 ? The following challenge was found : Leet Test Yes
+Flag :
 Incorrect flag
 ```
 
 ```bash
-❯ htb-cli submit -m Sau -f flag4testing -d 3
+❯ htb-cli submit -m Sau -d 3
 
 ? The following machine was found : Sau Yes
+Flag :
 Incorrect flag!
+```
+
+### vpn
+
+The vpn command downloads VPNs from HackTheBox.
+The `--download` flag downloads all VPNs assigned to the user.
+
+```bash
+❯ htb-cli vpn --download
+
+VPN : EU_VIP_7 downloaded successfully
+VPN : EU_StartingPoint_VIP_1 downloaded successfully
+VPN : EU_Endgame_VIP_1 downloaded successfully
+VPN : EU_Fortress_1 downloaded successfully
+VPN : EU_Release_Arena_1 downloaded successfully
+
+VPNs are located at the following path : /home/qu35t/.local/htb-cli
+```
+
+```bash
+❯ ls -la ~/.local/htb-cli
+
+total 72
+drwxr-xr-x 2 qu35t qu35t 4096 12 nov.  17:51 .
+drwxr-xr-x 5 qu35t qu35t 4096 10 nov.  14:32 ..
+-rw-r--r-- 1 qu35t qu35t  149  7 nov.  15:12 default.conf
+-rw-r--r-- 1 qu35t qu35t 9328 12 nov.  17:55 EU_Endgame_VIP_1-vpn.ovpn
+-rw-r--r-- 1 qu35t qu35t 8435 12 nov.  17:55 EU_Fortress_1-vpn.ovpn
+-rw-r--r-- 1 qu35t qu35t 9324 12 nov.  17:55 EU_Release_Arena_1-vpn.ovpn
+-rw-r--r-- 1 qu35t qu35t 8454 12 nov.  17:55 EU_StartingPoint_VIP_1-vpn.ovpn
+-rw-r--r-- 1 qu35t qu35t 9324 12 nov.  17:55 EU_VIP_7-vpn.ovpn
 ```

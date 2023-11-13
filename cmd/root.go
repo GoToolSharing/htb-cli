@@ -5,21 +5,16 @@ import (
 	"log"
 	"os"
 
+	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/spf13/cobra"
 )
-
-var verbose bool
-var proxyParam string
-var batchParam bool
-
-const baseAPIURL = "https://www.hackthebox.com/api/v4"
 
 var rootCmd = &cobra.Command{
 	Use:   "htb-cli",
 	Short: "CLI enhancing the HackTheBox user experience.",
 	Long:  `This software, engineered using the Go programming language, serves to streamline and automate various tasks for the HackTheBox platform, enhancing user efficiency and productivity.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		if verbose {
+		if config.GlobalConfig.Verbose {
 			log.SetOutput(os.Stdout)
 		} else {
 			log.SetOutput(io.Discard)
@@ -36,7 +31,7 @@ func Execute() {
 
 func init() {
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose mode")
-	rootCmd.PersistentFlags().StringVarP(&proxyParam, "proxy", "p", "", "Configure a URL for an HTTP proxy")
-	rootCmd.PersistentFlags().BoolVarP(&batchParam, "batch", "b", false, "Don't ask questions")
+	rootCmd.PersistentFlags().BoolVarP(&config.GlobalConfig.Verbose, "verbose", "v", false, "Verbose mode")
+	rootCmd.PersistentFlags().StringVarP(&config.GlobalConfig.ProxyParam, "proxy", "p", "", "Configure a URL for an HTTP proxy")
+	rootCmd.PersistentFlags().BoolVarP(&config.GlobalConfig.BatchParam, "batch", "b", false, "Don't ask questions")
 }

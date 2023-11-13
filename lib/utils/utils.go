@@ -17,29 +17,9 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/briandowns/spinner"
 )
-
-type Machine struct {
-	ID    string `json:"id"`
-	Value string `json:"value"`
-}
-
-type Challenge struct {
-	ID    string `json:"id"`
-	Value string `json:"value"`
-}
-
-type Username struct {
-	ID    string `json:"id"`
-	Value string `json:"value"`
-}
-
-type Root struct {
-	Machines   interface{} `json:"machines"`
-	Challenges interface{} `json:"challenges"`
-	Usernames  interface{} `json:"users"`
-}
 
 // SetTabWriterHeader will display the information in an array
 func SetTabWriterHeader(header string) *tabwriter.Writer {
@@ -50,12 +30,12 @@ func SetTabWriterHeader(header string) *tabwriter.Writer {
 
 // SetTabWriterData will write the contents of each array cell
 func SetTabWriterData(w *tabwriter.Writer, data string) {
-	fmt.Fprintf(w, data)
+	fmt.Fprint(w, data)
 }
 
 // AskConfirmation will request confirmation from the user
-func AskConfirmation(message string, batchParam bool) bool {
-	if !batchParam {
+func AskConfirmation(message string) bool {
+	if !config.GlobalConfig.BatchParam {
 		var confirmation bool
 		prompt := &survey.Confirm{
 			Message: message,
@@ -79,9 +59,9 @@ func GetHTBToken() string {
 }
 
 // SearchItemIDByName will return the id of an item (machine / challenge / user) based on its name
-func SearchItemIDByName(item string, proxyURL string, element_type string, batchParam bool) (string, error) {
-	url := "https://www.hackthebox.com/api/v4/search/fetch?query=" + item
-	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+func SearchItemIDByName(item string, element_type string) (string, error) {
+	url := fmt.Sprintf("%s/search/fetch?query=%s", config.BaseHackTheBoxAPIURL, item)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -109,7 +89,7 @@ func SearchItemIDByName(item string, proxyURL string, element_type string, batch
 				fmt.Println("error:", err)
 			}
 			log.Println("Machine found :", machines[0].Value)
-			isConfirmed := AskConfirmation("The following machine was found : "+machines[0].Value, batchParam)
+			isConfirmed := AskConfirmation("The following machine was found : " + machines[0].Value)
 			if isConfirmed {
 				return machines[0].ID, nil
 			}
@@ -127,7 +107,7 @@ func SearchItemIDByName(item string, proxyURL string, element_type string, batch
 				fmt.Println("error:", err)
 			}
 			log.Println("Machine found :", machines["0"].Value)
-			isConfirmed := AskConfirmation("The following machine was found : "+machines["0"].Value, batchParam)
+			isConfirmed := AskConfirmation("The following machine was found : " + machines["0"].Value)
 			if isConfirmed {
 				return machines["0"].ID, nil
 			}
@@ -150,7 +130,7 @@ func SearchItemIDByName(item string, proxyURL string, element_type string, batch
 				fmt.Println("error:", err)
 			}
 			log.Println("Challenge found :", challenges[0].Value)
-			isConfirmed := AskConfirmation("The following challenge was found : "+challenges[0].Value, batchParam)
+			isConfirmed := AskConfirmation("The following challenge was found : " + challenges[0].Value)
 			if isConfirmed {
 				return challenges[0].ID, nil
 			}
@@ -168,7 +148,7 @@ func SearchItemIDByName(item string, proxyURL string, element_type string, batch
 				fmt.Println("error:", err)
 			}
 			log.Println("Challenge found :", challenges["0"].Value)
-			isConfirmed := AskConfirmation("The following challenge was found : "+challenges["0"].Value, batchParam)
+			isConfirmed := AskConfirmation("The following challenge was found : " + challenges["0"].Value)
 			if isConfirmed {
 				return challenges["0"].ID, nil
 			}
@@ -191,7 +171,7 @@ func SearchItemIDByName(item string, proxyURL string, element_type string, batch
 				fmt.Println("error:", err)
 			}
 			log.Println("Username found :", usernames[0].Value)
-			isConfirmed := AskConfirmation("The following username was found : "+usernames[0].Value, batchParam)
+			isConfirmed := AskConfirmation("The following username was found : " + usernames[0].Value)
 			if isConfirmed {
 				return usernames[0].ID, nil
 			}
@@ -209,7 +189,7 @@ func SearchItemIDByName(item string, proxyURL string, element_type string, batch
 				fmt.Println("error:", err)
 			}
 			log.Println("Username found :", usernames["0"].Value)
-			isConfirmed := AskConfirmation("The following username was found : "+usernames["0"].Value, batchParam)
+			isConfirmed := AskConfirmation("The following username was found : " + usernames["0"].Value)
 			if isConfirmed {
 				return usernames["0"].ID, nil
 			}
@@ -237,10 +217,10 @@ func ParseJsonMessage(resp *http.Response, key string) interface{} {
 }
 
 // GetMachineType will return the machine type
-func GetMachineType(machine_id interface{}, proxyURL string) string {
+func GetMachineType(machine_id interface{}) string {
 	// Check if the machine is the latest release
-	url := "https://www.hackthebox.com/api/v4/machine/recommended/"
-	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	url := fmt.Sprintf("%s/machine/recommended/", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -251,8 +231,8 @@ func GetMachineType(machine_id interface{}, proxyURL string) string {
 	}
 
 	// Check if the machine is active or retired
-	url = "https://www.hackthebox.com/api/v4/machine/profile/" + machine_id.(string)
-	resp, err = HtbRequest(http.MethodGet, url, proxyURL, nil)
+	url = fmt.Sprintf("%s/machine/profile/%v", config.BaseHackTheBoxAPIURL, machine_id)
+	resp, err = HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -266,9 +246,9 @@ func GetMachineType(machine_id interface{}, proxyURL string) string {
 }
 
 // GetUserSubscription returns the user's subscription level
-func GetUserSubscription(proxyURL string) string {
-	url := "https://www.hackthebox.com/api/v4/user/info"
-	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+func GetUserSubscription() string {
+	url := fmt.Sprintf("%s/user/info", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -287,9 +267,9 @@ func GetUserSubscription(proxyURL string) string {
 }
 
 // GetActiveMachineID returns the id of the active machine
-func GetActiveMachineID(proxyURL string) string {
-	url := "https://www.hackthebox.com/api/v4/machine/active"
-	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+func GetActiveMachineID() string {
+	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -301,9 +281,9 @@ func GetActiveMachineID(proxyURL string) string {
 }
 
 // GetActiveMachineIP returns the ip of the active machine
-func GetActiveMachineIP(proxyURL string) string {
-	url := "https://www.hackthebox.com/api/v4/machine/active"
-	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+func GetActiveMachineIP() string {
+	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -319,7 +299,7 @@ func GetActiveMachineIP(proxyURL string) string {
 }
 
 // HtbRequest makes an HTTP request to the Hackthebox API
-func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte) (*http.Response, error) {
+func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -342,7 +322,7 @@ func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte
 		log.Fatalln(err)
 	}
 
-	req.Header.Set("User-Agent", "HTB-Tool")
+	req.Header.Set("User-Agent", "htb-cli")
 	req.Header.Set("Authorization", "Bearer "+JWT_TOKEN)
 
 	if method == http.MethodPost {
@@ -357,9 +337,9 @@ func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte
 		},
 	}
 
-	if proxyURL != "" {
-		log.Println("Proxy URL found :", proxyURL)
-		proxyURLParsed, err := url.Parse(proxyURL)
+	if config.GlobalConfig.ProxyParam != "" {
+		log.Println("Proxy URL found :", config.GlobalConfig.ProxyParam)
+		proxyURLParsed, err := url.Parse(config.GlobalConfig.ProxyParam)
 		if err != nil {
 			s.Stop()
 			return nil, fmt.Errorf("error parsing proxy url : %v", err)
@@ -380,18 +360,18 @@ func HtbRequest(method string, urlParam string, proxyURL string, jsonData []byte
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
 	resp.Body = io.NopCloser(bytes.NewReader(body))
-	var i interface{}
-	if json.Unmarshal(body, &i) != nil {
-		s.Stop()
-		fmt.Println("Your token is invalid or expired")
-		os.Exit(1)
-	}
+	// var i interface{}
+	// if json.Unmarshal(body, &i) != nil {
+	// 	s.Stop()
+	// 	fmt.Println("JSON Unmarshal error")
+	// 	os.Exit(1)
+	// }
 	s.Stop()
 	return resp, nil
 }
 
-func GetInformationsFromActiveMachine(proxyParam string) (map[string]interface{}, error) {
-	machineID := GetActiveMachineID(proxyParam)
+func GetInformationsFromActiveMachine() (map[string]interface{}, error) {
+	machineID := GetActiveMachineID()
 
 	if machineID == "" {
 		fmt.Println("No machine is running")
@@ -399,8 +379,8 @@ func GetInformationsFromActiveMachine(proxyParam string) (map[string]interface{}
 	}
 	log.Println("Machine ID:", machineID)
 
-	url := "https://www.hackthebox.com/api/v4/machine/profile/" + machineID
-	resp, err := HtbRequest(http.MethodGet, url, proxyParam, nil)
+	url := fmt.Sprintf("%s/machine/profile/%s", config.BaseHackTheBoxAPIURL, machineID)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -409,4 +389,62 @@ func GetInformationsFromActiveMachine(proxyParam string) (map[string]interface{}
 	data := info.(map[string]interface{})
 
 	return data, nil
+}
+
+// HTTPRequest makes an HTTP request with the specified method, URL, proxy settings, and data.
+func HTTPRequest(method string, urlParam string, jsonData []byte) (*http.Response, error) {
+	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigs
+		s.Stop()
+		os.Exit(0)
+	}()
+
+	s.Start()
+
+	req, err := http.NewRequest(method, urlParam, bytes.NewBuffer(jsonData))
+	if err != nil {
+		s.Stop()
+		log.Fatalln(err)
+	}
+
+	req.Header.Set("User-Agent", "htb-cli")
+
+	if method == http.MethodPost {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+
+	if config.GlobalConfig.ProxyParam != "" {
+		log.Println("Proxy URL found :", config.GlobalConfig.ProxyParam)
+		proxyURLParsed, err := url.Parse(config.GlobalConfig.ProxyParam)
+		if err != nil {
+			s.Stop()
+			return nil, fmt.Errorf("error parsing proxy url : %v", err)
+		}
+		transport.Proxy = http.ProxyURL(proxyURLParsed)
+	}
+
+	log.Println("HTTP request URL :", req.URL)
+	log.Println("HTTP request method :", req.Method)
+	log.Println("HTTP request body :", req.Body)
+
+	client := &http.Client{Transport: transport}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	resp.Body = io.NopCloser(bytes.NewReader(body))
+	s.Stop()
+	return resp, nil
 }
