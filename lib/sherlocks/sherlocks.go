@@ -1,7 +1,6 @@
 package sherlocks
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/chzyer/readline"
 	"github.com/sahilm/fuzzy"
 )
 
@@ -35,10 +35,19 @@ func getDownloadLink(sherlockID string) (string, error) {
 		return "", fmt.Errorf("error: Sherlock is not available for now")
 	}
 
-	data := utils.ParseJsonMessage(resp, "data").(map[string]interface{})
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	log.Println("Download URL :", data["url"].(string))
-	return data["url"].(string), nil
+	var data DownloadFile
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Download URL :", data.URL)
+	return data.URL, nil
 }
 
 // downloadFile downloads the Sherlock file from a given URL to a specified download path.
@@ -118,9 +127,13 @@ func GetTaskByID(sherlockID string, sherlockTaskID int, sherlockHint bool) error
 		} else {
 			fmt.Printf("\n%s :\n%s\n\nMasked Flag : %s\n", sherlockData.Tasks[sherlockTaskID-1].Title, sherlockData.Tasks[sherlockTaskID-1].Description, sherlockData.Tasks[sherlockTaskID-1].MaskedFlag)
 		}
-		fmt.Print("Answer : ")
-		reader := bufio.NewReader(os.Stdin)
-		flag, err := reader.ReadString('\n')
+		rl, err := readline.New("Answer: ")
+		if err != nil {
+			panic(err)
+		}
+		defer rl.Close()
+
+		flag, err := rl.Readline()
 		if err != nil {
 			return err
 		}

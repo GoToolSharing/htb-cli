@@ -26,3 +26,8 @@ type SherlockNameID struct {
 	Name string
 	ID   int
 }
+
+type DownloadFile struct {
+	URL       string `json:"url"`
+	ExpiresIn int    `json:"expires_in"`
+}

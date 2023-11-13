@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/briandowns/spinner v1.23.0
+	github.com/chzyer/readline v1.5.1
 	github.com/rivo/tview v0.0.0-20230928053139-9bc1d28d88a9
 	github.com/sahilm/fuzzy v0.1.0
 	github.com/spf13/cobra v1.5.0
