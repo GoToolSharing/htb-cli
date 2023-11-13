@@ -95,7 +95,7 @@ func submitTask(sherlockID string, taskID string, flag string) (string, error) {
 }
 
 // GetTaskByID retrieves and prints the description of a specific task of a Sherlock challenge.
-func GetTaskByID(sherlockID string, sherlockTaskID int) error {
+func GetTaskByID(sherlockID string, sherlockTaskID int, sherlockHint bool) error {
 	// TODO: Add hint
 	url := fmt.Sprintf("%s/sherlocks/%s/tasks", config.BaseHackTheBoxAPIURL, sherlockID)
 	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
@@ -113,7 +113,11 @@ func GetTaskByID(sherlockID string, sherlockTaskID int) error {
 	}
 
 	if sherlockTaskID >= 1 && sherlockTaskID <= len(sherlockData.Tasks) {
-		fmt.Printf("\n%s :\n%s\n\n", sherlockData.Tasks[sherlockTaskID-1].Title, sherlockData.Tasks[sherlockTaskID-1].Description)
+		if sherlockHint && sherlockData.Tasks[sherlockTaskID-1].Hint != "" {
+			fmt.Printf(fmt.Sprintf("\n%s :\n%s\n\nHint : %s\nMasked Flag : %s\n", sherlockData.Tasks[sherlockTaskID-1].Title, sherlockData.Tasks[sherlockTaskID-1].Description, sherlockData.Tasks[sherlockTaskID-1].Hint, sherlockData.Tasks[sherlockTaskID-1].MaskedFlag))
+		} else {
+			fmt.Printf(fmt.Sprintf("\n%s :\n%s\n\nMasked Flag : %s\n", sherlockData.Tasks[sherlockTaskID-1].Title, sherlockData.Tasks[sherlockTaskID-1].Description, sherlockData.Tasks[sherlockTaskID-1].MaskedFlag))
+		}
 		fmt.Print("Answer : ")
 		reader := bufio.NewReader(os.Stdin)
 		flag, err := reader.ReadString('\n')

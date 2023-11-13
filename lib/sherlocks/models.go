@@ -4,6 +4,8 @@ type SherlockTask struct {
 	ID          int    `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
+	MaskedFlag  string `json:"masked_flag"`
+	Hint        string `json:"hint"`
 	Completed   bool   `json:"completed"`
 }
 

@@ -32,6 +32,13 @@ var sherlocksCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
+
+		sherlockHint, err := cmd.Flags().GetBool("hint")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
 		if sherlockNameParam != "" {
 			sherlockID, err := sherlocks.SearchIDByName(sherlockNameParam)
 			if err != nil {
@@ -41,7 +48,7 @@ var sherlocksCmd = &cobra.Command{
 			log.Println("SherlockID :", sherlockID)
 
 			if sherlockTaskID != 0 {
-				err := sherlocks.GetTaskByID(sherlockID, sherlockTaskID)
+				err := sherlocks.GetTaskByID(sherlockID, sherlockTaskID, sherlockHint)
 				if err != nil {
 					fmt.Println(err)
 					return
@@ -122,4 +129,5 @@ func init() {
 	sherlocksCmd.Flags().StringP("sherlock_name", "s", "", "Sherlock Name")
 	sherlocksCmd.Flags().StringP("download", "d", "", "Download Sherlock Resources")
 	sherlocksCmd.Flags().IntP("task", "t", 0, "Task ID")
+	sherlocksCmd.Flags().BoolP("hint", "", false, "Hint")
 }
