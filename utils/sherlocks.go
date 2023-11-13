@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,7 +12,6 @@ import (
 	"strconv"
 
 	"github.com/sahilm/fuzzy"
-	"golang.org/x/term"
 )
 
 type SherlockTask struct {
@@ -135,14 +135,11 @@ func GetSherlockTaskByID(proxyURL string, sherlockID string, sherlockTaskID int)
 
 	if sherlockTaskID >= 1 && sherlockTaskID <= len(sherlockData.Tasks) {
 		fmt.Printf("\n%s :\n%s\n\n", sherlockData.Tasks[sherlockTaskID-1].Title, sherlockData.Tasks[sherlockTaskID-1].Description)
-		fmt.Print("Flag : ")
-		taskID := strconv.Itoa(sherlockData.Tasks[sherlockTaskID-1].ID)
-		flagByte, err := term.ReadPassword(int(os.Stdin.Fd()))
-		if err != nil {
-			fmt.Println("Error reading flag")
-		}
-		flag := string(flagByte)
+		fmt.Print("Answer : ")
+		reader := bufio.NewReader(os.Stdin)
+		flag, err := reader.ReadString('\n')
 		log.Println(flag)
+		taskID := strconv.Itoa(sherlockData.Tasks[sherlockTaskID-1].ID)
 
 		message, err := submitTask(proxyURL, sherlockID, taskID, flag)
 
