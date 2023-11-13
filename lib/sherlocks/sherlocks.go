@@ -35,10 +35,19 @@ func getDownloadLink(sherlockID string) (string, error) {
 		return "", fmt.Errorf("error: Sherlock is not available for now")
 	}
 
-	data := utils.ParseJsonMessage(resp, "data").(map[string]interface{})
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	log.Println("Download URL :", data["url"].(string))
-	return data["url"].(string), nil
+	var data DownloadFile
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Download URL :", data.URL)
+	return data.URL, nil
 }
 
 // downloadFile downloads the Sherlock file from a given URL to a specified download path.
