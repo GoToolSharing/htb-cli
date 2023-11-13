@@ -15,8 +15,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var machineChoosen string
-
 // coreStartCmd starts a specified machine and returns a status message and any error encountered.
 func coreStartCmd(machineChoosen string) (string, error) {
 	machineID, err := utils.SearchItemIDByName(machineChoosen, "Machine")
@@ -115,11 +113,16 @@ var startCmd = &cobra.Command{
 	Short: "Start a machine",
 	Long:  `Starts a Hackthebox machine specified in argument`,
 	Run: func(cmd *cobra.Command, args []string) {
+		machineChoosen, err := cmd.Flags().GetString("machine")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		output, err := coreStartCmd(machineChoosen)
 		if err != nil {
 			log.Fatalf("Error: %v", err)
 		}
-		if config.GlobalConf["Discord"] != "False" {
+		if config.ConfigFile["Discord"] != "False" {
 			err := webhooks.SendToDiscord("[START] - " + output)
 			if err != nil {
 				fmt.Println(err)
@@ -133,7 +136,7 @@ var startCmd = &cobra.Command{
 // init adds the startCmd to rootCmd and sets flags for the "start" command.
 func init() {
 	rootCmd.AddCommand(startCmd)
-	startCmd.Flags().StringVarP(&machineChoosen, "machine", "m", "", "Machine name")
+	startCmd.Flags().StringP("machine", "m", "", "Machine name")
 	err := startCmd.MarkFlagRequired("machine")
 	if err != nil {
 		fmt.Println(err)

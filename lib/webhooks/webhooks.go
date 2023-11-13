@@ -18,7 +18,7 @@ func SendToDiscord(message string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create JSON data: %w", err)
 	}
-	_, err = utils.HTTPRequest(http.MethodPost, config.GlobalConf["Discord"], jsonData)
+	_, err = utils.HTTPRequest(http.MethodPost, config.ConfigFile["Discord"], jsonData)
 	if err != nil {
 		return err
 	}

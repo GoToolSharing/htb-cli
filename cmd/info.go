@@ -14,10 +14,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var machineParam []string
-var challengeParam []string
-var usernameParam []string
-
 // Retrieves data for user profile
 func fetchData(itemID string, endpoint string, infoKey string) (map[string]interface{}, error) {
 	url := config.BaseHackTheBoxAPIURL + endpoint + itemID
@@ -123,7 +119,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 }
 
 // coreInfoCmd is the core of the info command; it checks the parameters and displays corresponding information.
-func coreInfoCmd() error {
+func coreInfoCmd(machineName []string, challengeName []string, usernameName []string) error {
 	machineHeader := "Name\tOS\tRetired\tDifficulty\tStars\tIP\tStatus\tLast Reset\tRelease"
 	challengeHeader := "Name\tCategory\tRetired\tDifficulty\tStars\tSolves\tStatus\tRelease"
 	usernameHeader := "Name\tUser Owns\tSystem Owns\tUser Bloods\tSystem Bloods\tTeam\tUniversity\tRank\tGlobal Rank\tPoints"
@@ -136,13 +132,13 @@ func coreInfoCmd() error {
 	}
 
 	infos := []infoType{
-		{config.BaseHackTheBoxAPIURL + "/machine/profile/", machineHeader, machineParam, "Machine"},
-		{config.BaseHackTheBoxAPIURL + "/challenge/info/", challengeHeader, challengeParam, "Challenge"},
-		{config.BaseHackTheBoxAPIURL + "/user/profile/basic/", usernameHeader, usernameParam, "Username"},
+		{config.BaseHackTheBoxAPIURL + "/machine/profile/", machineHeader, machineName, "Machine"},
+		{config.BaseHackTheBoxAPIURL + "/challenge/info/", challengeHeader, challengeName, "Challenge"},
+		{config.BaseHackTheBoxAPIURL + "/user/profile/basic/", usernameHeader, usernameName, "Username"},
 	}
 
 	// No arguments provided
-	if len(machineParam) == 0 && len(usernameParam) == 0 && len(challengeParam) == 0 {
+	if len(machineName) == 0 && len(usernameName) == 0 && len(challengeName) == 0 {
 		isConfirmed := utils.AskConfirmation("Do you want to check for active machine ?")
 		if isConfirmed {
 			err := displayActiveMachine(machineHeader)
@@ -265,7 +261,24 @@ var infoCmd = &cobra.Command{
 	Short: "Detailed information on challenges and machines",
 	Long:  "Displays detailed information on machines and challenges in a structured table",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := coreInfoCmd()
+		machineParam, err := cmd.Flags().GetStringSlice("machine")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		challengeParam, err := cmd.Flags().GetStringSlice("challenge")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		usernameParam, err := cmd.Flags().GetStringSlice("username")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		err = coreInfoCmd(machineParam, challengeParam, usernameParam)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -275,7 +288,7 @@ var infoCmd = &cobra.Command{
 // init adds the info command to the root command and sets flags specific to this command.
 func init() {
 	rootCmd.AddCommand(infoCmd)
-	infoCmd.Flags().StringSliceVarP(&machineParam, "machine", "m", []string{}, "Machine name")
-	infoCmd.Flags().StringSliceVarP(&challengeParam, "challenge", "c", []string{}, "Challenge name")
-	infoCmd.Flags().StringSliceVarP(&usernameParam, "username", "u", []string{}, "Username")
+	infoCmd.Flags().StringSliceP("machine", "m", []string{}, "Machine name")
+	infoCmd.Flags().StringSliceP("challenge", "c", []string{}, "Challenge name")
+	infoCmd.Flags().StringSliceP("username", "u", []string{}, "Username")
 }

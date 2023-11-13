@@ -17,7 +17,7 @@ type Settings struct {
 
 var GlobalConfig Settings
 
-var GlobalConf map[string]string
+var ConfigFile map[string]string
 
 var homeDir = os.Getenv("HOME")
 
@@ -140,6 +140,6 @@ func Init() error {
 	}
 
 	log.Println("Configuration successfully loaded :", config)
-	GlobalConf = config
+	ConfigFile = config
 	return nil
 }

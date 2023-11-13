@@ -12,10 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var sherlockNameParam string
-var sherlockDownloadPath string
-var sherlockTaskID int
-
 const (
 	sherlocksURL            = config.BaseHackTheBoxAPIURL + "/sherlocks?state=active"
 	retiredSherlocksURL     = config.BaseHackTheBoxAPIURL + "/sherlocks?state=retired"
@@ -107,6 +103,23 @@ var sherlocksCmd = &cobra.Command{
 	Use:   "sherlocks",
 	Short: "Displays active sherlocks and next sherlocks to be released",
 	Run: func(cmd *cobra.Command, args []string) {
+		sherlockNameParam, err := cmd.Flags().GetString("sherlock_name")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		sherlockDownloadPath, err := cmd.Flags().GetString("download")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		sherlockTaskID, err := cmd.Flags().GetInt("task")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		if sherlockNameParam != "" {
 			sherlockID, err := sherlocks.SearchIDByName(sherlockNameParam)
 			if err != nil {
@@ -194,7 +207,7 @@ var sherlocksCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(sherlocksCmd)
-	sherlocksCmd.Flags().StringVarP(&sherlockNameParam, "sherlock_name", "s", "", "Sherlock Name")
-	sherlocksCmd.Flags().StringVarP(&sherlockDownloadPath, "download", "d", "", "Download Sherlock Resources")
-	sherlocksCmd.Flags().IntVarP(&sherlockTaskID, "task", "t", 0, "Task ID")
+	sherlocksCmd.Flags().StringP("sherlock_name", "s", "", "Sherlock Name")
+	sherlocksCmd.Flags().StringP("download", "d", "", "Download Sherlock Resources")
+	sherlocksCmd.Flags().IntP("task", "t", 0, "Task ID")
 }

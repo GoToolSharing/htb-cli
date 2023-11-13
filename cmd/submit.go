@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// submitCmd defines the "submit" command for submitting flags for machines or challenges.
 var submitCmd = &cobra.Command{
 	Use:   "submit",
 	Short: "Submit credentials (machines / challenges / arena)",
@@ -38,8 +37,8 @@ var submitCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		if config.GlobalConf["Discord"] != "False" {
-			err := webhooks.SendToDiscord("[SUBMIT] - " + output)
+		if config.ConfigFile["Discord"] != "False" {
+			err := webhooks.SendToDiscord(fmt.Sprintf("[SUBMIT COMMAND] - %s", output))
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -49,7 +48,6 @@ var submitCmd = &cobra.Command{
 	},
 }
 
-// init adds the submitCmd to rootCmd and sets flags for the "submit" command.
 func init() {
 	rootCmd.AddCommand(submitCmd)
 	submitCmd.Flags().StringP("machine_name", "m", "", "Machine Name")

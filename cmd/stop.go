@@ -75,7 +75,6 @@ func coreStopCmd() (string, error) {
 	return message, nil
 }
 
-// stopCmd represents the "stop" command which stops the current active machine.
 var stopCmd = &cobra.Command{
 	Use:   "stop",
 	Short: "Stop the current machine",
@@ -84,8 +83,8 @@ var stopCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		if config.GlobalConf["Discord"] != "False" {
-			err := webhooks.SendToDiscord("[STOP] - " + output)
+		if config.ConfigFile["Discord"] != "False" {
+			err := webhooks.SendToDiscord(fmt.Sprintf("[STOP] - %s", output))
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -95,7 +94,6 @@ var stopCmd = &cobra.Command{
 	},
 }
 
-// init initializes the command by adding it to the root command.
 func init() {
 	rootCmd.AddCommand(stopCmd)
 }
