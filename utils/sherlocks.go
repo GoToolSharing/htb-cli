@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/sahilm/fuzzy"
 )
@@ -118,6 +119,7 @@ func submitTask(proxyURL string, sherlockID string, taskID string, flag string) 
 
 // GetSherlockTaskByID retrieves and prints the description of a specific task of a Sherlock challenge.
 func GetSherlockTaskByID(proxyURL string, sherlockID string, sherlockTaskID int) error {
+	// TODO: Add hint
 	url := "https://www.hackthebox.com/api/v4/sherlocks/" + sherlockID + "/tasks"
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
@@ -138,6 +140,10 @@ func GetSherlockTaskByID(proxyURL string, sherlockID string, sherlockTaskID int)
 		fmt.Print("Answer : ")
 		reader := bufio.NewReader(os.Stdin)
 		flag, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		flag = strings.TrimSpace(flag)
 		log.Println(flag)
 		taskID := strconv.Itoa(sherlockData.Tasks[sherlockTaskID-1].ID)
 
