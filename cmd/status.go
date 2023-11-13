@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/utils"
+	"github.com/GoToolSharing/htb-cli/utils/webhooks"
 	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
 )
@@ -121,7 +121,7 @@ var statusCmd = &cobra.Command{
 			log.Fatalf("Error: %v", err)
 		}
 		if config.GlobalConf["Discord"] != "False" {
-			err := utils.SendDiscordWebhook("[STATUS] - " + output)
+			err := webhooks.SendToDiscord("[STATUS] - " + output)
 			if err != nil {
 				fmt.Println(err)
 				return

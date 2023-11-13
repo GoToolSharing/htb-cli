@@ -7,6 +7,7 @@ import (
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/utils"
+	"github.com/GoToolSharing/htb-cli/utils/webhooks"
 	"github.com/spf13/cobra"
 )
 
@@ -84,7 +85,7 @@ var stopCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		if config.GlobalConf["Discord"] != "False" {
-			err := utils.SendDiscordWebhook("[STOP] - " + output)
+			err := webhooks.SendToDiscord("[STOP] - " + output)
 			if err != nil {
 				fmt.Println(err)
 				return

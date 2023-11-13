@@ -12,6 +12,7 @@ import (
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/utils"
+	"github.com/GoToolSharing/htb-cli/utils/webhooks"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
@@ -116,7 +117,7 @@ var submitCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		if config.GlobalConf["Discord"] != "False" {
-			err := utils.SendDiscordWebhook("[SUBMIT] - " + output)
+			err := webhooks.SendToDiscord("[SUBMIT] - " + output)
 			if err != nil {
 				fmt.Println(err)
 				return

@@ -10,6 +10,7 @@ import (
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/utils"
+	"github.com/GoToolSharing/htb-cli/utils/webhooks"
 	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
 )
@@ -119,7 +120,7 @@ var startCmd = &cobra.Command{
 			log.Fatalf("Error: %v", err)
 		}
 		if config.GlobalConf["Discord"] != "False" {
-			err := utils.SendDiscordWebhook("[START] - " + output)
+			err := webhooks.SendToDiscord("[START] - " + output)
 			if err != nil {
 				fmt.Println(err)
 				return

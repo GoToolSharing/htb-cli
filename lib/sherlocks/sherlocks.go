@@ -18,7 +18,7 @@ import (
 )
 
 // getSherlockDownloadLink constructs and returns the download link for a specific Sherlock challenge.
-func getSherlockDownloadLink(proxyURL string, sherlockID string) (string, error) {
+func getDownloadLink(proxyURL string, sherlockID string) (string, error) {
 	url := fmt.Sprintf("%s/sherlocks/%s/download_link", config.BaseHackTheBoxAPIURL, sherlockID)
 
 	// url := "https://www.hackthebox.com/api/v4/challenge/download/196"
@@ -41,8 +41,8 @@ func getSherlockDownloadLink(proxyURL string, sherlockID string) (string, error)
 	return data["url"].(string), nil
 }
 
-// downloadSherlockFile downloads the Sherlock file from a given URL to a specified download path.
-func downloadSherlockFile(proxyURL string, url string, downloadPath string) error {
+// downloadFile downloads the Sherlock file from a given URL to a specified download path.
+func downloadFile(proxyURL string, url string, downloadPath string) error {
 	resp, err := utils.HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -94,8 +94,8 @@ func submitTask(proxyURL string, sherlockID string, taskID string, flag string) 
 	return message, nil
 }
 
-// GetSherlockTaskByID retrieves and prints the description of a specific task of a Sherlock challenge.
-func GetSherlockTaskByID(proxyURL string, sherlockID string, sherlockTaskID int) error {
+// GetTaskByID retrieves and prints the description of a specific task of a Sherlock challenge.
+func GetTaskByID(proxyURL string, sherlockID string, sherlockTaskID int) error {
 	// TODO: Add hint
 	url := fmt.Sprintf("%s/sherlocks/%s/tasks", config.BaseHackTheBoxAPIURL, sherlockID)
 	resp, err := utils.HtbRequest(http.MethodGet, url, proxyURL, nil)
@@ -137,8 +137,8 @@ func GetSherlockTaskByID(proxyURL string, sherlockID string, sherlockTaskID int)
 	return nil
 }
 
-// GetSherlockTasks retrieves all tasks for a specific Sherlock challenge.
-func GetSherlockTasks(proxyURL string, sherlockID string) (*SherlockDataTasks, error) {
+// GetTasks retrieves all tasks for a specific Sherlock challenge.
+func GetTasks(proxyURL string, sherlockID string) (*SherlockDataTasks, error) {
 	url := fmt.Sprintf("%s/sherlocks/%s/tasks", config.BaseHackTheBoxAPIURL, sherlockID)
 	resp, err := utils.HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
@@ -157,8 +157,8 @@ func GetSherlockTasks(proxyURL string, sherlockID string) (*SherlockDataTasks, e
 	return &parsedData, nil
 }
 
-// GetSherlockGeneralInformations retrieves and prints general information about a Sherlock challenge.
-func GetSherlockGeneralInformations(proxyURL string, sherlockID string, sherlockDownloadPath string) error {
+// GetGeneralInformations retrieves and prints general information about a Sherlock challenge.
+func GetGeneralInformations(proxyURL string, sherlockID string, sherlockDownloadPath string) error {
 	url := fmt.Sprintf("%s/sherlocks/%s/play", config.BaseHackTheBoxAPIURL, sherlockID)
 	resp, err := utils.HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
@@ -169,11 +169,11 @@ func GetSherlockGeneralInformations(proxyURL string, sherlockID string, sherlock
 	info := utils.ParseJsonMessage(resp, "data").(map[string]interface{})
 
 	if sherlockDownloadPath != "" {
-		url, err := getSherlockDownloadLink(proxyURL, sherlockID)
+		url, err := getDownloadLink(proxyURL, sherlockID)
 		if err != nil {
 			return err
 		}
-		err = downloadSherlockFile(proxyURL, url, sherlockDownloadPath)
+		err = downloadFile(proxyURL, url, sherlockDownloadPath)
 		if err != nil {
 			return err
 		}
@@ -186,8 +186,8 @@ func GetSherlockGeneralInformations(proxyURL string, sherlockID string, sherlock
 	return nil
 }
 
-// SearchSherlockIDByName searches for a Sherlock challenge by name and returns its ID.
-func SearchSherlockIDByName(proxyURL string, sherlockSearch string, batchParam bool) (string, error) {
+// SearchIDByName searches for a Sherlock challenge by name and returns its ID.
+func SearchIDByName(proxyURL string, sherlockSearch string, batchParam bool) (string, error) {
 	url := fmt.Sprintf("%s/sherlocks", config.BaseHackTheBoxAPIURL)
 	resp, err := utils.HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
@@ -195,12 +195,7 @@ func SearchSherlockIDByName(proxyURL string, sherlockSearch string, batchParam b
 	}
 	defer resp.Body.Close()
 
-	// info := ParseJsonMessage(resp, "data")
-	// log.Println("Info :", info)
-
 	jsonData, _ := io.ReadAll(resp.Body)
-
-	// fmt.Println(jsonData)
 
 	var parsedData SherlockData
 	err = json.Unmarshal([]byte(jsonData), &parsedData)
