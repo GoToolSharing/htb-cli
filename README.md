@@ -72,14 +72,19 @@ Usage:
   htb-cli [command]
 
 Available Commands:
+  completion  Generate completion script
   help        Help about any command
   info        Detailed information on challenges and machines
   machines    Displays active / retired machines and next machines to be released
   reset       Reset a machine
+  sherlocks   Play Sherlocks mode (blue team)
   start       Start a machine
   status      Displays the status of hackthebox servers
   stop        Stop the current machine
   submit      Submit credentials (machines / challenges / arena)
+  update      Check for updates
+  version     Displays the current version
+  vpn         Interact with HackTheBox VPNs
 
 Flags:
   -b, --batch          Don't ask questions
@@ -105,6 +110,8 @@ Another optional argument is `--download` or `-d`, which allows you to download 
 To submit the answers for each task, you can add the `-t` / `--task` flag followed by the task number.
 
 ![Sherlock_3](./assets/sherlocks_3.gif)
+
+Finally, the `--hint` flag can be added to provide a `hint`. If available, it will be displayed above the masked flag when a task is selected.
 
 ### info
 

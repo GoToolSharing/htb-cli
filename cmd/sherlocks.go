@@ -13,7 +13,7 @@ import (
 
 var sherlocksCmd = &cobra.Command{
 	Use:   "sherlocks",
-	Short: "Displays active / retired / to be released sherlocks",
+	Short: "Play Sherlocks mode (blue team)",
 	Run: func(cmd *cobra.Command, args []string) {
 		sherlockNameParam, err := cmd.Flags().GetString("sherlock_name")
 		if err != nil {
