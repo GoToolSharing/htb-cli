@@ -1,4 +1,4 @@
-package utils
+package vpn
 
 import (
 	"encoding/json"
@@ -12,25 +12,11 @@ import (
 	"time"
 
 	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/GoToolSharing/htb-cli/lib/utils"
 )
 
-type Assigned struct {
-	ID           int    `json:"id"`
-	FriendlyName string `json:"friendly_name"`
-}
-
-type Data struct {
-	Disabled bool     `json:"disabled"`
-	Assigned Assigned `json:"assigned"`
-}
-
-type Response struct {
-	Status bool `json:"status"`
-	Data   Data `json:"data"`
-}
-
-// DownloadVPN downloads VPN configurations from HackTheBox for different server types.
-func DownloadVPN(proxyURL string) error {
+// DownloadAll downloads VPN configurations from HackTheBox for different server types.
+func DownloadAll() error {
 	baseURL := fmt.Sprintf("%s/connections/servers?product=", config.BaseHackTheBoxAPIURL)
 	urls := []string{
 		baseURL + "labs",
@@ -42,7 +28,7 @@ func DownloadVPN(proxyURL string) error {
 
 	for _, url := range urls {
 
-		resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+		resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -62,7 +48,7 @@ func DownloadVPN(proxyURL string) error {
 		}
 
 		url = fmt.Sprintf("%s/access/ovpnfile/%d/0", config.BaseHackTheBoxAPIURL, response.Data.Assigned.ID)
-		resp, err = HtbRequest(http.MethodGet, url, proxyURL, nil)
+		resp, err = utils.HtbRequest(http.MethodGet, url, nil)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -75,7 +61,7 @@ func DownloadVPN(proxyURL string) error {
 
 		vpnName := strings.ReplaceAll(response.Data.Assigned.FriendlyName, " ", "_")
 
-		downloadPath := "/home/qu35t/.local/htb-cli/" + vpnName + "-vpn.ovpn"
+		downloadPath := fmt.Sprintf("%s/%s-vpn.ovpn", config.BaseDirectory, vpnName)
 		outFile, err := os.Create(downloadPath)
 		if err != nil {
 			log.Fatal(err)
@@ -96,10 +82,10 @@ func DownloadVPN(proxyURL string) error {
 	return nil
 }
 
-// StartVPN starts the VPN connection using an OpenVPN configuration file.
-func StartVPN(configPath string) string {
+// Start starts the VPN connection using an OpenVPN configuration file.
+func Start(configPath string) string {
 	fmt.Println("VPN is starting...")
-	pidFile := baseDirectory + "/lab-vpn.pid"
+	pidFile := config.BaseDirectory + "/lab-vpn.pid"
 	cmd := exec.Command("sudo", "openvpn", "--config", configPath, "--writepid", pidFile)
 
 	err := cmd.Start()
@@ -109,7 +95,7 @@ func StartVPN(configPath string) string {
 
 	fmt.Println("Wait 20s and check if the vpn is started...")
 	time.Sleep(20 * time.Second)
-	isActive := CheckVPN("")
+	isActive := Status()
 	if isActive {
 		fmt.Println("The VPN is now active !")
 	}
@@ -117,10 +103,10 @@ func StartVPN(configPath string) string {
 	return ""
 }
 
-// CheckVPN checks the current status of the VPN connection.
-func CheckVPN(proxyURL string) bool {
+// Status checks the current status of the VPN connection.
+func Status() bool {
 	url := fmt.Sprintf("%s/connection/status", config.BaseHackTheBoxAPIURL)
-	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -158,10 +144,10 @@ func CheckVPN(proxyURL string) bool {
 	return true
 }
 
-// StopVPN attempts to stop the currently active VPN connection.
-func StopVPN() error {
+// Stop attempts to stop the currently active VPN connection.
+func Stop() error {
 	fmt.Println("Try to stop the active VPN...")
-	pidFile := baseDirectory + "/lab-vpn.pid"
+	pidFile := config.BaseDirectory + "/lab-vpn.pid"
 	pidData, err := os.ReadFile(pidFile)
 	if err != nil {
 		return err

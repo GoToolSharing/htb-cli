@@ -5,12 +5,13 @@ import (
 	"log"
 	"os"
 
+	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/spf13/cobra"
 )
 
 var verbose bool
 var proxyParam string
-var batchParam bool
+var BatchParam bool
 
 var rootCmd = &cobra.Command{
 	Use:   "htb-cli",
@@ -34,7 +35,7 @@ func Execute() {
 
 func init() {
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose mode")
-	rootCmd.PersistentFlags().StringVarP(&proxyParam, "proxy", "p", "", "Configure a URL for an HTTP proxy")
-	rootCmd.PersistentFlags().BoolVarP(&batchParam, "batch", "b", false, "Don't ask questions")
+	rootCmd.PersistentFlags().BoolVarP(&config.GlobalConfig.Verbose, "verbose", "v", false, "Verbose mode")
+	rootCmd.PersistentFlags().StringVarP(&config.GlobalConfig.ProxyParam, "proxy", "p", "", "Configure a URL for an HTTP proxy")
+	rootCmd.PersistentFlags().BoolVarP(&config.GlobalConfig.BatchParam, "batch", "b", false, "Don't ask questions")
 }

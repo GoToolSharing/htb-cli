@@ -9,6 +9,14 @@ import (
 	"strings"
 )
 
+type Settings struct {
+	Verbose    bool
+	ProxyParam string
+	BatchParam bool
+}
+
+var GlobalConfig Settings
+
 var GlobalConf map[string]string
 
 var homeDir = os.Getenv("HOME")

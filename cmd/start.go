@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/utils"
-	"github.com/GoToolSharing/htb-cli/utils/webhooks"
+	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
 )
@@ -19,16 +19,16 @@ var machineChoosen string
 
 // coreStartCmd starts a specified machine and returns a status message and any error encountered.
 func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
-	machineID, err := utils.SearchItemIDByName(machineChoosen, proxyParam, "Machine", batchParam)
+	machineID, err := utils.SearchItemIDByName(machineChoosen, "Machine")
 	if err != nil {
 		return "", err
 	}
 	log.Printf("Machine ID: %s", machineID)
 
-	machineType := utils.GetMachineType(machineID, proxyParam)
+	machineType := utils.GetMachineType(machineID)
 	log.Printf("Machine Type: %s", machineType)
 
-	userSubscription := utils.GetUserSubscription(proxyParam)
+	userSubscription := utils.GetUserSubscription()
 	log.Printf("User subscription: %s", userSubscription)
 
 	// isActive := utils.CheckVPN(proxyParam)
@@ -57,7 +57,7 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 		jsonData = []byte("{}")
 	}
 
-	resp, err := utils.HtbRequest(http.MethodPost, url, proxyParam, jsonData)
+	resp, err := utils.HtbRequest(http.MethodPost, url, jsonData)
 	if err != nil {
 		return "", err
 	}
@@ -88,7 +88,7 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 				s.Stop()
 				return "", nil
 			default:
-				ip = utils.GetActiveMachineIP(proxyParam)
+				ip = utils.GetActiveMachineIP()
 				if ip != "Undefined" {
 					s.Stop()
 					break Loop
@@ -98,7 +98,7 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 		}
 	default:
 		// Get IP address from active machine
-		activeMachineData, err := utils.GetInformationsFromActiveMachine(proxyParam)
+		activeMachineData, err := utils.GetInformationsFromActiveMachine()
 		if err != nil {
 			return "", err
 		}

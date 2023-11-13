@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/utils"
+	"github.com/GoToolSharing/htb-cli/lib/utils"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 )
@@ -119,7 +119,7 @@ var machinesCmd = &cobra.Command{
 		app := tview.NewApplication()
 
 		getAndDisplayFlex := func(url, title string, isScheduled bool, flex *tview.Flex) error {
-			resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
+			resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 			if err != nil {
 				return fmt.Errorf("failed to get data from %s: %w", url, err)
 			}

@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/utils"
-	"github.com/GoToolSharing/htb-cli/utils/webhooks"
+	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 	"github.com/spf13/cobra"
 )
 
@@ -44,20 +44,20 @@ func coreStopCmd(proxyParam string) (string, error) {
 	// if err != nil {
 	// 	return "", err
 	// }
-	machineID := utils.GetActiveMachineID(proxyParam)
+	machineID := utils.GetActiveMachineID()
 	if machineID == "" {
 		return "No machine is running", nil
 	}
 	log.Println("Machine ID:", machineID)
 
-	machineType := utils.GetMachineType(machineID, "")
+	machineType := utils.GetMachineType(machineID)
 	log.Println("Machine Type:", machineType)
 
-	userSubscription := utils.GetUserSubscription(proxyParam)
+	userSubscription := utils.GetUserSubscription()
 	log.Println("User subscription:", userSubscription)
 
 	apiEndpoint, jsonData := buildMachineStopRequest(machineType, userSubscription, machineID, proxyParam)
-	resp, err := utils.HtbRequest(http.MethodPost, apiEndpoint, proxyParam, jsonData)
+	resp, err := utils.HtbRequest(http.MethodPost, apiEndpoint, jsonData)
 	if err != nil {
 		return "", err
 	}

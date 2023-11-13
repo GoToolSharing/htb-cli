@@ -10,7 +10,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/utils"
+	"github.com/GoToolSharing/htb-cli/lib/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -19,11 +19,11 @@ var challengeParam []string
 var usernameParam []string
 
 // Retrieves data for user profile
-func fetchData(itemID, endpoint, infoKey, proxyParam string) (map[string]interface{}, error) {
+func fetchData(itemID string, endpoint string, infoKey string) (map[string]interface{}, error) {
 	url := config.BaseHackTheBoxAPIURL + endpoint + itemID
 	log.Println("URL :", url)
 
-	resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
+	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -42,13 +42,13 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 
 	// Iteration on all machines / challenges / users argument
 	for _, param := range params {
-		itemID, err := utils.SearchItemIDByName(param, proxyParam, elementType, batchParam)
+		itemID, err := utils.SearchItemIDByName(param, elementType)
 		if err != nil {
 			fmt.Println(err)
 			return nil
 		}
 
-		resp, err := utils.HtbRequest(http.MethodGet, (url + itemID), proxyParam, nil)
+		resp, err := utils.HtbRequest(http.MethodGet, (url + itemID), nil)
 		if err != nil {
 			return err
 		}
@@ -83,7 +83,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 		dataMaps := make(map[string]map[string]interface{})
 
 		for _, ep := range endpoints {
-			data, err := fetchData(itemID, ep.url, "profile", proxyParam)
+			data, err := fetchData(itemID, ep.url, "profile")
 			if err != nil {
 				fmt.Printf("Error fetching data for %s: %v\n", ep.name, err)
 				continue
@@ -143,7 +143,7 @@ func coreInfoCmd() error {
 
 	// No arguments provided
 	if len(machineParam) == 0 && len(usernameParam) == 0 && len(challengeParam) == 0 {
-		isConfirmed := utils.AskConfirmation("Do you want to check for active machine ?", batchParam)
+		isConfirmed := utils.AskConfirmation("Do you want to check for active machine ?")
 		if isConfirmed {
 			err := displayActiveMachine(machineHeader)
 			if err != nil {
@@ -151,7 +151,7 @@ func coreInfoCmd() error {
 			}
 		}
 		// Get current account
-		resp, err := utils.HtbRequest(http.MethodGet, config.BaseHackTheBoxAPIURL+"/user/info", proxyParam, nil)
+		resp, err := utils.HtbRequest(http.MethodGet, config.BaseHackTheBoxAPIURL+"/user/info", nil)
 		if err != nil {
 			return err
 		}
@@ -169,7 +169,7 @@ func coreInfoCmd() error {
 	for _, info := range infos {
 		if len(info.Params) > 0 {
 			if info.Name == "Machine" {
-				isConfirmed := utils.AskConfirmation("Do you want to check for active "+strings.ToLower(info.Name)+"?", batchParam)
+				isConfirmed := utils.AskConfirmation("Do you want to check for active " + strings.ToLower(info.Name) + "?")
 				if isConfirmed {
 					err := displayActiveMachine(info.Header)
 					if err != nil {
@@ -206,7 +206,7 @@ func getIPStatus(data map[string]interface{}) interface{} {
 
 // displayActiveMachine displays information about the active machine if one is found.
 func displayActiveMachine(header string) error {
-	machineID := utils.GetActiveMachineID(proxyParam)
+	machineID := utils.GetActiveMachineID()
 
 	if machineID != "" {
 		log.Println("Active machine found !")
@@ -216,7 +216,7 @@ func displayActiveMachine(header string) error {
 		w := utils.SetTabWriterHeader(header)
 
 		url := fmt.Sprintf("%s/machine/profile/%s", config.BaseHackTheBoxAPIURL, machineID)
-		resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
+		resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 		if err != nil {
 			return err
 		}
@@ -231,17 +231,17 @@ func displayActiveMachine(header string) error {
 			return err
 		}
 
-		machineType := utils.GetMachineType(machineID, proxyParam)
+		machineType := utils.GetMachineType(machineID)
 		log.Printf("Machine Type: %s", machineType)
 
-		userSubscription := utils.GetUserSubscription(proxyParam)
+		userSubscription := utils.GetUserSubscription()
 		log.Printf("User subscription: %s", userSubscription)
 
 		ip := "Undefined"
 		_ = ip
 		switch {
 		case userSubscription == "vip+" || machineType == "release":
-			ip = utils.GetActiveMachineIP(proxyParam)
+			ip = utils.GetActiveMachineIP()
 		default:
 			ip = getIPStatus(data).(string)
 		}

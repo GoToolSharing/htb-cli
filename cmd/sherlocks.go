@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/utils"
-	"github.com/GoToolSharing/htb-cli/utils/sherlocks"
+	"github.com/GoToolSharing/htb-cli/lib/sherlocks"
+	"github.com/GoToolSharing/htb-cli/lib/utils"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 )
@@ -108,7 +108,7 @@ var sherlocksCmd = &cobra.Command{
 	Short: "Displays active sherlocks and next sherlocks to be released",
 	Run: func(cmd *cobra.Command, args []string) {
 		if sherlockNameParam != "" {
-			sherlockID, err := sherlocks.SearchIDByName(proxyParam, sherlockNameParam, batchParam)
+			sherlockID, err := sherlocks.SearchIDByName(sherlockNameParam)
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -116,7 +116,7 @@ var sherlocksCmd = &cobra.Command{
 			log.Println("SherlockID :", sherlockID)
 
 			if sherlockTaskID != 0 {
-				err := sherlocks.GetTaskByID(proxyParam, sherlockID, sherlockTaskID)
+				err := sherlocks.GetTaskByID(sherlockID, sherlockTaskID)
 				if err != nil {
 					fmt.Println(err)
 					return
@@ -124,14 +124,14 @@ var sherlocksCmd = &cobra.Command{
 				return
 			}
 
-			err = sherlocks.GetGeneralInformations(proxyParam, sherlockID, sherlockDownloadPath)
+			err = sherlocks.GetGeneralInformations(sherlockID, sherlockDownloadPath)
 
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
 
-			data, err := sherlocks.GetTasks(proxyParam, sherlockID)
+			data, err := sherlocks.GetTasks(sherlockID)
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -148,7 +148,7 @@ var sherlocksCmd = &cobra.Command{
 		app := tview.NewApplication()
 
 		getAndDisplayFlex := func(url, title string, isScheduled bool, flex *tview.Flex) error {
-			resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
+			resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 			if err != nil {
 				return fmt.Errorf("failed to get data from %s: %w", url, err)
 			}

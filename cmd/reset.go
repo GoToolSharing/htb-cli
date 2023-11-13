@@ -7,22 +7,22 @@ import (
 	"net/http"
 
 	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/utils"
-	"github.com/GoToolSharing/htb-cli/utils/webhooks"
+	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 	"github.com/spf13/cobra"
 )
 
 // coreResetCmd sends a reset request for an active machine.
-func coreResetCmd(proxyParam string) (string, error) {
+func coreResetCmd() (string, error) {
 	// Retrieve the ID of the active machine.
-	machineID := utils.GetActiveMachineID(proxyParam)
+	machineID := utils.GetActiveMachineID()
 	if machineID == "" {
 		return "No active machine found", nil
 	}
 	log.Printf("Machine ID: %s", machineID)
 
 	// Retrieve the type of the machine.
-	machineType := utils.GetMachineType(machineID, "")
+	machineType := utils.GetMachineType(machineID)
 	log.Printf("Machine Type: %s", machineType)
 
 	// Determine the API endpoint and construct JSON data based on the machine type.
@@ -42,7 +42,7 @@ func coreResetCmd(proxyParam string) (string, error) {
 	}
 
 	// Send an HTTP request to reset the machine.
-	resp, err := utils.HtbRequest(http.MethodPost, url, proxyParam, jsonData)
+	resp, err := utils.HtbRequest(http.MethodPost, url, jsonData)
 	if err != nil {
 		return "", err
 	}
@@ -62,7 +62,7 @@ var resetCmd = &cobra.Command{
 	Long:  "Initiates a reset request for the selected machine.",
 	Run: func(cmd *cobra.Command, args []string) {
 		// Execute the core reset function and handle the results.
-		output, err := coreResetCmd(proxyParam)
+		output, err := coreResetCmd()
 		if err != nil {
 			log.Fatalf("Error: %v", err)
 		}

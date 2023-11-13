@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/utils/webhooks"
+	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
 )
