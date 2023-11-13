@@ -15,6 +15,8 @@ var homeDir = os.Getenv("HOME")
 
 var BaseDirectory = homeDir + "/.local/htb-cli"
 
+const Version = "v1.3.1"
+
 // LoadConfig reads a configuration file from a specified filepath and returns a map of key-value pairs.
 func LoadConfig(filepath string) (map[string]string, error) {
 	config := make(map[string]string)

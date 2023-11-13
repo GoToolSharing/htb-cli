@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -34,7 +35,7 @@ func SendDiscordWebhook(message string) error {
 }
 
 // HTTPRequest makes an HTTP request with the specified method, URL, proxy settings, and data.
-func HTTPRequest(method string, urlParam string, proxyURL string, jsonData []byte) (bool, error) {
+func HTTPRequest(method string, urlParam string, proxyURL string, jsonData []byte) (*http.Response, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -69,7 +70,7 @@ func HTTPRequest(method string, urlParam string, proxyURL string, jsonData []byt
 		proxyURLParsed, err := url.Parse(proxyURL)
 		if err != nil {
 			s.Stop()
-			return false, fmt.Errorf("error parsing proxy url : %v", err)
+			return nil, fmt.Errorf("error parsing proxy url : %v", err)
 		}
 		transport.Proxy = http.ProxyURL(proxyURLParsed)
 	}
@@ -85,6 +86,8 @@ func HTTPRequest(method string, urlParam string, proxyURL string, jsonData []byt
 		log.Fatalln(err)
 	}
 	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	resp.Body = io.NopCloser(bytes.NewReader(body))
 	s.Stop()
-	return true, nil
+	return resp, nil
 }
