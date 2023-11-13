@@ -114,9 +114,9 @@ func GetTaskByID(sherlockID string, sherlockTaskID int, sherlockHint bool) error
 
 	if sherlockTaskID >= 1 && sherlockTaskID <= len(sherlockData.Tasks) {
 		if sherlockHint && sherlockData.Tasks[sherlockTaskID-1].Hint != "" {
-			fmt.Printf(fmt.Sprintf("\n%s :\n%s\n\nHint : %s\nMasked Flag : %s\n", sherlockData.Tasks[sherlockTaskID-1].Title, sherlockData.Tasks[sherlockTaskID-1].Description, sherlockData.Tasks[sherlockTaskID-1].Hint, sherlockData.Tasks[sherlockTaskID-1].MaskedFlag))
+			fmt.Println(fmt.Sprintf("\n%s :\n%s\n\nHint : %s\nMasked Flag : %s", sherlockData.Tasks[sherlockTaskID-1].Title, sherlockData.Tasks[sherlockTaskID-1].Description, sherlockData.Tasks[sherlockTaskID-1].Hint, sherlockData.Tasks[sherlockTaskID-1].MaskedFlag))
 		} else {
-			fmt.Printf(fmt.Sprintf("\n%s :\n%s\n\nHint : Not available\nMasked Flag : %s\n", sherlockData.Tasks[sherlockTaskID-1].Title, sherlockData.Tasks[sherlockTaskID-1].Description, sherlockData.Tasks[sherlockTaskID-1].MaskedFlag))
+			fmt.Println(fmt.Sprintf("\n%s :\n%s\n\nMasked Flag : %s", sherlockData.Tasks[sherlockTaskID-1].Title, sherlockData.Tasks[sherlockTaskID-1].Description, sherlockData.Tasks[sherlockTaskID-1].MaskedFlag))
 		}
 		fmt.Print("Answer : ")
 		reader := bufio.NewReader(os.Stdin)
