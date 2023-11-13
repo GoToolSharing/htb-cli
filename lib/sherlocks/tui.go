@@ -54,11 +54,11 @@ func CreateFlex(info interface{}, title string, isScheduled bool) (*tview.Flex, 
 		}
 		color := GetColorFromDifficultyText(key)
 
-		var formatString string
+		// var formatString string
 
 		// Choice of display format depending on the nature of the information
 		// if isScheduled {
-		formatString = fmt.Sprintf("%-15s %s%-10s[-]",
+		formatString := fmt.Sprintf("%-15s %s%-10s[-]",
 			data["name"], color, data["difficulty"])
 		//}
 		// else {
