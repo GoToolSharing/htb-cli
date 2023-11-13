@@ -1,7 +1,6 @@
 package sherlocks
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/chzyer/readline"
 	"github.com/sahilm/fuzzy"
 )
 
@@ -127,9 +127,13 @@ func GetTaskByID(sherlockID string, sherlockTaskID int, sherlockHint bool) error
 		} else {
 			fmt.Printf("\n%s :\n%s\n\nMasked Flag : %s\n", sherlockData.Tasks[sherlockTaskID-1].Title, sherlockData.Tasks[sherlockTaskID-1].Description, sherlockData.Tasks[sherlockTaskID-1].MaskedFlag)
 		}
-		fmt.Print("Answer : ")
-		reader := bufio.NewReader(os.Stdin)
-		flag, err := reader.ReadString('\n')
+		rl, err := readline.New("Answer: ")
+		if err != nil {
+			panic(err)
+		}
+		defer rl.Close()
+
+		flag, err := rl.Readline()
 		if err != nil {
 			return err
 		}
