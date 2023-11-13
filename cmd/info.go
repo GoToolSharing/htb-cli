@@ -9,6 +9,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/utils"
 	"github.com/spf13/cobra"
 )
@@ -19,7 +20,7 @@ var usernameParam []string
 
 // Retrieves data for user profile
 func fetchData(itemID, endpoint, infoKey, proxyParam string) (map[string]interface{}, error) {
-	url := baseAPIURL + endpoint + itemID
+	url := config.BaseHackTheBoxAPIURL + endpoint + itemID
 	log.Println("URL :", url)
 
 	resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
@@ -135,9 +136,9 @@ func coreInfoCmd() error {
 	}
 
 	infos := []infoType{
-		{baseAPIURL + "/machine/profile/", machineHeader, machineParam, "Machine"},
-		{baseAPIURL + "/challenge/info/", challengeHeader, challengeParam, "Challenge"},
-		{baseAPIURL + "/user/profile/basic/", usernameHeader, usernameParam, "Username"},
+		{config.BaseHackTheBoxAPIURL + "/machine/profile/", machineHeader, machineParam, "Machine"},
+		{config.BaseHackTheBoxAPIURL + "/challenge/info/", challengeHeader, challengeParam, "Challenge"},
+		{config.BaseHackTheBoxAPIURL + "/user/profile/basic/", usernameHeader, usernameParam, "Username"},
 	}
 
 	// No arguments provided
@@ -150,14 +151,14 @@ func coreInfoCmd() error {
 			}
 		}
 		// Get current account
-		resp, err := utils.HtbRequest(http.MethodGet, baseAPIURL+"/user/info", proxyParam, nil)
+		resp, err := utils.HtbRequest(http.MethodGet, config.BaseHackTheBoxAPIURL+"/user/info", proxyParam, nil)
 		if err != nil {
 			return err
 		}
 		info := utils.ParseJsonMessage(resp, "info")
 		infoMap, _ := info.(map[string]interface{})
 		newInfo := infoType{
-			APIURL: baseAPIURL + "/user/profile/basic/",
+			APIURL: config.BaseHackTheBoxAPIURL + "/user/profile/basic/",
 			Header: "",
 			Params: []string{infoMap["name"].(string)},
 			Name:   "Username",
@@ -214,7 +215,7 @@ func displayActiveMachine(header string) error {
 		tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
 		w := utils.SetTabWriterHeader(header)
 
-		url := "https://www.hackthebox.com/api/v4/machine/profile/" + machineID
+		url := fmt.Sprintf("%s/machine/profile/%s", config.BaseHackTheBoxAPIURL, machineID)
 		resp, err := utils.HtbRequest(http.MethodGet, url, proxyParam, nil)
 		if err != nil {
 			return err

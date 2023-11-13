@@ -32,7 +32,7 @@ func coreResetCmd(proxyParam string) (string, error) {
 	default:
 		endpoint = "/arena/reset"
 	}
-	url := baseAPIURL + endpoint
+	url := config.BaseHackTheBoxAPIURL + endpoint
 
 	// Construct JSON data.
 	jsonData, err := json.Marshal(map[string]string{"machine_id": machineID})

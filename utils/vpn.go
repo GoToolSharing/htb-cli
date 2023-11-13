@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 	"time"
 
@@ -32,7 +31,7 @@ type Response struct {
 
 // DownloadVPN downloads VPN configurations from HackTheBox for different server types.
 func DownloadVPN(proxyURL string) error {
-	baseURL := "https://www.hackthebox.com/api/v4/connections/servers?product="
+	baseURL := fmt.Sprintf("%s/connections/servers?product=", config.BaseHackTheBoxAPIURL)
 	urls := []string{
 		baseURL + "labs",
 		baseURL + "starting_point",
@@ -62,7 +61,7 @@ func DownloadVPN(proxyURL string) error {
 			panic(err)
 		}
 
-		url = "https://www.hackthebox.com/api/v4/access/ovpnfile/" + strconv.Itoa(response.Data.Assigned.ID) + "/0"
+		url = fmt.Sprintf("%s/access/ovpnfile/%d/0", config.BaseHackTheBoxAPIURL, response.Data.Assigned.ID)
 		resp, err = HtbRequest(http.MethodGet, url, proxyURL, nil)
 		if err != nil {
 			log.Fatal(err)
@@ -120,7 +119,7 @@ func StartVPN(configPath string) string {
 
 // CheckVPN checks the current status of the VPN connection.
 func CheckVPN(proxyURL string) bool {
-	url := "https://www.hackthebox.com/api/v4/connection/status"
+	url := fmt.Sprintf("%s/connection/status", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)

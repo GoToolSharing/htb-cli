@@ -40,7 +40,7 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 		if err != nil {
 			return "", err
 		}
-		url = baseAPIURL + "/challenge/own"
+		url = config.BaseHackTheBoxAPIURL + "/challenge/own"
 		payload["challenge_id"] = challengeID
 	} else if machineNameParam != "" {
 		log.Println("Machine submit requested!")
@@ -52,9 +52,9 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 		log.Printf("Machine Type: %s", machineType)
 
 		if machineType == "release" {
-			url = baseAPIURL + "/arena/own"
+			url = config.BaseHackTheBoxAPIURL + "/arena/own"
 		} else {
-			url = baseAPIURL + "/machine/own"
+			url = config.BaseHackTheBoxAPIURL + "/machine/own"
 
 		}
 		payload["id"] = machineID
@@ -67,9 +67,9 @@ func coreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 		log.Printf("Machine Type: %s", machineType)
 
 		if machineType == "release" {
-			url = baseAPIURL + "/arena/own"
+			url = config.BaseHackTheBoxAPIURL + "/arena/own"
 		} else {
-			url = baseAPIURL + "/machine/own"
+			url = config.BaseHackTheBoxAPIURL + "/machine/own"
 
 		}
 		payload["id"] = machineID

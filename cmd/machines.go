@@ -6,15 +6,16 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/utils"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 )
 
 const (
-	machineURL     = baseAPIURL + "/machine/paginated/?per_page=20"
-	retiredURL     = baseAPIURL + "/machine/list/retired/paginated/?per_page=20&sort_by=release-date"
-	scheduledURL   = baseAPIURL + "/machine/unreleased/"
+	machineURL     = config.BaseHackTheBoxAPIURL + "/machine/paginated/?per_page=20"
+	retiredURL     = config.BaseHackTheBoxAPIURL + "/machine/list/retired/paginated/?per_page=20&sort_by=release-date"
+	scheduledURL   = config.BaseHackTheBoxAPIURL + "/machine/unreleased/"
 	activeTitle    = "Active"
 	retiredTitle   = "Retired"
 	scheduledTitle = "Scheduled"

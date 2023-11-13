@@ -1,4 +1,4 @@
-package utils
+package sherlocks
 
 import (
 	"bufio"
@@ -12,43 +12,20 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/GoToolSharing/htb-cli/utils"
 	"github.com/sahilm/fuzzy"
 )
 
-type SherlockTask struct {
-	ID          int    `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Completed   bool   `json:"completed"`
-}
-
-type SherlockDataTasks struct {
-	Tasks []SherlockTask `json:"data"`
-}
-
-type SherlockElement struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-type SherlockData struct {
-	Data []SherlockElement `json:"data"`
-}
-
-type SherlockNameID struct {
-	Name string
-	ID   int
-}
-
 // getSherlockDownloadLink constructs and returns the download link for a specific Sherlock challenge.
 func getSherlockDownloadLink(proxyURL string, sherlockID string) (string, error) {
-	url := "https://www.hackthebox.com/api/v4/sherlocks/" + sherlockID + "/download_link"
+	url := fmt.Sprintf("%s/sherlocks/%s/download_link", config.BaseHackTheBoxAPIURL, sherlockID)
 
 	// url := "https://www.hackthebox.com/api/v4/challenge/download/196"
 
 	// return url, nil
 
-	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	resp, err := utils.HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -58,7 +35,7 @@ func getSherlockDownloadLink(proxyURL string, sherlockID string) (string, error)
 		return "", fmt.Errorf("error: Sherlock is not available for now")
 	}
 
-	data := ParseJsonMessage(resp, "data").(map[string]interface{})
+	data := utils.ParseJsonMessage(resp, "data").(map[string]interface{})
 
 	log.Println("Download URL :", data["url"].(string))
 	return data["url"].(string), nil
@@ -66,7 +43,7 @@ func getSherlockDownloadLink(proxyURL string, sherlockID string) (string, error)
 
 // downloadSherlockFile downloads the Sherlock file from a given URL to a specified download path.
 func downloadSherlockFile(proxyURL string, url string, downloadPath string) error {
-	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	resp, err := utils.HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -95,7 +72,7 @@ func downloadSherlockFile(proxyURL string, url string, downloadPath string) erro
 
 // submitTask sends a flag for a specific task of a Sherlock challenge and returns the server's response.
 func submitTask(proxyURL string, sherlockID string, taskID string, flag string) (string, error) {
-	url := "https://www.hackthebox.com/api/v4/sherlocks/" + sherlockID + "/tasks/" + taskID + "/flag"
+	url := fmt.Sprintf("%s/sherlocks/%s/tasks/%s/flag", config.BaseHackTheBoxAPIURL, sherlockID, taskID)
 
 	body := map[string]string{
 		"flag": flag,
@@ -104,13 +81,13 @@ func submitTask(proxyURL string, sherlockID string, taskID string, flag string) 
 	if err != nil {
 		return "", fmt.Errorf("failed to create JSON data: %w", err)
 	}
-	resp, err := HtbRequest(http.MethodPost, url, proxyURL, jsonBody)
+	resp, err := utils.HtbRequest(http.MethodPost, url, proxyURL, jsonBody)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
 
-	message, ok := ParseJsonMessage(resp, "message").(string)
+	message, ok := utils.ParseJsonMessage(resp, "message").(string)
 	if !ok {
 		return "", errors.New("unexpected response format")
 	}
@@ -120,8 +97,8 @@ func submitTask(proxyURL string, sherlockID string, taskID string, flag string) 
 // GetSherlockTaskByID retrieves and prints the description of a specific task of a Sherlock challenge.
 func GetSherlockTaskByID(proxyURL string, sherlockID string, sherlockTaskID int) error {
 	// TODO: Add hint
-	url := "https://www.hackthebox.com/api/v4/sherlocks/" + sherlockID + "/tasks"
-	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	url := fmt.Sprintf("%s/sherlocks/%s/tasks", config.BaseHackTheBoxAPIURL, sherlockID)
+	resp, err := utils.HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -162,8 +139,8 @@ func GetSherlockTaskByID(proxyURL string, sherlockID string, sherlockTaskID int)
 
 // GetSherlockTasks retrieves all tasks for a specific Sherlock challenge.
 func GetSherlockTasks(proxyURL string, sherlockID string) (*SherlockDataTasks, error) {
-	url := "https://www.hackthebox.com/api/v4/sherlocks/" + sherlockID + "/tasks"
-	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	url := fmt.Sprintf("%s/sherlocks/%s/tasks", config.BaseHackTheBoxAPIURL, sherlockID)
+	resp, err := utils.HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -182,14 +159,14 @@ func GetSherlockTasks(proxyURL string, sherlockID string) (*SherlockDataTasks, e
 
 // GetSherlockGeneralInformations retrieves and prints general information about a Sherlock challenge.
 func GetSherlockGeneralInformations(proxyURL string, sherlockID string, sherlockDownloadPath string) error {
-	url := "https://www.hackthebox.com/api/v4/sherlocks/" + sherlockID + "/play"
-	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	url := fmt.Sprintf("%s/sherlocks/%s/play", config.BaseHackTheBoxAPIURL, sherlockID)
+	resp, err := utils.HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
 
-	info := ParseJsonMessage(resp, "data").(map[string]interface{})
+	info := utils.ParseJsonMessage(resp, "data").(map[string]interface{})
 
 	if sherlockDownloadPath != "" {
 		url, err := getSherlockDownloadLink(proxyURL, sherlockID)
@@ -211,8 +188,8 @@ func GetSherlockGeneralInformations(proxyURL string, sherlockID string, sherlock
 
 // SearchSherlockIDByName searches for a Sherlock challenge by name and returns its ID.
 func SearchSherlockIDByName(proxyURL string, sherlockSearch string, batchParam bool) (string, error) {
-	url := "https://www.hackthebox.com/api/v4/sherlocks"
-	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
+	url := fmt.Sprintf("%s/sherlocks", config.BaseHackTheBoxAPIURL)
+	resp, err := utils.HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -245,7 +222,7 @@ func SearchSherlockIDByName(proxyURL string, sherlockSearch string, batchParam b
 
 	for _, match := range matches {
 		matchedNameID := nameIDs[match.Index]
-		isConfirmed := AskConfirmation("The following sherlock was found : "+matchedNameID.Name, batchParam)
+		isConfirmed := utils.AskConfirmation("The following sherlock was found : "+matchedNameID.Name, batchParam)
 		if isConfirmed {
 			return strconv.Itoa(matchedNameID.ID), nil
 		}

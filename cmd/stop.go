@@ -10,10 +10,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	releaseAPI = "https://www.hackthebox.com/api/v4/arena/stop"
-	vipAPI     = "https://www.hackthebox.com/api/v4/vm/terminate"
-	defaultAPI = "https://www.hackthebox.com/api/v4/machine/stop"
+var (
+	releaseAPI = fmt.Sprintf("%s/arena/stop", config.BaseHackTheBoxAPIURL)
+	vipAPI     = fmt.Sprintf("%s/vm/terminate", config.BaseHackTheBoxAPIURL)
+	defaultAPI = fmt.Sprintf("%s/machine/stop", config.BaseHackTheBoxAPIURL)
 )
 
 // buildMachineStopRequest constructs the URL endpoint and JSON data payload for stopping a machine based on its type and user's subscription.

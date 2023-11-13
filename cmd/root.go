@@ -12,8 +12,6 @@ var verbose bool
 var proxyParam string
 var batchParam bool
 
-const baseAPIURL = "https://www.hackthebox.com/api/v4"
-
 var rootCmd = &cobra.Command{
 	Use:   "htb-cli",
 	Short: "CLI enhancing the HackTheBox user experience.",

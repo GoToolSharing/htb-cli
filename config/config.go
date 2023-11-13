@@ -15,6 +15,8 @@ var homeDir = os.Getenv("HOME")
 
 var BaseDirectory = homeDir + "/.local/htb-cli"
 
+const BaseHackTheBoxAPIURL = "https://www.hackthebox.com/api/v4"
+
 const Version = "v1.3.1"
 
 // LoadConfig reads a configuration file from a specified filepath and returns a map of key-value pairs.

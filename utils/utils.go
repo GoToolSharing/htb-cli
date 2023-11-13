@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/briandowns/spinner"
 )
 
@@ -84,7 +85,7 @@ func GetHTBToken() string {
 
 // SearchItemIDByName will return the id of an item (machine / challenge / user) based on its name
 func SearchItemIDByName(item string, proxyURL string, element_type string, batchParam bool) (string, error) {
-	url := "https://www.hackthebox.com/api/v4/search/fetch?query=" + item
+	url := fmt.Sprintf("%s/search/fetch?query=%s", config.BaseHackTheBoxAPIURL, item)
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -243,7 +244,7 @@ func ParseJsonMessage(resp *http.Response, key string) interface{} {
 // GetMachineType will return the machine type
 func GetMachineType(machine_id interface{}, proxyURL string) string {
 	// Check if the machine is the latest release
-	url := "https://www.hackthebox.com/api/v4/machine/recommended/"
+	url := fmt.Sprintf("%s/machine/recommended/", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -255,7 +256,7 @@ func GetMachineType(machine_id interface{}, proxyURL string) string {
 	}
 
 	// Check if the machine is active or retired
-	url = "https://www.hackthebox.com/api/v4/machine/profile/" + machine_id.(string)
+	url = fmt.Sprintf("%s/machine/profile/%v", config.BaseHackTheBoxAPIURL, machine_id)
 	resp, err = HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -271,7 +272,7 @@ func GetMachineType(machine_id interface{}, proxyURL string) string {
 
 // GetUserSubscription returns the user's subscription level
 func GetUserSubscription(proxyURL string) string {
-	url := "https://www.hackthebox.com/api/v4/user/info"
+	url := fmt.Sprintf("%s/user/info", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -292,7 +293,7 @@ func GetUserSubscription(proxyURL string) string {
 
 // GetActiveMachineID returns the id of the active machine
 func GetActiveMachineID(proxyURL string) string {
-	url := "https://www.hackthebox.com/api/v4/machine/active"
+	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -306,7 +307,7 @@ func GetActiveMachineID(proxyURL string) string {
 
 // GetActiveMachineIP returns the ip of the active machine
 func GetActiveMachineIP(proxyURL string) string {
-	url := "https://www.hackthebox.com/api/v4/machine/active"
+	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, proxyURL, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -403,7 +404,7 @@ func GetInformationsFromActiveMachine(proxyParam string) (map[string]interface{}
 	}
 	log.Println("Machine ID:", machineID)
 
-	url := "https://www.hackthebox.com/api/v4/machine/profile/" + machineID
+	url := fmt.Sprintf("%s/machine/profile/%s", config.BaseHackTheBoxAPIURL, machineID)
 	resp, err := HtbRequest(http.MethodGet, url, proxyParam, nil)
 	if err != nil {
 		return nil, err

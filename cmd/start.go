@@ -43,16 +43,16 @@ func coreStartCmd(machineChoosen string, proxyParam string) (string, error) {
 
 	switch {
 	case machineType == "release":
-		url = baseAPIURL + "/arena/start"
+		url = config.BaseHackTheBoxAPIURL + "/arena/start"
 		jsonData = []byte("{}")
 	case userSubscription == "vip" || userSubscription == "vip+":
-		url = baseAPIURL + "/vm/spawn"
+		url = config.BaseHackTheBoxAPIURL + "/vm/spawn"
 		jsonData, err = json.Marshal(map[string]string{"machine_id": machineID})
 		if err != nil {
 			return "", fmt.Errorf("failed to create JSON data: %w", err)
 		}
 	default:
-		url = baseAPIURL + "/machine/play/" + machineID
+		url = config.BaseHackTheBoxAPIURL + "/machine/play/" + machineID
 		jsonData = []byte("{}")
 	}
 

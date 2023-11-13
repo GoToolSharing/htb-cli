@@ -5,7 +5,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/utils"
+	"github.com/GoToolSharing/htb-cli/utils/sherlocks"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 )
@@ -15,9 +17,9 @@ var sherlockDownloadPath string
 var sherlockTaskID int
 
 const (
-	sherlocksURL            = baseAPIURL + "/sherlocks?state=active"
-	retiredSherlocksURL     = baseAPIURL + "/sherlocks?state=retired"
-	scheduledSherlocksURL   = baseAPIURL + "/sherlocks?state=unreleased"
+	sherlocksURL            = config.BaseHackTheBoxAPIURL + "/sherlocks?state=active"
+	retiredSherlocksURL     = config.BaseHackTheBoxAPIURL + "/sherlocks?state=retired"
+	scheduledSherlocksURL   = config.BaseHackTheBoxAPIURL + "/sherlocks?state=unreleased"
 	activeSherlocksTitle    = "Active"
 	retiredSherlocksTitle   = "Retired"
 	scheduledSherlocksTitle = "Scheduled"
@@ -106,7 +108,7 @@ var sherlocksCmd = &cobra.Command{
 	Short: "Displays active sherlocks and next sherlocks to be released",
 	Run: func(cmd *cobra.Command, args []string) {
 		if sherlockNameParam != "" {
-			sherlockID, err := utils.SearchSherlockIDByName(proxyParam, sherlockNameParam, batchParam)
+			sherlockID, err := sherlocks.SearchSherlockIDByName(proxyParam, sherlockNameParam, batchParam)
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -114,7 +116,7 @@ var sherlocksCmd = &cobra.Command{
 			log.Println("SherlockID :", sherlockID)
 
 			if sherlockTaskID != 0 {
-				err := utils.GetSherlockTaskByID(proxyParam, sherlockID, sherlockTaskID)
+				err := sherlocks.GetSherlockTaskByID(proxyParam, sherlockID, sherlockTaskID)
 				if err != nil {
 					fmt.Println(err)
 					return
@@ -122,14 +124,14 @@ var sherlocksCmd = &cobra.Command{
 				return
 			}
 
-			err = utils.GetSherlockGeneralInformations(proxyParam, sherlockID, sherlockDownloadPath)
+			err = sherlocks.GetSherlockGeneralInformations(proxyParam, sherlockID, sherlockDownloadPath)
 
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
 
-			data, err := utils.GetSherlockTasks(proxyParam, sherlockID)
+			data, err := sherlocks.GetSherlockTasks(proxyParam, sherlockID)
 			if err != nil {
 				fmt.Println(err)
 				return
