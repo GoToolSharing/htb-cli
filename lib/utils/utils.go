@@ -49,13 +49,12 @@ func AskConfirmation(message string) bool {
 }
 
 // GetHTBToken checks whether the HTB_TOKEN environment variable exists
-func GetHTBToken() string {
+func GetHTBToken() (string, error) {
 	var envName = "HTB_TOKEN"
 	if os.Getenv(envName) == "" {
-		fmt.Printf("Environment variable is not set : %v\n", envName)
-		return ""
+		return "", fmt.Errorf("Environment variable is not set : %v\n", envName)
 	}
-	return os.Getenv("HTB_TOKEN")
+	return os.Getenv("HTB_TOKEN"), nil
 }
 
 // SearchItemIDByName will return the id of an item (machine / challenge / user) based on its name
@@ -310,10 +309,10 @@ func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response
 	}()
 
 	s.Start()
-	JWT_TOKEN := GetHTBToken()
-	if JWT_TOKEN == "" {
+	JWT_TOKEN, err := GetHTBToken()
+	if err != nil {
 		s.Stop()
-		os.Exit(1)
+		return nil, err
 	}
 
 	req, err := http.NewRequest(method, urlParam, bytes.NewBuffer(jsonData))
@@ -328,7 +327,7 @@ func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response
 	if method == http.MethodPost {
 		req.Header.Set("Content-Type", "application/json")
 	} else if method == http.MethodGet {
-		req.Header.Set("Host", "www.hackthebox.com")
+		req.Header.Set("Host", config.HostHackTheBox)
 	}
 
 	transport := &http.Transport{
@@ -360,12 +359,12 @@ func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
 	resp.Body = io.NopCloser(bytes.NewReader(body))
-	// var i interface{}
-	// if json.Unmarshal(body, &i) != nil {
-	// 	s.Stop()
-	// 	fmt.Println("JSON Unmarshal error")
-	// 	os.Exit(1)
-	// }
+	var i interface{}
+	if json.Unmarshal(body, &i) != nil {
+		s.Stop()
+		fmt.Println("HTB Token appears invalid or expired")
+		os.Exit(1)
+	}
 	s.Stop()
 	return resp, nil
 }
