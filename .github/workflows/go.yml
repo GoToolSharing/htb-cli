@@ -36,9 +36,9 @@ jobs:
         GOARCH: ${{ matrix.arch }}
       run: go build -v ./...
 
-    - name: Get Commit Hash
-      id: get_commit
-      run: echo "::set-output name=commit::$(git rev-parse --short HEAD)"
+    - name: Set Commit Hash
+      id: set_commit_hash
+      run: echo "commit-hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
   update-version:
     needs: build
