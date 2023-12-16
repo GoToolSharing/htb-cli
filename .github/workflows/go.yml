@@ -39,9 +39,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: 'dev'
     - name: Update Version in config.go
       run: |
-        VERSION=${{ needs.build-and-test.outputs.commit-hash }}
+        VERSION=${{ needs.build.outputs.commit-hash }}
         sed -i "s/const Version = \".*\"/const Version = \"$VERSION\"/" config/config.go  
     - name: Commit and Push
       run: |
@@ -49,4 +51,4 @@ jobs:
         git config --global user.name "Github Action"
         git add config/config.go
         git commit -m "Update dev version to $VERSION"
-        git push
+        git push origin HEAD:dev
