@@ -42,7 +42,7 @@ jobs:
     - name: Update Version in config.go
       run: |
         VERSION=${{ needs.build-and-test.outputs.commit-hash }}
-        sed -i "s/const Version = \".*\"/const Version = \"$VERSION\"/" config.go  
+        sed -i "s/const Version = \".*\"/const Version = \"$VERSION\"/" config/config.go  
     - name: Commit and Push
       run: |
         git config --global user.email "github-action@github.com"
