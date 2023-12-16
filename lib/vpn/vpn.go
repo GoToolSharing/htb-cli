@@ -27,8 +27,10 @@ func DownloadAll() error {
 	}
 
 	for _, url := range urls {
-
 		resp, err := utils.HtbRequest(http.MethodGet, url, nil)
+		if resp.StatusCode == 401 {
+			continue
+		}
 		if err != nil {
 			log.Fatal(err)
 		}

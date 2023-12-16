@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"text/tabwriter"
 	"time"
@@ -350,7 +351,9 @@ func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response
 	log.Println("HTTP request method :", req.Method)
 	log.Println("HTTP request body :", req.Body)
 
-	client := &http.Client{Transport: transport}
+	client := &http.Client{Transport: transport, CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -359,8 +362,9 @@ func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
 	resp.Body = io.NopCloser(bytes.NewReader(body))
-	var i interface{}
-	if json.Unmarshal(body, &i) != nil {
+
+	// Check if token is invalid or expired
+	if resp.StatusCode == 302 && strings.Contains(resp.Header.Get("Location"), "/login") {
 		s.Stop()
 		fmt.Println("HTB Token appears invalid or expired")
 		os.Exit(1)
