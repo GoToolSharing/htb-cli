@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/GoToolSharing/htb-cli/config"
@@ -21,6 +22,14 @@ var pwnboxCmd = &cobra.Command{
 
 		_ = locationFlag
 
+		modeFlag, err := cmd.Flags().GetString("mode")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		_ = modeFlag
+
 		startFlag, err := cmd.Flags().GetBool("start")
 		if err != nil {
 			fmt.Println(err)
@@ -36,7 +45,25 @@ var pwnboxCmd = &cobra.Command{
 		}
 
 		// Check subscription
+		log.Println("Mode :" + modeFlag)
 
+		switch modeFlag {
+		case "machines":
+			fmt.Println("Machines")
+		case "sp":
+			fmt.Println("Starting Points")
+		case "fortresses":
+			fmt.Println("Fortresses")
+		case "prolabs":
+			fmt.Println("Prolabs")
+		case "seasonals":
+			fmt.Println("Seasonals")
+		}
+
+		if startFlag {
+			fmt.Println("Sorry, but HackTheBox currently uses a v3 recaptcha to start a pwnbox.")
+			return
+		}
 		// Start and stop
 		if stopFlag {
 			resp, err := utils.HtbRequest(http.MethodPost, config.BaseHackTheBoxAPIURL+"/pwnbox/terminate", nil)
@@ -59,4 +86,5 @@ func init() {
 	pwnboxCmd.Flags().StringP("location", "l", "", "Pwnbox Location")
 	pwnboxCmd.Flags().BoolP("start", "", false, "Start pwnbox")
 	pwnboxCmd.Flags().BoolP("stop", "", false, "Stop active pwnbox")
+	pwnboxCmd.Flags().StringP("mode", "m", "", "Select mode") // TODO: Choice list
 }
