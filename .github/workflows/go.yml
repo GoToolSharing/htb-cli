@@ -36,10 +36,6 @@ jobs:
         GOARCH: ${{ matrix.arch }}
       run: go build -v ./...
 
-    - name: Set Commit Hash
-      id: set_commit_hash
-      run: echo "commit-hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
   update-version:
     needs: build
     if: github.ref == 'refs/heads/dev'
@@ -50,8 +46,7 @@ jobs:
         ref: 'dev'
     - name: Update Version in config.go
       run: |
-        VERSION=${{ needs.build.outputs.commit-hash }}
-        sed -i "s/const Version = \".*\"/const Version = \"$VERSION\"/" config/config.go  
+        sed -i "s/const Version = \".*\"/const Version = \"$GITHUB_SHA\"/" config/config.go  
     - name: Commit and Push
       run: |
         git config --global user.email "github-action@github.com"
