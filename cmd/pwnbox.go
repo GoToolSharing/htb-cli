@@ -10,10 +10,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func doAction(mode string) {
+}
+
 var pwnboxCmd = &cobra.Command{
 	Use:   "pwnbox",
 	Short: "Interact with the pwnbox",
 	Run: func(cmd *cobra.Command, args []string) {
+		modeFlag, err := cmd.Flags().GetString("mode")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		if modeFlag == "" {
+			fmt.Println("You have to choose a mode to use the pwnbox (-m)")
+			return
+		}
+
 		locationFlag, err := cmd.Flags().GetString("location")
 		if err != nil {
 			fmt.Println(err)
@@ -22,21 +36,13 @@ var pwnboxCmd = &cobra.Command{
 
 		_ = locationFlag
 
-		modeFlag, err := cmd.Flags().GetString("mode")
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		_ = modeFlag
-
 		startFlag, err := cmd.Flags().GetBool("start")
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		_ = startFlag
+		// _ = startFlag
 
 		stopFlag, err := cmd.Flags().GetBool("stop")
 		if err != nil {
@@ -44,21 +50,13 @@ var pwnboxCmd = &cobra.Command{
 			return
 		}
 
+		if !startFlag && !stopFlag {
+			fmt.Println("Wrong action supplied : --start / --stop")
+			return
+		}
+
 		// Check subscription
 		log.Println("Mode :" + modeFlag)
-
-		switch modeFlag {
-		case "machines":
-			fmt.Println("Machines")
-		case "sp":
-			fmt.Println("Starting Points")
-		case "fortresses":
-			fmt.Println("Fortresses")
-		case "prolabs":
-			fmt.Println("Prolabs")
-		case "seasonals":
-			fmt.Println("Seasonals")
-		}
 
 		if startFlag {
 			fmt.Println("Sorry, but HackTheBox currently uses a v3 recaptcha to start a pwnbox.")
@@ -77,6 +75,33 @@ var pwnboxCmd = &cobra.Command{
 				return
 			}
 			fmt.Println(message)
+			return
+		}
+
+		switch modeFlag {
+		case "machines":
+			fmt.Println("Machines")
+			doAction("machines")
+			return
+		case "sp":
+			fmt.Println("Starting Points")
+			doAction("sp")
+			return
+		case "fortresses":
+			fmt.Println("Fortresses")
+			doAction("fortresses")
+			return
+		case "prolabs":
+			fmt.Println("Prolabs")
+			doAction("prolabs")
+			return
+		case "seasonals":
+			fmt.Println("Seasonals")
+			doAction("seasonals")
+			return
+		default:
+			fmt.Println("Available modes : machines - sp - fortresses - prolabs - seasonals")
+			return
 		}
 	},
 }
