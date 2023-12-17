@@ -27,7 +27,7 @@ const HostHackTheBox = "www.hackthebox.com"
 
 const BaseHackTheBoxAPIURL = "https://" + HostHackTheBox + "/api/v4"
 
-const Version = "52df10e4c200b0dff298d0c9eb76c1d73e0409ae"
+const Version = "cf7e80c4dfd2d635cb61b9ba197c346b8ce49d16"
 
 // LoadConfig reads a configuration file from a specified filepath and returns a map of key-value pairs.
 func LoadConfig(filepath string) (map[string]string, error) {
