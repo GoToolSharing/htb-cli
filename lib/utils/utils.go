@@ -280,6 +280,20 @@ func GetActiveMachineID() string {
 	return fmt.Sprintf("%.0f", info.(map[string]interface{})["id"].(float64))
 }
 
+// GetActiveExpiredTime returns the expired date of the active machine
+func GetActiveExpiredTime() string {
+	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	info := ParseJsonMessage(resp, "info")
+	if info == nil {
+		return ""
+	}
+	return fmt.Sprintf("%s", info.(map[string]interface{})["expires_at"])
+}
+
 // GetActiveMachineIP returns the ip of the active machine
 func GetActiveMachineIP() string {
 	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
