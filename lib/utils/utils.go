@@ -387,6 +387,13 @@ func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response
 	return resp, nil
 }
 
+func TruncateString(str string, maxLength int) string {
+	if len(str) > maxLength {
+		return str[:maxLength]
+	}
+	return str
+}
+
 func GetInformationsFromActiveMachine() (map[string]interface{}, error) {
 	machineID := GetActiveMachineID()
 

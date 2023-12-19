@@ -18,7 +18,7 @@ var versionCmd = &cobra.Command{
 		} else {
 			fmt.Println("Stable version (main branch): " + config.Version)
 		}
-		config.GlobalConfig.Logger.Info("Exit command correctly")
+		config.GlobalConfig.Logger.Info("Exit version command correctly")
 	},
 }
 
