@@ -380,8 +380,7 @@ func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response
 	// Check if token is invalid or expired
 	if resp.StatusCode == 302 && strings.Contains(resp.Header.Get("Location"), "/login") {
 		s.Stop()
-		fmt.Println("HTB Token appears invalid or expired")
-		os.Exit(1)
+		return nil, fmt.Errorf("HTB Token appears invalid or expired")
 	}
 	s.Stop()
 	return resp, nil
