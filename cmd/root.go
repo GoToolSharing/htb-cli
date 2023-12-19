@@ -1,12 +1,11 @@
 package cmd
 
 import (
-	"io"
-	"log"
-	"os"
+	"fmt"
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 var rootCmd = &cobra.Command{
@@ -14,24 +13,26 @@ var rootCmd = &cobra.Command{
 	Short: "CLI enhancing the HackTheBox user experience.",
 	Long:  `This software, engineered using the Go programming language, serves to streamline and automate various tasks for the HackTheBox platform, enhancing user efficiency and productivity.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		if config.GlobalConfig.Verbose {
-			log.SetOutput(os.Stdout)
-		} else {
-			log.SetOutput(io.Discard)
+		config.ConfigureLogger()
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Verbosity level : %v", config.GlobalConfig.Verbose))
+		defer config.GlobalConfig.Logger.Sync()
+		err := config.Init()
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
 	},
 }
 
 func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
+	if err := rootCmd.Execute(); err != nil {
+		config.GlobalConfig.Logger.Error("Erreur lors de l'exécution de la commande", zap.Error(err))
 	}
 }
 
 func init() {
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
-	rootCmd.PersistentFlags().BoolVarP(&config.GlobalConfig.Verbose, "verbose", "v", false, "Verbose mode")
+	rootCmd.PersistentFlags().CountVarP(&config.GlobalConfig.Verbose, "verbose", "v", "Verbose level")
 	rootCmd.PersistentFlags().StringVarP(&config.GlobalConfig.ProxyParam, "proxy", "p", "", "Configure a URL for an HTTP proxy")
 	rootCmd.PersistentFlags().BoolVarP(&config.GlobalConfig.BatchParam, "batch", "b", false, "Don't ask questions")
 }

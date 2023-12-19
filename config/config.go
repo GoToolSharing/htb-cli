@@ -3,14 +3,17 @@ package config
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 	"strings"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type Settings struct {
-	Verbose    bool
+	Verbose    int
+	Logger     *zap.Logger
 	ProxyParam string
 	BatchParam bool
 }
@@ -28,6 +31,43 @@ const HostHackTheBox = "www.hackthebox.com"
 const BaseHackTheBoxAPIURL = "https://" + HostHackTheBox + "/api/v4"
 
 const Version = "cf7e80c4dfd2d635cb61b9ba197c346b8ce49d16"
+
+func ConfigureLogger() {
+	var logLevel zapcore.Level
+
+	switch GlobalConfig.Verbose {
+	case 1:
+		logLevel = zap.InfoLevel
+	case 2:
+		logLevel = zap.DebugLevel
+	case 3:
+		logLevel = zap.WarnLevel
+	case 4:
+		logLevel = zap.PanicLevel
+	default:
+		logLevel = zap.ErrorLevel
+	}
+
+	encoderConfig := zap.NewDevelopmentEncoderConfig()
+	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder // Ajoute des couleurs pour les niveaux de log
+
+	cfg := zap.Config{
+		Level:            zap.NewAtomicLevelAt(logLevel),
+		Development:      true,
+		Encoding:         "console",
+		EncoderConfig:    encoderConfig,
+		OutputPaths:      []string{"stdout"},
+		ErrorOutputPaths: []string{"stderr"},
+	}
+
+	var err error
+	GlobalConfig.Logger, err = cfg.Build()
+	if err != nil {
+		GlobalConfig.Logger.Error(fmt.Sprintf("Logger configuration error: %v\n", err))
+		os.Exit(1)
+	}
+	zap.ReplaceGlobals(GlobalConfig.Logger)
+}
 
 // LoadConfig reads a configuration file from a specified filepath and returns a map of key-value pairs.
 func LoadConfig(filepath string) (map[string]string, error) {
@@ -48,7 +88,8 @@ func LoadConfig(filepath string) (map[string]string, error) {
 
 		parts := strings.SplitN(line, "=", 2)
 		if len(parts) != 2 {
-			return nil, fmt.Errorf("incorrectly formatted line in configuration file : %s", line)
+			GlobalConfig.Logger.Error(fmt.Sprintf("Incorrectly formatted line in configuration file : %s", line))
+			os.Exit(1)
 		}
 
 		key := strings.TrimSpace(parts[0])
@@ -72,15 +113,18 @@ func validateConfig(key, value string) error {
 	switch key {
 	case "Logging", "Batch":
 		if value != "True" && value != "False" {
-			return fmt.Errorf("the value for '%s' must be 'True' or 'False', got : %s", key, value)
+			GlobalConfig.Logger.Error(fmt.Sprintf("The value for '%s' must be 'True' or 'False', got : %s", key, value))
+			os.Exit(1)
 		}
 	case "Proxy":
 		if value != "False" && !isValidHTTPorHTTPSURL(value) {
-			return fmt.Errorf("the URL for '%s' must be a valid URL starting with http or https, got : %s", key, value)
+			GlobalConfig.Logger.Error(fmt.Sprintf("The URL for '%s' must be a valid URL starting with http or https, got : %s", key, value))
+			os.Exit(1)
 		}
 	case "Discord":
 		if value != "False" && !isValidDiscordWebhook(value) {
-			return fmt.Errorf("the Discord webhook URL is invalid : %s", value)
+			GlobalConfig.Logger.Error(fmt.Sprintf("The Discord webhook URL is invalid : %s", value))
+			os.Exit(1)
 		}
 	}
 
@@ -102,20 +146,22 @@ func isValidHTTPorHTTPSURL(u string) bool {
 // Init initializes the application by setting up necessary directories, creating a default configuration file if it doesn't exist, and loading the configuration.
 func Init() error {
 	if _, err := os.Stat(BaseDirectory); os.IsNotExist(err) {
-		log.Printf("The \"%s\" folder does not exist, creation in progress...\n", BaseDirectory)
+		GlobalConfig.Logger.Info(fmt.Sprintf("The \"%s\" folder does not exist, creation in progress...\n", BaseDirectory))
 		err := os.MkdirAll(BaseDirectory, os.ModePerm)
 		if err != nil {
-			return fmt.Errorf("folder creation error: %s", err)
+			GlobalConfig.Logger.Error(fmt.Sprintf("Error folder creation: %s", err))
+			os.Exit(1)
 		}
 
-		log.Printf("\"%s\" folder created successfully\n\n", BaseDirectory)
+		GlobalConfig.Logger.Info(fmt.Sprintf("\"%s\" folder created successfully\n\n", BaseDirectory))
 	}
 
 	confFilePath := BaseDirectory + "/default.conf"
 	if _, err := os.Stat(confFilePath); os.IsNotExist(err) {
 		file, err := os.Create(confFilePath)
 		if err != nil {
-			return fmt.Errorf("error creating file: %w", err)
+			GlobalConfig.Logger.Error(fmt.Sprintf("Error creating file: %w", err))
+			os.Exit(1)
 		}
 		defer file.Close()
 
@@ -124,24 +170,28 @@ func Init() error {
 		writer := bufio.NewWriter(file)
 		_, err = writer.WriteString(configContent)
 		if err != nil {
-			return fmt.Errorf("error when writing to file: %v", err)
+			GlobalConfig.Logger.Error(fmt.Sprintf("Error when writing to file: %v", err))
+			os.Exit(1)
 		}
 
 		err = writer.Flush()
 		if err != nil {
-			return fmt.Errorf("error clearing buffer: %v", err)
+			GlobalConfig.Logger.Error(fmt.Sprintf("Error clearing buffer: %v", err))
+			os.Exit(1)
 		}
 
-		log.Println("Configuration file created successfully.")
+		GlobalConfig.Logger.Info("Configuration file created successfully.")
 	}
 
-	log.Println("Loading configuration file...")
+	GlobalConfig.Logger.Info("Loading configuration file...")
 	config, err := LoadConfig(BaseDirectory + "/default.conf")
 	if err != nil {
-		return fmt.Errorf("error loading configuration file : %v", err)
+		GlobalConfig.Logger.Error(fmt.Sprintf("Error loading configuration file : %v", err))
+		os.Exit(1)
 	}
 
-	log.Println("Configuration successfully loaded :", config)
+	GlobalConfig.Logger.Info("Configuration successfully loaded")
+	GlobalConfig.Logger.Debug(fmt.Sprintf("%v", config))
 	ConfigFile = config
 	return nil
 }
