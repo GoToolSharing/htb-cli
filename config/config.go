@@ -32,7 +32,7 @@ const BaseHackTheBoxAPIURL = "https://" + HostHackTheBox + "/api/v4"
 
 const Version = "b17009a5bb3f56dd177e5e0a403f117d9ebf3d76"
 
-func ConfigureLogger() {
+func ConfigureLogger() error {
 	var logLevel zapcore.Level
 
 	switch GlobalConfig.Verbose {
@@ -61,10 +61,10 @@ func ConfigureLogger() {
 	var err error
 	GlobalConfig.Logger, err = cfg.Build()
 	if err != nil {
-		GlobalConfig.Logger.Error(fmt.Sprintf("Logger configuration error: %v\n", err))
-		os.Exit(1)
+		return fmt.Errorf("Logger configuration error: %v", err)
 	}
 	zap.ReplaceGlobals(GlobalConfig.Logger)
+	return nil
 }
 
 // LoadConfig reads a configuration file from a specified filepath and returns a map of key-value pairs.
@@ -86,8 +86,7 @@ func LoadConfig(filepath string) (map[string]string, error) {
 
 		parts := strings.SplitN(line, "=", 2)
 		if len(parts) != 2 {
-			GlobalConfig.Logger.Error(fmt.Sprintf("Incorrectly formatted line in configuration file : %s", line))
-			os.Exit(1)
+			return nil, fmt.Errorf("Incorrectly formatted line in configuration file: %s", line)
 		}
 
 		key := strings.TrimSpace(parts[0])
@@ -111,18 +110,15 @@ func validateConfig(key, value string) error {
 	switch key {
 	case "Logging", "Batch":
 		if value != "True" && value != "False" {
-			GlobalConfig.Logger.Error(fmt.Sprintf("The value for '%s' must be 'True' or 'False', got : %s", key, value))
-			os.Exit(1)
+			return fmt.Errorf("The value for '%s' must be 'True' or 'False', got : %s", key, value)
 		}
 	case "Proxy":
 		if value != "False" && !isValidHTTPorHTTPSURL(value) {
-			GlobalConfig.Logger.Error(fmt.Sprintf("The URL for '%s' must be a valid URL starting with http or https, got : %s", key, value))
-			os.Exit(1)
+			return fmt.Errorf("The URL for '%s' must be a valid URL starting with http or https, got : %s", key, value)
 		}
 	case "Discord":
 		if value != "False" && !isValidDiscordWebhook(value) {
-			GlobalConfig.Logger.Error(fmt.Sprintf("The Discord webhook URL is invalid : %s", value))
-			os.Exit(1)
+			return fmt.Errorf("The Discord webhook URL is invalid : %s", value)
 		}
 	}
 
@@ -147,8 +143,7 @@ func Init() error {
 		GlobalConfig.Logger.Info(fmt.Sprintf("The \"%s\" folder does not exist, creation in progress...\n", BaseDirectory))
 		err := os.MkdirAll(BaseDirectory, os.ModePerm)
 		if err != nil {
-			GlobalConfig.Logger.Error(fmt.Sprintf("Error folder creation: %s", err))
-			os.Exit(1)
+			return fmt.Errorf("Error folder creation: %s", err)
 		}
 
 		GlobalConfig.Logger.Info(fmt.Sprintf("\"%s\" folder created successfully\n\n", BaseDirectory))
@@ -158,8 +153,7 @@ func Init() error {
 	if _, err := os.Stat(confFilePath); os.IsNotExist(err) {
 		file, err := os.Create(confFilePath)
 		if err != nil {
-			GlobalConfig.Logger.Error(fmt.Sprintf("Error creating file: %w", err))
-			os.Exit(1)
+			return fmt.Errorf("Error creating file: %v", err)
 		}
 		defer file.Close()
 
@@ -168,14 +162,12 @@ func Init() error {
 		writer := bufio.NewWriter(file)
 		_, err = writer.WriteString(configContent)
 		if err != nil {
-			GlobalConfig.Logger.Error(fmt.Sprintf("Error when writing to file: %v", err))
-			os.Exit(1)
+			return fmt.Errorf("Error when writing to file: %v", err)
 		}
 
 		err = writer.Flush()
 		if err != nil {
-			GlobalConfig.Logger.Error(fmt.Sprintf("Error clearing buffer: %v", err))
-			os.Exit(1)
+			return fmt.Errorf("Error clearing buffer: %v", err)
 		}
 
 		GlobalConfig.Logger.Info("Configuration file created successfully.")
@@ -184,8 +176,7 @@ func Init() error {
 	GlobalConfig.Logger.Info("Loading configuration file...")
 	config, err := LoadConfig(BaseDirectory + "/default.conf")
 	if err != nil {
-		GlobalConfig.Logger.Error(fmt.Sprintf("Error loading configuration file : %v", err))
-		os.Exit(1)
+		return fmt.Errorf("Error loading configuration file: %v", err)
 	}
 
 	GlobalConfig.Logger.Info("Configuration successfully loaded")

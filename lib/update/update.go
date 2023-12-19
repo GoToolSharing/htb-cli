@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
@@ -23,16 +22,14 @@ func Check(newVersion string) error {
 			return err
 		}
 		body, err := io.ReadAll(resp.Body)
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Body : %s", utils.TruncateString(string(body), 2000)))
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Body: %s", utils.TruncateString(string(body), 2000)))
 		if err != nil {
-			config.GlobalConfig.Logger.Error(fmt.Sprintf("Error when reading the response: %v", err))
-			os.Exit(1)
+			return fmt.Errorf("Error when reading the response: %v", err)
 		}
 		var commits []Commit
 		err = json.Unmarshal(body, &commits)
 		if err != nil {
-			config.GlobalConfig.Logger.Error(fmt.Sprintf("Error when decoding JSON: %v", err))
-			os.Exit(1)
+			return fmt.Errorf("Error when decoding JSON: %v", err)
 		}
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Commits : %v", commits))
 
@@ -64,7 +61,7 @@ func Check(newVersion string) error {
 	}
 	var release GitHubRelease
 	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
-		return err
+		return fmt.Errorf("Error when decoding JSON: %v", err)
 	}
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("release.TagName : %s", release.TagName))
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("config.Version : %s", config.Version))

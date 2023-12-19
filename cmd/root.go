@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/spf13/cobra"
@@ -13,20 +14,23 @@ var rootCmd = &cobra.Command{
 	Short: "CLI enhancing the HackTheBox user experience.",
 	Long:  `This software, engineered using the Go programming language, serves to streamline and automate various tasks for the HackTheBox platform, enhancing user efficiency and productivity.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		config.ConfigureLogger()
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Verbosity level : %v", config.GlobalConfig.Verbose))
-		defer config.GlobalConfig.Logger.Sync()
-		err := config.Init()
+		err := config.ConfigureLogger()
 		if err != nil {
-			fmt.Println(err)
-			return
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
+		}
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Verbosity level : %v", config.GlobalConfig.Verbose))
+		err = config.Init()
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
 	},
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		config.GlobalConfig.Logger.Error("Erreur lors de l'exécution de la commande", zap.Error(err))
+		config.GlobalConfig.Logger.Error("Error when executing root command:", zap.Error(err))
 	}
 }
 
