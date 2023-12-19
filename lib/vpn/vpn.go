@@ -9,11 +9,66 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
 )
+
+func downloadVPN(url string) error {
+	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 401 {
+		return nil
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("error: Bad status code : %d", resp.StatusCode)
+	}
+
+	jsonData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	var response Response
+	err = json.Unmarshal(jsonData, &response)
+	if err != nil {
+		return err
+	}
+
+	vpnURL := fmt.Sprintf("%s/access/ovpnfile/%d/0", config.BaseHackTheBoxAPIURL, response.Data.Assigned.ID)
+	resp, err = utils.HtbRequest(http.MethodGet, vpnURL, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("error: Bad status code : %d", resp.StatusCode)
+	}
+
+	vpnName := strings.ReplaceAll(response.Data.Assigned.FriendlyName, " ", "_")
+	downloadPath := fmt.Sprintf("%s/%s-vpn.ovpn", config.BaseDirectory, vpnName)
+	outFile, err := os.Create(downloadPath)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+
+	_, err = io.Copy(outFile, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("VPN :", vpnName, "downloaded successfully")
+	return nil
+}
 
 // DownloadAll downloads VPN configurations from HackTheBox for different server types.
 func DownloadAll() error {
@@ -26,55 +81,28 @@ func DownloadAll() error {
 		baseURL + "competitive",
 	}
 
+	var wg sync.WaitGroup
+	errors := make(chan error, len(urls))
+
 	for _, url := range urls {
-		resp, err := utils.HtbRequest(http.MethodGet, url, nil)
-		if resp.StatusCode == 401 {
-			continue
-		}
+		wg.Add(1)
+		go func(url string) {
+			defer wg.Done()
+			err := downloadVPN(url)
+			if err != nil {
+				errors <- err
+				return
+			}
+		}(url)
+	}
+
+	wg.Wait()
+	close(errors)
+
+	for err := range errors {
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("error: Bad status code : %d", resp.StatusCode)
-		}
-
-		jsonData, _ := io.ReadAll(resp.Body)
-
-		var response Response
-		err = json.Unmarshal([]byte(jsonData), &response)
-		if err != nil {
-			panic(err)
-		}
-
-		url = fmt.Sprintf("%s/access/ovpnfile/%d/0", config.BaseHackTheBoxAPIURL, response.Data.Assigned.ID)
-		resp, err = utils.HtbRequest(http.MethodGet, url, nil)
-		if err != nil {
-			return err
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			fmt.Println("error:", resp.StatusCode)
-			return nil
-		}
-
-		vpnName := strings.ReplaceAll(response.Data.Assigned.FriendlyName, " ", "_")
-
-		downloadPath := fmt.Sprintf("%s/%s-vpn.ovpn", config.BaseDirectory, vpnName)
-		outFile, err := os.Create(downloadPath)
-		if err != nil {
-			return err
-		}
-		defer outFile.Close()
-
-		_, err = io.Copy(outFile, resp.Body)
-		if err != nil {
-			return err
-		}
-
-		fmt.Println("VPN :", vpnName, "downloaded successfully")
 	}
 
 	fmt.Println("")
