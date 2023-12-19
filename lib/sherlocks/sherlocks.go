@@ -27,7 +27,7 @@ func getDownloadLink(sherlockID string) (string, error) {
 
 	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	defer resp.Body.Close()
 
@@ -37,13 +37,13 @@ func getDownloadLink(sherlockID string) (string, error) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	var data DownloadFile
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	log.Println("Download URL :", data.URL)
@@ -54,7 +54,7 @@ func getDownloadLink(sherlockID string) (string, error) {
 func downloadFile(url string, downloadPath string) error {
 	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer resp.Body.Close()
 
@@ -65,13 +65,13 @@ func downloadFile(url string, downloadPath string) error {
 
 	outFile, err := os.Create(downloadPath)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer outFile.Close()
 
 	_, err = io.Copy(outFile, resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	fmt.Println("Archive downloaded successfully. The password for unlock is: hacktheblue")
@@ -92,7 +92,7 @@ func submitTask(sherlockID string, taskID string, flag string) (string, error) {
 	}
 	resp, err := utils.HtbRequest(http.MethodPost, url, jsonBody)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	defer resp.Body.Close()
 
@@ -109,7 +109,7 @@ func GetTaskByID(sherlockID string, sherlockTaskID int, sherlockHint bool) error
 	url := fmt.Sprintf("%s/sherlocks/%s/tasks", config.BaseHackTheBoxAPIURL, sherlockID)
 	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer resp.Body.Close()
 
@@ -159,7 +159,7 @@ func GetTasks(sherlockID string) (*SherlockDataTasks, error) {
 	url := fmt.Sprintf("%s/sherlocks/%s/tasks", config.BaseHackTheBoxAPIURL, sherlockID)
 	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
@@ -179,7 +179,7 @@ func GetGeneralInformations(sherlockID string, sherlockDownloadPath string) erro
 	url := fmt.Sprintf("%s/sherlocks/%s/play", config.BaseHackTheBoxAPIURL, sherlockID)
 	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer resp.Body.Close()
 
@@ -208,7 +208,7 @@ func SearchIDByName(sherlockSearch string) (string, error) {
 	url := fmt.Sprintf("%s/sherlocks", config.BaseHackTheBoxAPIURL)
 	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	defer resp.Body.Close()
 

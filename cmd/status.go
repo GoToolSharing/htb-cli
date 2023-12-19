@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -17,10 +16,8 @@ import (
 	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
-
-// statusURL holds the API URL to check the status.
-const statusURL = "https://status.hackthebox.com/api/v2/status.json"
 
 // PageStatus represents the status structure fetched from the API.
 type PageStatus struct {
@@ -64,13 +61,18 @@ func createClient() (*http.Client, error) {
 
 // fetchStatus makes an HTTP request to fetch the status and returns the status description.
 func fetchStatus(client *http.Client) (string, error) {
-	req, err := http.NewRequest(http.MethodGet, statusURL, nil)
+	req, err := http.NewRequest(http.MethodGet, config.StatusURL, nil)
 	if err != nil {
 		return "", err
 	}
 
 	req.Header.Set("User-Agent", "htb-cli")
 	req.Header.Set("Host", "status.hackthebox.com")
+
+	config.GlobalConfig.Logger.Info("Sending an HTTP request")
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Request URL: %v", req.URL))
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Request method: %v", req.Method))
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Request body: %v", req.Body))
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -116,18 +118,19 @@ var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Displays the status of hackthebox servers",
 	Run: func(cmd *cobra.Command, args []string) {
+		config.GlobalConfig.Logger.Info("Status command executed")
 		output, err := coreStatusCmd()
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
-		if config.ConfigFile["Discord"] != "False" {
-			err := webhooks.SendToDiscord("[STATUS] - " + output)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
+		err = webhooks.SendToDiscord("[STATUS] - " + output)
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
 		fmt.Println(output)
+		config.GlobalConfig.Logger.Info("Exit status command correctly")
 	},
 }
 

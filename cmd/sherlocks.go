@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/sherlocks"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 var sherlocksCmd = &cobra.Command{
@@ -100,15 +103,18 @@ var sherlocksCmd = &cobra.Command{
 		rightFlex := tview.NewFlex().SetDirection(tview.FlexRow)
 
 		if err := getAndDisplayFlex(sherlocks.SherlocksURL, sherlocks.ActiveSherlocksTitle, false, leftFlex); err != nil {
-			log.Fatal(err)
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
 
 		if err := getAndDisplayFlex(sherlocks.RetiredSherlocksURL, sherlocks.RetiredSherlocksTitle, false, leftFlex); err != nil {
-			log.Fatal(err)
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
 
 		if err := getAndDisplayFlex(sherlocks.ScheduledSherlocksURL, sherlocks.ScheduledSherlocksTitle, true, rightFlex); err != nil {
-			log.Fatal(err)
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
 
 		rightFlex.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 0, 0, false)
@@ -118,7 +124,8 @@ var sherlocksCmd = &cobra.Command{
 			AddItem(rightFlex, 0, 1, false)
 
 		if err := app.SetRoot(mainFlex, true).Run(); err != nil {
-			panic(err)
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
 
 	},

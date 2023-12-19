@@ -2,14 +2,15 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 const (
@@ -139,15 +140,18 @@ var machinesCmd = &cobra.Command{
 		rightFlex := tview.NewFlex().SetDirection(tview.FlexRow)
 
 		if err := getAndDisplayFlex(machineURL, activeTitle, false, leftFlex); err != nil {
-			log.Fatal(err)
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
 
 		if err := getAndDisplayFlex(retiredURL, retiredTitle, false, leftFlex); err != nil {
-			log.Fatal(err)
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
 
 		if err := getAndDisplayFlex(scheduledURL, scheduledTitle, true, rightFlex); err != nil {
-			log.Fatal(err)
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
 
 		rightFlex.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 0, 0, false)
@@ -157,7 +161,8 @@ var machinesCmd = &cobra.Command{
 			AddItem(rightFlex, 0, 1, false)
 
 		if err := app.SetRoot(mainFlex, true).Run(); err != nil {
-			panic(err)
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
 	},
 }

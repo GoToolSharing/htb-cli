@@ -2,9 +2,9 @@ package vpn
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -32,13 +32,12 @@ func DownloadAll() error {
 			continue
 		}
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			fmt.Println("error:", resp.StatusCode)
-			return nil
+			return fmt.Errorf("error: Bad status code : %d", resp.StatusCode)
 		}
 
 		jsonData, _ := io.ReadAll(resp.Body)
@@ -52,7 +51,7 @@ func DownloadAll() error {
 		url = fmt.Sprintf("%s/access/ovpnfile/%d/0", config.BaseHackTheBoxAPIURL, response.Data.Assigned.ID)
 		resp, err = utils.HtbRequest(http.MethodGet, url, nil)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		defer resp.Body.Close()
 
@@ -66,13 +65,13 @@ func DownloadAll() error {
 		downloadPath := fmt.Sprintf("%s/%s-vpn.ovpn", config.BaseDirectory, vpnName)
 		outFile, err := os.Create(downloadPath)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		defer outFile.Close()
 
 		_, err = io.Copy(outFile, resp.Body)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		fmt.Println("VPN :", vpnName, "downloaded successfully")
@@ -85,57 +84,57 @@ func DownloadAll() error {
 }
 
 // Start starts the VPN connection using an OpenVPN configuration file.
-func Start(configPath string) string {
+func Start(configPath string) (string, error) {
 	fmt.Println("VPN is starting...")
 	pidFile := config.BaseDirectory + "/lab-vpn.pid"
 	cmd := exec.Command("sudo", "openvpn", "--config", configPath, "--writepid", pidFile)
 
 	err := cmd.Start()
 	if err != nil {
-		return ""
+		return "", nil
 	}
 
 	fmt.Println("Wait 20s and check if the vpn is started...")
 	time.Sleep(20 * time.Second)
-	isActive := Status()
+	isActive, err := Status()
+	if err != nil {
+		return "", err
+	}
 	if isActive {
 		fmt.Println("The VPN is now active !")
 	}
 
-	return ""
+	return "", nil
 }
 
 // Status checks the current status of the VPN connection.
-func Status() bool {
+func Status() (bool, error) {
 	url := fmt.Sprintf("%s/connection/status", config.BaseHackTheBoxAPIURL)
 	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return false, err
 	}
 	defer resp.Body.Close()
 
 	var result []map[string]interface{}
 	jsonBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("Error reading response body: %s\n", err)
-		return false
+		return false, fmt.Errorf("Error reading response body: %s", err)
 	}
 
 	err = json.Unmarshal(jsonBody, &result)
 	if err != nil {
-		log.Printf("Error unmarshalling JSON: %s\n", err)
-		return false
+		return false, fmt.Errorf("Error unmarshalling JSON: %s", err)
 	}
 
 	if len(result) == 0 {
-		return false
+		return false, nil
 	}
 
 	for _, item := range result {
 		connectionData, ok := item["connection"].(map[string]interface{})
 		if !ok {
-			log.Printf("Error asserting connection data\n")
-			return false
+			return false, errors.New("Error asserting connection data")
 		}
 
 		name := connectionData["name"]
@@ -143,7 +142,7 @@ func Status() bool {
 
 		fmt.Printf("Name: %s, IP4: %s\n", name, ip4)
 	}
-	return true
+	return true, nil
 }
 
 // Stop attempts to stop the currently active VPN connection.
@@ -154,7 +153,7 @@ func Stop() error {
 	if err != nil {
 		return err
 	}
-	log.Println("VPN PID :", string(pidData))
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("VPN PID : %v", pidData))
 
 	cmd := exec.Command("sudo", "kill", string(pidData))
 

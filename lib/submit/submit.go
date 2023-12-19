@@ -30,7 +30,7 @@ func CoreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 	url := ""
 
 	if challengeNameParam != "" {
-		log.Println("Challenge submit requested!")
+		config.GlobalConfig.Logger.Info("Challenge submit requested")
 		challengeID, err := utils.SearchItemIDByName(challengeNameParam, "Challenge")
 		if err != nil {
 			return "", err
@@ -38,12 +38,15 @@ func CoreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 		url = config.BaseHackTheBoxAPIURL + "/challenge/own"
 		payload["challenge_id"] = challengeID
 	} else if machineNameParam != "" {
-		log.Println("Machine submit requested!")
+		config.GlobalConfig.Logger.Info("Machine submit requested")
 		machineID, err := utils.SearchItemIDByName(machineNameParam, "Machine")
 		if err != nil {
 			return "", err
 		}
-		machineType := utils.GetMachineType(machineID)
+		machineType, err := utils.GetMachineType(machineID)
+		if err != nil {
+			return "", err
+		}
 		log.Printf("Machine Type: %s", machineType)
 
 		if machineType == "release" {
@@ -54,11 +57,17 @@ func CoreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 		}
 		payload["id"] = machineID
 	} else if machineNameParam == "" && challengeNameParam == "" {
-		machineID := utils.GetActiveMachineID()
+		machineID, err := utils.GetActiveMachineID()
+		if err != nil {
+			return "", err
+		}
 		if machineID == "" {
 			return "No machine is running", nil
 		}
-		machineType := utils.GetMachineType(machineID)
+		machineType, err := utils.GetMachineType(machineID)
+		if err != nil {
+			return "", err
+		}
 		log.Printf("Machine Type: %s", machineType)
 
 		if machineType == "release" {

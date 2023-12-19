@@ -3,8 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -13,6 +13,7 @@ import (
 	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 // coreStartCmd starts a specified machine and returns a status message and any error encountered.
@@ -21,13 +22,13 @@ func coreStartCmd(machineChoosen string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	log.Printf("Machine ID: %s", machineID)
+	config.GlobalConfig.Logger.Info(fmt.Sprintf("Machine ID: %s", machineID))
 
 	machineType := utils.GetMachineType(machineID)
-	log.Printf("Machine Type: %s", machineType)
+	config.GlobalConfig.Logger.Info(fmt.Sprintf("Machine Type: %s", machineType))
 
 	userSubscription := utils.GetUserSubscription()
-	log.Printf("User subscription: %s", userSubscription)
+	config.GlobalConfig.Logger.Info(fmt.Sprintf("User subscription: %s", userSubscription))
 
 	// isActive := utils.CheckVPN()
 	// if !isActive {
@@ -113,23 +114,24 @@ var startCmd = &cobra.Command{
 	Short: "Start a machine",
 	Long:  `Starts a Hackthebox machine specified in argument`,
 	Run: func(cmd *cobra.Command, args []string) {
+		config.GlobalConfig.Logger.Info("Start command executed")
 		machineChoosen, err := cmd.Flags().GetString("machine")
 		if err != nil {
-			fmt.Println(err)
-			return
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
 		output, err := coreStartCmd(machineChoosen)
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
-		if config.ConfigFile["Discord"] != "False" {
-			err := webhooks.SendToDiscord("[START] - " + output)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
+		err = webhooks.SendToDiscord("[START] - " + output)
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
 		fmt.Println(output)
+		config.GlobalConfig.Logger.Info("Exit start command correctly")
 	},
 }
 
@@ -139,7 +141,7 @@ func init() {
 	startCmd.Flags().StringP("machine", "m", "", "Machine name")
 	err := startCmd.MarkFlagRequired("machine")
 	if err != nil {
-		fmt.Println(err)
-		return
+		config.GlobalConfig.Logger.Error("", zap.Error(err))
+		os.Exit(1)
 	}
 }

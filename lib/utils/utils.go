@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -63,7 +63,7 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 	url := fmt.Sprintf("%s/search/fetch?query=%s", config.BaseHackTheBoxAPIURL, item)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	defer resp.Body.Close()
 	json_body, _ := io.ReadAll(resp.Body)
@@ -88,7 +88,8 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			if err != nil {
 				fmt.Println("error:", err)
 			}
-			log.Println("Machine found :", machines[0].Value)
+			config.GlobalConfig.Logger.Info("Machine found")
+			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine name: %s", machines[0].Value))
 			isConfirmed := AskConfirmation("The following machine was found : " + machines[0].Value)
 			if isConfirmed {
 				return machines[0].ID, nil
@@ -106,7 +107,8 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			if err != nil {
 				fmt.Println("error:", err)
 			}
-			log.Println("Machine found :", machines["0"].Value)
+			config.GlobalConfig.Logger.Info("Machine found")
+			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine name: %s", machines["0"].Value))
 			isConfirmed := AskConfirmation("The following machine was found : " + machines["0"].Value)
 			if isConfirmed {
 				return machines["0"].ID, nil
@@ -129,7 +131,8 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			if err != nil {
 				fmt.Println("error:", err)
 			}
-			log.Println("Challenge found :", challenges[0].Value)
+			config.GlobalConfig.Logger.Info("Challenge found")
+			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge name: %s", challenges[0].Value))
 			isConfirmed := AskConfirmation("The following challenge was found : " + challenges[0].Value)
 			if isConfirmed {
 				return challenges[0].ID, nil
@@ -147,14 +150,15 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			if err != nil {
 				fmt.Println("error:", err)
 			}
-			log.Println("Challenge found :", challenges["0"].Value)
+			config.GlobalConfig.Logger.Info("Challenge found")
+			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge name: %s", challenges["0"].Value))
 			isConfirmed := AskConfirmation("The following challenge was found : " + challenges["0"].Value)
 			if isConfirmed {
 				return challenges["0"].ID, nil
 			}
 			os.Exit(0)
 		default:
-			log.Fatal("No challenge found")
+			fmt.Println("No challenge found")
 		}
 	} else if element_type == "Username" {
 		switch root.Usernames.(type) {
@@ -170,7 +174,8 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			if err != nil {
 				fmt.Println("error:", err)
 			}
-			log.Println("Username found :", usernames[0].Value)
+			config.GlobalConfig.Logger.Info("Username found")
+			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Username value: %s", usernames[0].Value))
 			isConfirmed := AskConfirmation("The following username was found : " + usernames[0].Value)
 			if isConfirmed {
 				return usernames[0].ID, nil
@@ -188,17 +193,18 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			if err != nil {
 				fmt.Println("error:", err)
 			}
-			log.Println("Username found :", usernames["0"].Value)
+			config.GlobalConfig.Logger.Info("Username found")
+			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Username value: %s", usernames["0"].Value))
 			isConfirmed := AskConfirmation("The following username was found : " + usernames["0"].Value)
 			if isConfirmed {
 				return usernames["0"].ID, nil
 			}
 			os.Exit(0)
 		default:
-			log.Fatal("No username found")
+			fmt.Println("No username found")
 		}
 	} else {
-		log.Fatal("Bad element_type")
+		return "", errors.New("Bad element_type")
 	}
 
 	// The HackTheBox API can return either a slice or a map
@@ -217,40 +223,40 @@ func ParseJsonMessage(resp *http.Response, key string) interface{} {
 }
 
 // GetMachineType will return the machine type
-func GetMachineType(machine_id interface{}) string {
+func GetMachineType(machine_id interface{}) (string, error) {
 	// Check if the machine is the latest release
 	url := fmt.Sprintf("%s/machine/recommended/", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	card := ParseJsonMessage(resp, "card1").(map[string]interface{})
 	fmachine_id, _ := strconv.ParseFloat(machine_id.(string), 64)
 	if card["id"].(float64) == fmachine_id {
-		return "release"
+		return "release", nil
 	}
 
 	// Check if the machine is active or retired
 	url = fmt.Sprintf("%s/machine/profile/%v", config.BaseHackTheBoxAPIURL, machine_id)
 	resp, err = HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	info := ParseJsonMessage(resp, "info").(map[string]interface{})
 	if info["active"].(float64) == 1 {
-		return "active"
+		return "active", nil
 	} else if info["retired"].(float64) == 1 {
-		return "retired"
+		return "retired", nil
 	}
-	return "error"
+	return "", errors.New("Error: machine type not found")
 }
 
 // GetUserSubscription returns the user's subscription level
-func GetUserSubscription() string {
+func GetUserSubscription() (string, error) {
 	url := fmt.Sprintf("%s/user/info", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	info := ParseJsonMessage(resp, "info").(map[string]interface{})
 	canAccessVIP := info["canAccessVIP"].(bool)
@@ -258,58 +264,58 @@ func GetUserSubscription() string {
 
 	if canAccessVIP {
 		if isDedicatedVIP {
-			return "vip+"
+			return "vip+", nil
 		}
-		return "vip"
+		return "vip", nil
 	}
 
-	return "free"
+	return "free", nil
 }
 
 // GetActiveMachineID returns the id of the active machine
-func GetActiveMachineID() string {
+func GetActiveMachineID() (string, error) {
 	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	info := ParseJsonMessage(resp, "info")
 	if info == nil {
-		return ""
+		return "", err
 	}
-	return fmt.Sprintf("%.0f", info.(map[string]interface{})["id"].(float64))
+	return fmt.Sprintf("%.0f", info.(map[string]interface{})["id"].(float64)), nil
 }
 
 // GetActiveExpiredTime returns the expired date of the active machine
-func GetActiveExpiredTime() string {
+func GetActiveExpiredTime() (string, error) {
 	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	info := ParseJsonMessage(resp, "info")
 	if info == nil {
-		return ""
+		return "", nil
 	}
-	return fmt.Sprintf("%s", info.(map[string]interface{})["expires_at"])
+	return fmt.Sprintf("%s", info.(map[string]interface{})["expires_at"]), nil
 }
 
 // GetActiveMachineIP returns the ip of the active machine
-func GetActiveMachineIP() string {
+func GetActiveMachineIP() (string, error) {
 	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	info := ParseJsonMessage(resp, "info")
 	if info == nil {
-		return ""
+		return "", err
 	}
-	log.Println("Active infos :", info)
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Active machine informations: %v", info))
 	if ipValue, ok := info.(map[string]interface{})["ip"].(string); ok {
-		return ipValue
+		return ipValue, nil
 	}
-	return "Undefined"
+	return "Undefined", nil
 }
 
 // HtbRequest makes an HTTP request to the Hackthebox API
@@ -333,7 +339,7 @@ func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response
 	req, err := http.NewRequest(method, urlParam, bytes.NewBuffer(jsonData))
 	if err != nil {
 		s.Stop()
-		log.Fatalln(err)
+		return nil, err
 	}
 
 	req.Header.Set("User-Agent", "htb-cli")
@@ -396,13 +402,15 @@ func TruncateString(str string, maxLength int) string {
 }
 
 func GetInformationsFromActiveMachine() (map[string]interface{}, error) {
-	machineID := GetActiveMachineID()
-
+	machineID, err := GetActiveMachineID()
+	if err != nil {
+		return nil, err
+	}
 	if machineID == "" {
 		fmt.Println("No machine is running")
 		return nil, nil
 	}
-	log.Println("Machine ID:", machineID)
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
 
 	url := fmt.Sprintf("%s/machine/profile/%s", config.BaseHackTheBoxAPIURL, machineID)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
@@ -432,7 +440,7 @@ func HTTPRequest(method string, urlParam string, jsonData []byte) (*http.Respons
 	req, err := http.NewRequest(method, urlParam, bytes.NewBuffer(jsonData))
 	if err != nil {
 		s.Stop()
-		log.Fatalln(err)
+		return nil, err
 	}
 
 	req.Header.Set("User-Agent", "htb-cli")
@@ -448,7 +456,8 @@ func HTTPRequest(method string, urlParam string, jsonData []byte) (*http.Respons
 	}
 
 	if config.GlobalConfig.ProxyParam != "" {
-		log.Println("Proxy URL found :", config.GlobalConfig.ProxyParam)
+		config.GlobalConfig.Logger.Info("Proxy URL found")
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Proxy value : %s", config.GlobalConfig.ProxyParam))
 		proxyURLParsed, err := url.Parse(config.GlobalConfig.ProxyParam)
 		if err != nil {
 			s.Stop()
@@ -457,15 +466,16 @@ func HTTPRequest(method string, urlParam string, jsonData []byte) (*http.Respons
 		transport.Proxy = http.ProxyURL(proxyURLParsed)
 	}
 
-	log.Println("HTTP request URL :", req.URL)
-	log.Println("HTTP request method :", req.Method)
-	log.Println("HTTP request body :", req.Body)
+	config.GlobalConfig.Logger.Info("Sending an HTTP request")
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Request URL: %v", req.URL))
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Request method: %v", req.Method))
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Request body: %v", req.Body))
 
 	client := &http.Client{Transport: transport}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)

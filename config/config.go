@@ -30,6 +30,8 @@ const HostHackTheBox = "labs.hackthebox.com"
 
 const BaseHackTheBoxAPIURL = "https://" + HostHackTheBox + "/api/v4"
 
+const StatusURL = "https://status.hackthebox.com/api/v2/status.json"
+
 const Version = "8ac11df2ef569ed08f5f5622016222497658ff89"
 
 func ConfigureLogger() error {
