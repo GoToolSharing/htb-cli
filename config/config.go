@@ -36,16 +36,14 @@ func ConfigureLogger() {
 	var logLevel zapcore.Level
 
 	switch GlobalConfig.Verbose {
+	case 0:
+		logLevel = zap.ErrorLevel
 	case 1:
 		logLevel = zap.InfoLevel
 	case 2:
 		logLevel = zap.DebugLevel
-	case 3:
-		logLevel = zap.WarnLevel
-	case 4:
-		logLevel = zap.PanicLevel
 	default:
-		logLevel = zap.ErrorLevel
+		logLevel = zap.DebugLevel
 	}
 
 	encoderConfig := zap.NewDevelopmentEncoderConfig()
