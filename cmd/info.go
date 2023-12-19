@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -14,6 +13,7 @@ import (
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 type Response struct {
@@ -24,7 +24,7 @@ type Response struct {
 // Retrieves data for user profile
 func fetchData(itemID string, endpoint string, infoKey string) (map[string]interface{}, error) {
 	url := config.BaseHackTheBoxAPIURL + endpoint + itemID
-	log.Println("URL :", url)
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("URL: %s", url))
 
 	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -67,8 +67,8 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 			return fmt.Errorf("infoKey not defined")
 		}
 
-		log.Println("URL :", url)
-		log.Println("InfoKey :", infoKey)
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("URL: %s", url))
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("InfoKey: %s", infoKey))
 
 		info := utils.ParseJsonMessage(resp, infoKey)
 		data := info.(map[string]interface{})
@@ -150,7 +150,7 @@ func coreInfoCmd(machineName []string, challengeName []string, usernameName []st
 		if isConfirmed {
 			err := displayActiveMachine(machineHeader)
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 		}
 		// Get current account
@@ -176,7 +176,7 @@ func coreInfoCmd(machineName []string, challengeName []string, usernameName []st
 				if isConfirmed {
 					err := displayActiveMachine(info.Header)
 					if err != nil {
-						log.Fatal(err)
+						return err
 					}
 				}
 			}
@@ -209,13 +209,19 @@ func getIPStatus(data map[string]interface{}) interface{} {
 
 // displayActiveMachine displays information about the active machine if one is found.
 func displayActiveMachine(header string) error {
-	machineID := utils.GetActiveMachineID()
-	expiresTime := utils.GetActiveExpiredTime()
+	machineID, err := utils.GetActiveMachineID()
+	if err != nil {
+		return err
+	}
+	expiresTime, err := utils.GetActiveExpiredTime()
+	if err != nil {
+		return err
+	}
 
 	if machineID != "" {
-		log.Println("Active machine found !")
-		log.Println("Machine ID:", machineID)
-		log.Println("Expires At:", expiresTime)
+		config.GlobalConfig.Logger.Info("Active machine found !")
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Expires At: %v", expiresTime))
 
 		layout := "2006-01-02 15:04:05"
 
@@ -225,7 +231,7 @@ func displayActiveMachine(header string) error {
 		}
 
 		now := time.Now()
-		log.Println("Actual date :", now)
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Actual date: %v", now))
 		var remainingTime string
 		if date.After(now) {
 			duration := date.Sub(now)
@@ -241,18 +247,18 @@ func displayActiveMachine(header string) error {
 			jsonData := []byte("{\"machine_id\":" + machineID + "}")
 			resp, err := utils.HtbRequest(http.MethodPost, config.BaseHackTheBoxAPIURL+"/vm/extend", jsonData)
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 			var response Response
 			if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-				log.Fatalf("Error decoding JSON response: %v", err)
+				return fmt.Errorf("Error decoding JSON response: %v", err)
 			}
 
 			inputLayout := time.RFC3339Nano
 
 			date, err := time.Parse(inputLayout, response.ExpiresAt)
 			if err != nil {
-				log.Fatalf("Error decoding JSON response: %v", err)
+				return fmt.Errorf("Error decoding JSON response: %v", err)
 			}
 
 			outputLayout := "2006-01-02 -> 15h 04m 05s"
@@ -283,17 +289,26 @@ func displayActiveMachine(header string) error {
 			return err
 		}
 
-		machineType := utils.GetMachineType(machineID)
-		log.Printf("Machine Type: %s", machineType)
+		machineType, err := utils.GetMachineType(machineID)
+		if err != nil {
+			return err
+		}
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
 
-		userSubscription := utils.GetUserSubscription()
-		log.Printf("User subscription: %s", userSubscription)
+		userSubscription, err := utils.GetUserSubscription()
+		if err != nil {
+			return err
+		}
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("User subscription: %s", userSubscription))
 
 		ip := "Undefined"
 		_ = ip
 		switch {
 		case userSubscription == "vip+" || machineType == "release":
-			ip = utils.GetActiveMachineIP()
+			ip, err = utils.GetActiveMachineIP()
+			if err != nil {
+				return err
+			}
 		default:
 			ip = getIPStatus(data).(string)
 		}
@@ -336,7 +351,8 @@ var infoCmd = &cobra.Command{
 		}
 		err = coreInfoCmd(machineParam, challengeParam, usernameParam)
 		if err != nil {
-			log.Fatal(err)
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
 	},
 }

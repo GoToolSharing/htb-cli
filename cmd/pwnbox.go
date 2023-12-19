@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/GoToolSharing/htb-cli/config"
@@ -56,7 +55,7 @@ var pwnboxCmd = &cobra.Command{
 		}
 
 		// Check subscription
-		log.Println("Mode :" + modeFlag)
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Mode: %s", modeFlag))
 
 		if startFlag {
 			fmt.Println("Sorry, but HackTheBox currently uses a v3 recaptcha to start a pwnbox.")

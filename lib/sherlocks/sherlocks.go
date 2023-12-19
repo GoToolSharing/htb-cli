@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -46,7 +45,7 @@ func getDownloadLink(sherlockID string) (string, error) {
 		return "", err
 	}
 
-	log.Println("Download URL :", data.URL)
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Download URL: %s", data.URL))
 	return data.URL, nil
 }
 
@@ -138,7 +137,7 @@ func GetTaskByID(sherlockID string, sherlockTaskID int, sherlockHint bool) error
 			return err
 		}
 		flag = strings.TrimSpace(flag)
-		log.Println(flag)
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Flag: %s", flag))
 		taskID := strconv.Itoa(sherlockData.Tasks[sherlockTaskID-1].ID)
 
 		message, err := submitTask(sherlockID, taskID, flag)
@@ -196,7 +195,7 @@ func GetGeneralInformations(sherlockID string, sherlockDownloadPath string) erro
 		}
 	}
 
-	log.Println(info)
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Informations: %v", info))
 	fmt.Println("Scenario :", info["scenario"])
 	fmt.Println("\nFile :", info["file_name"])
 	fmt.Println("File Size :", info["file_size"])

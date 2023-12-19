@@ -2,7 +2,6 @@ package sherlocks
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/rivo/tview"
@@ -39,7 +38,7 @@ func GetColorFromDifficultyText(difficultyText string) string {
 
 // CreateFlex creates and returns a Flex view with machine information
 func CreateFlex(info interface{}, title string, isScheduled bool) (*tview.Flex, error) {
-	log.Println("Info :", info)
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Info: %v", info))
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
 	flex.SetBorder(true).SetTitle(title).SetTitleAlign(tview.AlignLeft)
 

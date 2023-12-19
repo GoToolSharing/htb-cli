@@ -3,27 +3,34 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
+	"os"
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
 	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 // coreResetCmd sends a reset request for an active machine.
 func coreResetCmd() (string, error) {
 	// Retrieve the ID of the active machine.
-	machineID := utils.GetActiveMachineID()
+	machineID, err := utils.GetActiveMachineID()
+	if err != nil {
+		return "", err
+	}
 	if machineID == "" {
 		return "No active machine found", nil
 	}
-	log.Printf("Machine ID: %s", machineID)
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
 
 	// Retrieve the type of the machine.
-	machineType := utils.GetMachineType(machineID)
-	log.Printf("Machine Type: %s", machineType)
+	machineType, err := utils.GetMachineType(machineID)
+	if err != nil {
+		return "", err
+	}
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
 
 	// Determine the API endpoint and construct JSON data based on the machine type.
 	var endpoint string
@@ -64,14 +71,13 @@ var resetCmd = &cobra.Command{
 		// Execute the core reset function and handle the results.
 		output, err := coreResetCmd()
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
-		if config.ConfigFile["Discord"] != "False" {
-			err := webhooks.SendToDiscord("[RESET] - " + output)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
+		err = webhooks.SendToDiscord("[RESET] - " + output)
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
 		fmt.Println(output)
 	},

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -47,7 +46,7 @@ func CoreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 		if err != nil {
 			return "", err
 		}
-		log.Printf("Machine Type: %s", machineType)
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
 
 		if machineType == "release" {
 			url = config.BaseHackTheBoxAPIURL + "/arena/own"
@@ -68,7 +67,7 @@ func CoreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 		if err != nil {
 			return "", err
 		}
-		log.Printf("Machine Type: %s", machineType)
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
 
 		if machineType == "release" {
 			url = config.BaseHackTheBoxAPIURL + "/arena/own"
@@ -89,8 +88,8 @@ func CoreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 	flag := strings.ReplaceAll(flagOriginal, " ", "")
 	payload["flag"] = flag
 
-	log.Println("Flag :", flag)
-	log.Println("Difficulty :", difficultyString)
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Flag: %s", flag))
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Difficulty: %s", difficultyString))
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {

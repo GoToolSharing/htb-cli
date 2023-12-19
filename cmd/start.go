@@ -24,10 +24,16 @@ func coreStartCmd(machineChoosen string) (string, error) {
 	}
 	config.GlobalConfig.Logger.Info(fmt.Sprintf("Machine ID: %s", machineID))
 
-	machineType := utils.GetMachineType(machineID)
+	machineType, err := utils.GetMachineType(machineID)
+	if err != nil {
+		return "", err
+	}
 	config.GlobalConfig.Logger.Info(fmt.Sprintf("Machine Type: %s", machineType))
 
-	userSubscription := utils.GetUserSubscription()
+	userSubscription, err := utils.GetUserSubscription()
+	if err != nil {
+		return "", err
+	}
 	config.GlobalConfig.Logger.Info(fmt.Sprintf("User subscription: %s", userSubscription))
 
 	// isActive := utils.CheckVPN()
@@ -87,7 +93,10 @@ func coreStartCmd(machineChoosen string) (string, error) {
 				s.Stop()
 				return "", nil
 			default:
-				ip = utils.GetActiveMachineIP()
+				ip, err = utils.GetActiveMachineIP()
+				if err != nil {
+					return "", err
+				}
 				if ip != "Undefined" {
 					s.Stop()
 					break Loop

@@ -45,16 +45,25 @@ func coreStopCmd() (string, error) {
 	// if err != nil {
 	// 	return "", err
 	// }
-	machineID := utils.GetActiveMachineID()
+	machineID, err := utils.GetActiveMachineID()
+	if err != nil {
+		return "", err
+	}
 	if machineID == "" {
 		return "No machine is running", nil
 	}
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
 
-	machineType := utils.GetMachineType(machineID)
+	machineType, err := utils.GetMachineType(machineID)
+	if err != nil {
+		return "", err
+	}
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
 
-	userSubscription := utils.GetUserSubscription()
+	userSubscription, err := utils.GetUserSubscription()
+	if err != nil {
+		return "", err
+	}
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("User subscription: %s", userSubscription))
 
 	apiEndpoint, jsonData := buildMachineStopRequest(machineType, userSubscription, machineID)

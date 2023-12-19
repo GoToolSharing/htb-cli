@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
@@ -48,7 +47,7 @@ var sherlocksCmd = &cobra.Command{
 				fmt.Println(err)
 				return
 			}
-			log.Println("SherlockID :", sherlockID)
+			config.GlobalConfig.Logger.Debug(fmt.Sprintf("SherlockID: %s", sherlockID))
 
 			if sherlockTaskID != 0 {
 				err := sherlocks.GetTaskByID(sherlockID, sherlockTaskID, sherlockHint)
