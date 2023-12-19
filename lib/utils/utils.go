@@ -352,7 +352,8 @@ func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response
 	}
 
 	if config.GlobalConfig.ProxyParam != "" {
-		log.Println("Proxy URL found :", config.GlobalConfig.ProxyParam)
+		config.GlobalConfig.Logger.Info("Proxy URL found")
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Proxy value : %s", config.GlobalConfig.ProxyParam))
 		proxyURLParsed, err := url.Parse(config.GlobalConfig.ProxyParam)
 		if err != nil {
 			s.Stop()
@@ -361,9 +362,10 @@ func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response
 		transport.Proxy = http.ProxyURL(proxyURLParsed)
 	}
 
-	log.Println("HTTP request URL :", req.URL)
-	log.Println("HTTP request method :", req.Method)
-	log.Println("HTTP request body :", req.Body)
+	config.GlobalConfig.Logger.Info("Sending an HTTP HTB request")
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Request URL: %v", req.URL))
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Request method: %v", req.Method))
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Request body: %v", req.Body))
 
 	client := &http.Client{Transport: transport, CheckRedirect: func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
@@ -371,7 +373,7 @@ func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)

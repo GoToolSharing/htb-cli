@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"net/http"
+	"os"
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
 	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 var (
@@ -48,13 +49,13 @@ func coreStopCmd() (string, error) {
 	if machineID == "" {
 		return "No machine is running", nil
 	}
-	log.Println("Machine ID:", machineID)
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
 
 	machineType := utils.GetMachineType(machineID)
-	log.Println("Machine Type:", machineType)
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
 
 	userSubscription := utils.GetUserSubscription()
-	log.Println("User subscription:", userSubscription)
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("User subscription: %s", userSubscription))
 
 	apiEndpoint, jsonData := buildMachineStopRequest(machineType, userSubscription, machineID)
 	resp, err := utils.HtbRequest(http.MethodPost, apiEndpoint, jsonData)
@@ -79,18 +80,19 @@ var stopCmd = &cobra.Command{
 	Use:   "stop",
 	Short: "Stop the current machine",
 	Run: func(cmd *cobra.Command, args []string) {
+		config.GlobalConfig.Logger.Info("Stop command executed")
 		output, err := coreStopCmd()
 		if err != nil {
-			log.Fatal(err)
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
-		if config.ConfigFile["Discord"] != "False" {
-			err := webhooks.SendToDiscord(fmt.Sprintf("[STOP] - %s", output))
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
+		err = webhooks.SendToDiscord(fmt.Sprintf("[STOP] - %s", output))
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
 		}
 		fmt.Println(output)
+		config.GlobalConfig.Logger.Info("Exit stop command correctly")
 	},
 }
 
