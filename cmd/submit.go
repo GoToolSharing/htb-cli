@@ -35,6 +35,10 @@ var submitCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Difficulty: %d", difficultyParam))
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine name: %s", machineNameParam))
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge name: %s", challengeNameParam))
+
 		output, err := submit.CoreSubmitCmd(difficultyParam, machineNameParam, challengeNameParam)
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
