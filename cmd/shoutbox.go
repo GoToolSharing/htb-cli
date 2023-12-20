@@ -23,6 +23,11 @@ var shoutboxCmd = &cobra.Command{
 	},
 }
 
+// TODO :
+// Flag pour les autres channels
+// Par défault all?
+// challenges / prolabs / fortresses
+
 func init() {
 	rootCmd.AddCommand(shoutboxCmd)
 }

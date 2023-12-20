@@ -3,10 +3,8 @@ package shoutbox
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/url"
 	"regexp"
-	"strings"
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/gorilla/websocket"
@@ -30,20 +28,18 @@ func ConnectToWebSocket() error {
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Message received: %s", message))
 		var msgData map[string]interface{}
 		if err := json.Unmarshal(message, &msgData); err != nil {
-			log.Println("Erreur lors de l'analyse du message :", err)
-			continue
+			return fmt.Errorf("Error when analyzing internal data: %v", err)
 		}
 
 		if msgData["event"] == "display-info" {
 			if data, ok := msgData["data"].(string); ok {
 				var dataContent map[string]string
 				if err := json.Unmarshal([]byte(data), &dataContent); err != nil {
-					log.Println("Erreur lors de l'analyse des données internes :", err)
-					continue
+					return fmt.Errorf("Error when analyzing internal data: %v", err)
 				}
 
-				config.GlobalConfig.Logger.Debug(fmt.Sprintf("Data content: %s", dataContent["text"]))
-				extractedMessage, _ := parseOwnsMessages(dataContent["text"])
+				config.GlobalConfig.Logger.Debug(fmt.Sprintf("Data: %s", dataContent))
+				extractedMessage, _ := parseOwnsMessages(dataContent)
 				fmt.Println(extractedMessage)
 			}
 		}
@@ -81,15 +77,26 @@ func ConnectToWebSocket() error {
 	}
 }
 
-func parseOwnsMessages(message string) (string, error) {
-	re := regexp.MustCompile(`text=([^&]+)`)
-	matches := re.FindStringSubmatch(message)
+func parseOwnsMessages(message map[string]string) (string, error) {
+	re := regexp.MustCompile(`<span class="text-info">(.*?)</span>`)
+	matches := re.FindStringSubmatch(message["prepend"])
 
-	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Matches: %s", matches))
+	var messageFormated string
 
 	if len(matches) >= 2 {
-		return strings.ReplaceAll(matches[1], "\\\"", "\""), nil
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Matches: %s", matches))
+		messageFormated = fmt.Sprintf("%s - ", matches[1])
 	}
 
-	return "", nil
+	re = regexp.MustCompile(`<[^>]+>`)
+	output := re.ReplaceAllString(message["text"], "")
+
+	re = regexp.MustCompile(`\s*\[.*?\]\s*`)
+	output = re.ReplaceAllString(output, "")
+
+	reSpaces := regexp.MustCompile(`\s{2,}`)
+	output = reSpaces.ReplaceAllString(output, " ")
+
+	messageFormated += output
+	return messageFormated, nil
 }
