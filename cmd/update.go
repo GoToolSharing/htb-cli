@@ -19,6 +19,7 @@ var updateCmd = &cobra.Command{
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
+
 		config.GlobalConfig.Logger.Info("Exit update command correctly")
 	},
 }

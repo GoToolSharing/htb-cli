@@ -74,12 +74,12 @@ var resetCmd = &cobra.Command{
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
-		err = webhooks.SendToDiscord("[RESET] - " + output)
+		fmt.Println(output)
+		err = webhooks.SendToDiscord("reset", output)
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
-		fmt.Println(output)
 	},
 }
 

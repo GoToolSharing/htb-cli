@@ -3,10 +3,13 @@ package cmd
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 func doAction(mode string) {
@@ -74,6 +77,12 @@ var pwnboxCmd = &cobra.Command{
 				return
 			}
 			fmt.Println(message)
+
+			err = webhooks.SendToDiscord("pwnbox", message)
+			if err != nil {
+				config.GlobalConfig.Logger.Error("", zap.Error(err))
+				os.Exit(1)
+			}
 			return
 		}
 

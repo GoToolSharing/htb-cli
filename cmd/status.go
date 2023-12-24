@@ -124,12 +124,12 @@ var statusCmd = &cobra.Command{
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
-		err = webhooks.SendToDiscord("[STATUS] - " + output)
+		fmt.Println(output)
+		err = webhooks.SendToDiscord("status", output)
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
-		fmt.Println(output)
 		config.GlobalConfig.Logger.Info("Exit status command correctly")
 	},
 }

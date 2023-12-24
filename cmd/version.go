@@ -2,9 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 var versionCmd = &cobra.Command{
@@ -13,11 +16,20 @@ var versionCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		config.GlobalConfig.Logger.Info("Version command executed")
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("config.Version: %s", config.Version))
+		var message string
 		if len(config.Version) == 40 {
-			fmt.Println("Development version (dev branch): " + config.Version)
+			message = fmt.Sprintf("Development version (dev branch): %s", config.Version)
 		} else {
-			fmt.Println("Stable version (main branch): " + config.Version)
+			message = fmt.Sprintf("Stable version (main branch): %s", config.Version)
 		}
+
+		fmt.Println(message)
+		err := webhooks.SendToDiscord("version", message)
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
+		}
+
 		config.GlobalConfig.Logger.Info("Exit version command correctly")
 	},
 }

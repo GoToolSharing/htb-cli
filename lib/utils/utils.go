@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"os/user"
 	"strconv"
 	"strings"
 	"syscall"
@@ -347,6 +348,7 @@ func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response
 
 	if method == http.MethodPost {
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Accept", "application/json, text/plain, */*")
 	} else if method == http.MethodGet {
 		req.Header.Set("Host", config.HostHackTheBox)
 	}
@@ -482,4 +484,10 @@ func HTTPRequest(method string, urlParam string, jsonData []byte) (*http.Respons
 	resp.Body = io.NopCloser(bytes.NewReader(body))
 	s.Stop()
 	return resp, nil
+}
+
+// GetCurrentUsername retrieves the current system user's name.
+func GetCurrentUsername() string {
+	user, _ := user.Current()
+	return user.Username
 }

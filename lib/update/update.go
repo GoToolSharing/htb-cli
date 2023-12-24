@@ -8,6 +8,7 @@ import (
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 )
 
 func Check(newVersion string) error {
@@ -24,12 +25,12 @@ func Check(newVersion string) error {
 		body, err := io.ReadAll(resp.Body)
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Body: %s", utils.TruncateString(string(body), 2000)))
 		if err != nil {
-			return fmt.Errorf("Error when reading the response: %v", err)
+			return fmt.Errorf("error when reading the response: %v", err)
 		}
 		var commits []Commit
 		err = json.Unmarshal(body, &commits)
 		if err != nil {
-			return fmt.Errorf("Error when decoding JSON: %v", err)
+			return fmt.Errorf("error when decoding JSON: %v", err)
 		}
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Commits : %v", commits))
 
@@ -41,14 +42,20 @@ func Check(newVersion string) error {
 				break
 			}
 		}
+		var message string
 		if commitHash != config.Version {
-			message := fmt.Sprintf("A new update is now available (dev) ! (%s)", commitHash)
-			fmt.Println(message)
-			fmt.Println("Update with : git pull")
+			message = fmt.Sprintf("A new update is now available (dev) ! (%s)\nUpdate with : git pull", commitHash)
 		} else {
-			message := fmt.Sprintf("You're up to date (dev) ! (%s)", commitHash)
-			fmt.Println(message)
+			message = fmt.Sprintf("You're up to date (dev) ! (%s)", commitHash)
 		}
+
+		fmt.Println(message)
+
+		err = webhooks.SendToDiscord("update", message)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	}
 
@@ -61,17 +68,22 @@ func Check(newVersion string) error {
 	}
 	var release GitHubRelease
 	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
-		return fmt.Errorf("Error when decoding JSON: %v", err)
+		return fmt.Errorf("error when decoding JSON: %v", err)
 	}
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("release.TagName : %s", release.TagName))
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("config.Version : %s", config.Version))
+	var message string
 	if release.TagName != config.Version {
-		message := fmt.Sprintf("A new update is now available ! (%s)", release.TagName)
-		fmt.Println(message)
-		fmt.Println("Update with : go install github.com/GoToolSharing/htb-cli@latest")
+		message = fmt.Sprintf("A new update is now available ! (%s)\nUpdate with : go install github.com/GoToolSharing/htb-cli@latest", release.TagName)
 	} else {
-		message := fmt.Sprintf("You're up to date ! (%s)", config.Version)
-		fmt.Println(message)
+		message = fmt.Sprintf("You're up to date ! (%s)", config.Version)
+	}
+
+	fmt.Println(message)
+
+	err = webhooks.SendToDiscord("update", message)
+	if err != nil {
+		return err
 	}
 
 	return nil

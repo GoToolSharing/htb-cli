@@ -40,12 +40,14 @@ var submitCmd = &cobra.Command{
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
-		err = webhooks.SendToDiscord(fmt.Sprintf("[SUBMIT COMMAND] - %s", output))
+
+		fmt.Println(output)
+
+		err = webhooks.SendToDiscord("submit", output)
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
-		fmt.Println(output)
 		config.GlobalConfig.Logger.Info("Exit submit command correctly")
 	},
 }

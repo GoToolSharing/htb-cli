@@ -95,12 +95,14 @@ var stopCmd = &cobra.Command{
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
-		err = webhooks.SendToDiscord(fmt.Sprintf("[STOP] - %s", output))
+
+		fmt.Println(output)
+
+		err = webhooks.SendToDiscord("stop", output)
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
-		fmt.Println(output)
 		config.GlobalConfig.Logger.Info("Exit stop command correctly")
 	},
 }

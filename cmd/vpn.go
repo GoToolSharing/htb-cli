@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/GoToolSharing/htb-cli/config"
@@ -26,6 +27,8 @@ var vpnCmd = &cobra.Command{
 				config.GlobalConfig.Logger.Error("", zap.Error(err))
 				os.Exit(1)
 			}
+		} else {
+			fmt.Println("--download flag is required")
 		}
 		config.GlobalConfig.Logger.Info("Exit vpn command correctly")
 	},

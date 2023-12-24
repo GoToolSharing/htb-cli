@@ -14,6 +14,7 @@ import (
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 )
 
 func downloadVPN(url string) error {
@@ -106,7 +107,15 @@ func DownloadAll() error {
 	}
 
 	fmt.Println("")
-	fmt.Println("VPNs are located at the following path :", config.BaseDirectory)
+
+	message := fmt.Sprintf("VPNs are located at the following path : %s", config.BaseDirectory)
+
+	fmt.Println(message)
+
+	err := webhooks.SendToDiscord("vpn", message)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
