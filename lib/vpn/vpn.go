@@ -234,7 +234,10 @@ func Start(configPath string) (string, error) {
 		cmd = fmt.Sprintf("sudo openvpn %s", configPath)
 		vpnProcess := exec.Command("sh", "-c", cmd)
 		stdout, _ := vpnProcess.StdoutPipe()
-		vpnProcess.Start()
+		err := vpnProcess.Start()
+		if err != nil {
+			return "", err
+		}
 
 		scanner := bufio.NewScanner(stdout)
 		for scanner.Scan() {
@@ -256,7 +259,10 @@ func Start(configPath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	Start(configPath)
+	_, err = Start(configPath)
+	if err != nil {
+		return "", err
+	}
 	return "HackTheBox VPN is already running.", nil
 }
 
