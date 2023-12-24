@@ -29,9 +29,7 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		config.GlobalConfig.Logger.Error("Error when executing root command:", zap.Error(err))
-	}
+	rootCmd.Execute()
 }
 
 func init() {
