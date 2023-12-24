@@ -53,10 +53,18 @@ func AskConfirmation(message string) bool {
 // GetHTBToken checks whether the HTB_TOKEN environment variable exists
 func GetHTBToken() (string, error) {
 	var envName = "HTB_TOKEN"
-	if os.Getenv(envName) == "" {
+	var htbToken = os.Getenv(envName)
+
+	if htbToken == "" {
 		return "", fmt.Errorf("Environment variable is not set : %v\n", envName)
 	}
-	return os.Getenv("HTB_TOKEN"), nil
+
+	parts := strings.Split(htbToken, ".")
+	if len(parts) != 3 {
+		return "", fmt.Errorf("The %s variable must be an app token : https://app.hackthebox.com/profile/settings", envName)
+	}
+
+	return htbToken, nil
 }
 
 // SearchItemIDByName will return the id of an item (machine / challenge / user) based on its name

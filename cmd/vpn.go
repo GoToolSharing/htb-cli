@@ -36,5 +36,5 @@ var vpnCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(vpnCmd)
-	vpnCmd.Flags().Bool("download", false, "Download All VPNs from HackTheBox")
+	vpnCmd.Flags().BoolP("download", "d", false, "Download All VPNs from HackTheBox")
 }
