@@ -82,8 +82,10 @@ Available Commands:
   help        Help about any command
   info        Detailed information on challenges and machines
   machines    Displays active / retired machines and next machines to be released
+  pwnbox      Interact with the pwnbox
   reset       Reset a machine
   sherlocks   Play Sherlocks mode (blue team)
+  shoutbox    Displays shoutbox information in real time
   start       Start a machine
   status      Displays the status of hackthebox servers
   stop        Stop the current machine
@@ -93,12 +95,23 @@ Available Commands:
   vpn         Interact with HackTheBox VPNs
 
 Flags:
-  -b, --batch          Don't ask questions
-  -h, --help           help for htb-cli
-  -p, --proxy string   Configure a URL for an HTTP proxy
-  -v, --verbose        Verbose mode
+  -b, --batch           Don't ask questions
+  -h, --help            help for htb-cli
+  -p, --proxy string    Configure a URL for an HTTP proxy
+  -v, --verbose count   Verbose level
 
 Use "htb-cli [command] --help" for more information about a command.
+```
+
+### shoutbox
+
+The shoutbox allows you to view player submissions in real time.
+
+```bash
+❯ htb-cli shoutbox
+
+[Dec 24 22:50] - ComBeat solved challenge Diagnostic from Forensics
+[Dec 24 22:50] - cledmir owned root on Crocodile
 ```
 
 ### sherlocks
@@ -265,6 +278,25 @@ VPN : EU_Fortress_1 downloaded successfully
 VPN : EU_Release_Arena_1 downloaded successfully
 
 VPNs are located at the following path : /home/qu35t/.local/htb-cli
+```
+
+A VPN can be started with the `--start` flag
+
+```bash
+❯ htb-cli vpn -m labs --start
+
+VPN is starting...
+VPN Started Successfully!
+```
+
+We can also stop it with the `--stop` flag
+
+```bash
+❯ htb-cli vpn --stop
+
+Stopping VPN if any HackTheBox connection is found...
+Killed HackTheBox VPN process 48492
+Killed HackTheBox VPN process 48493
 ```
 
 ```bash
