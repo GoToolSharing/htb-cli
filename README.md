@@ -29,8 +29,8 @@
 ## Completion
 
 ```bash
-❯ htb-cli completion zsh > ~/.local/htb-cli-completion
-❯ source ~/.local/htb-cli-completion
+❯ htb-cli completion zsh > ~/.local/htb-cli/completion
+❯ source ~/.local/htb-cli/completion
 ```
 
 ```bash

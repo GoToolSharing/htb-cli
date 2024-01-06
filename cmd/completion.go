@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Generates shell autocompletion file
 var completionCmd = &cobra.Command{
 	Use:       "completion [bash|zsh|fish|powershell]",
 	Short:     "Generate completion script",

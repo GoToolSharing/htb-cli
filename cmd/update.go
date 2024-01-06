@@ -11,9 +11,10 @@ import (
 	"go.uber.org/zap"
 )
 
+// Check if an update is available for htb-cli
 var updateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "Check for updates",
+	Short: "Check if updates are available",
 	Run: func(cmd *cobra.Command, args []string) {
 		config.GlobalConfig.Logger.Info("Update command executed")
 		message, err := update.Check(config.Version)

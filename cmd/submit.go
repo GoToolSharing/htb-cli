@@ -13,7 +13,7 @@ import (
 
 var submitCmd = &cobra.Command{
 	Use:   "submit",
-	Short: "Submit credentials (machines / challenges / arena)",
+	Short: "Submit credentials (machines / challenges / release arena)",
 	Long:  "This command allows for the submission of user and root flags discovered on vulnerable machines / challenges",
 	Run: func(cmd *cobra.Command, args []string) {
 		config.GlobalConfig.Logger.Info("Submit command executed")

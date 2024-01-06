@@ -17,10 +17,14 @@ import (
 )
 
 // coreStartCmd starts a specified machine and returns a status message and any error encountered.
-func coreStartCmd(machineChoosen string) (string, error) {
-	machineID, err := utils.SearchItemIDByName(machineChoosen, "Machine")
-	if err != nil {
-		return "", err
+func coreStartCmd(machineChoosen string, machineID string) (string, error) {
+	var err error
+	if machineID == "" {
+		machineID, err = utils.SearchItemIDByName(machineChoosen, "Machine")
+		if err != nil {
+			return "", err
+		}
+
 	}
 	config.GlobalConfig.Logger.Info(fmt.Sprintf("Machine ID: %s", machineID))
 
@@ -129,7 +133,18 @@ var startCmd = &cobra.Command{
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
-		output, err := coreStartCmd(machineChoosen)
+		var machineID string
+		if machineChoosen == "" {
+			config.GlobalConfig.Logger.Info("Launching the machine in release arena")
+			machineID, err = utils.SearchLastReleaseArenaMachine()
+			if err != nil {
+				config.GlobalConfig.Logger.Error("", zap.Error(err))
+				os.Exit(1)
+			}
+			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID : %s", machineID))
+
+		}
+		output, err := coreStartCmd(machineChoosen, machineID)
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
@@ -148,9 +163,4 @@ var startCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(startCmd)
 	startCmd.Flags().StringP("machine", "m", "", "Machine name")
-	err := startCmd.MarkFlagRequired("machine")
-	if err != nil {
-		config.GlobalConfig.Logger.Error("", zap.Error(err))
-		os.Exit(1)
-	}
 }

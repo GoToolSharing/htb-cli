@@ -56,12 +56,12 @@ func GetHTBToken() (string, error) {
 	var htbToken = os.Getenv(envName)
 
 	if htbToken == "" {
-		return "", fmt.Errorf("Environment variable is not set : %v\n", envName)
+		return "", fmt.Errorf("environment variable is not set : %v\n", envName)
 	}
 
 	parts := strings.Split(htbToken, ".")
 	if len(parts) != 3 {
-		return "", fmt.Errorf("The %s variable must be an app token : https://app.hackthebox.com/profile/settings", envName)
+		return "", fmt.Errorf("the %s variable must be an app token : https://app.hackthebox.com/profile/settings", envName)
 	}
 
 	return htbToken, nil
@@ -124,7 +124,7 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			}
 			os.Exit(0)
 		default:
-			return "", fmt.Errorf("No machine was found")
+			return "", fmt.Errorf("no machine was found")
 		}
 	} else if element_type == "Challenge" {
 		switch root.Challenges.(type) {
@@ -213,7 +213,7 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			fmt.Println("No username found")
 		}
 	} else {
-		return "", errors.New("Bad element_type")
+		return "", errors.New("bad element_type")
 	}
 
 	// The HackTheBox API can return either a slice or a map
@@ -257,7 +257,7 @@ func GetMachineType(machine_id interface{}) (string, error) {
 	} else if info["retired"].(float64) == 1 {
 		return "retired", nil
 	}
-	return "", errors.New("Error: machine type not found")
+	return "", errors.New("error: machine type not found")
 }
 
 // GetUserSubscription returns the user's subscription level
@@ -498,4 +498,21 @@ func HTTPRequest(method string, urlParam string, jsonData []byte) (*http.Respons
 func GetCurrentUsername() string {
 	user, _ := user.Current()
 	return user.Username
+}
+
+func SearchLastReleaseArenaMachine() (string, error) {
+	url := fmt.Sprintf("%s/season/machine/active", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	info := ParseJsonMessage(resp, "data")
+	if info == nil {
+		return "", err
+	}
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Information on the last active machine: %v", info))
+	machineF64 := info.(map[string]interface{})["id"].(float64)
+	machineID := int(machineF64)
+	machineIDstr := strconv.Itoa(machineID)
+	return machineIDstr, nil
 }

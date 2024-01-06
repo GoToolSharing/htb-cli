@@ -10,9 +10,10 @@ import (
 	"go.uber.org/zap"
 )
 
+// Displays the current version of htb-cli
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Displays the current version",
+	Short: "Displays the current version of htb-cli",
 	Run: func(cmd *cobra.Command, args []string) {
 		config.GlobalConfig.Logger.Info("Version command executed")
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("config.Version: %s", config.Version))
