@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/GoToolSharing/htb-cli/config"
@@ -14,11 +15,12 @@ var updateCmd = &cobra.Command{
 	Short: "Check for updates",
 	Run: func(cmd *cobra.Command, args []string) {
 		config.GlobalConfig.Logger.Info("Update command executed")
-		err := update.Check(config.Version)
+		message, err := update.Check(config.Version)
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
+		fmt.Println(message)
 
 		config.GlobalConfig.Logger.Info("Exit update command correctly")
 	},

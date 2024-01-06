@@ -11,7 +11,7 @@ import (
 	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 )
 
-func Check(newVersion string) error {
+func Check(newVersion string) (string, error) {
 	// Dev version
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("config.Version: %s", config.Version))
 	if len(config.Version) == 40 {
@@ -20,17 +20,17 @@ func Check(newVersion string) error {
 
 		resp, err := utils.HTTPRequest(http.MethodGet, githubCommits, nil)
 		if err != nil {
-			return err
+			return "", err
 		}
 		body, err := io.ReadAll(resp.Body)
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Body: %s", utils.TruncateString(string(body), 2000)))
 		if err != nil {
-			return fmt.Errorf("error when reading the response: %v", err)
+			return "", fmt.Errorf("error when reading the response: %v", err)
 		}
 		var commits []Commit
 		err = json.Unmarshal(body, &commits)
 		if err != nil {
-			return fmt.Errorf("error when decoding JSON: %v", err)
+			return "", fmt.Errorf("error when decoding JSON: %v", err)
 		}
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Commits : %v", commits))
 
@@ -49,14 +49,12 @@ func Check(newVersion string) error {
 			message = fmt.Sprintf("You're up to date (dev) ! (%s)", commitHash)
 		}
 
-		fmt.Println(message)
-
 		err = webhooks.SendToDiscord("update", message)
 		if err != nil {
-			return err
+			return "", err
 		}
 
-		return nil
+		return message, nil
 	}
 
 	// Main version
@@ -64,11 +62,11 @@ func Check(newVersion string) error {
 
 	resp, err := utils.HTTPRequest(http.MethodGet, githubVersion, nil)
 	if err != nil {
-		return err
+		return "", err
 	}
 	var release GitHubRelease
 	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
-		return fmt.Errorf("error when decoding JSON: %v", err)
+		return "", fmt.Errorf("error when decoding JSON: %v", err)
 	}
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("release.TagName : %s", release.TagName))
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("config.Version : %s", config.Version))
@@ -79,13 +77,11 @@ func Check(newVersion string) error {
 		message = fmt.Sprintf("You're up to date ! (%s)", config.Version)
 	}
 
-	fmt.Println(message)
-
 	err = webhooks.SendToDiscord("update", message)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return message, nil
 
 }

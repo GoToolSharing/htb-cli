@@ -3,8 +3,10 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/GoToolSharing/htb-cli/lib/update"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -24,6 +26,15 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
+		}
+		message, err := update.Check(config.Version)
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
+		}
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Message : %s", message))
+		if strings.Contains(message, "A new update") {
+			fmt.Println(message)
 		}
 	},
 }
