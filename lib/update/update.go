@@ -8,7 +8,6 @@ import (
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
-	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 )
 
 func Check(newVersion string) (string, error) {
@@ -23,7 +22,7 @@ func Check(newVersion string) (string, error) {
 			return "", err
 		}
 		body, err := io.ReadAll(resp.Body)
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Body: %s", utils.TruncateString(string(body), 2000)))
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Body: %s", utils.TruncateString(string(body), 500)))
 		if err != nil {
 			return "", fmt.Errorf("error when reading the response: %v", err)
 		}
@@ -49,11 +48,6 @@ func Check(newVersion string) (string, error) {
 			message = fmt.Sprintf("You're up to date (dev) ! (%s)", commitHash)
 		}
 
-		err = webhooks.SendToDiscord("update", message)
-		if err != nil {
-			return "", err
-		}
-
 		return message, nil
 	}
 
@@ -77,11 +71,5 @@ func Check(newVersion string) (string, error) {
 		message = fmt.Sprintf("You're up to date ! (%s)", config.Version)
 	}
 
-	err = webhooks.SendToDiscord("update", message)
-	if err != nil {
-		return "", err
-	}
-
 	return message, nil
-
 }

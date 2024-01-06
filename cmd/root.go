@@ -34,7 +34,7 @@ var rootCmd = &cobra.Command{
 		}
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Message : %s", message))
 		if strings.Contains(message, "A new update") {
-			fmt.Println(message)
+			fmt.Printf("%s\n\n", message)
 		}
 	},
 }

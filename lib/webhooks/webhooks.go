@@ -12,6 +12,9 @@ import (
 
 // SendToDiscord sends a message to a Discord channel using a webhook URL.
 func SendToDiscord(command string, message string) error {
+	if config.ConfigFile["Discord"] == "False" {
+		return nil
+	}
 	embed := Embed{
 		Title:       "htb-cli",
 		Description: fmt.Sprintf("User **%s** used the **%s** command.\n**Message:** %s", utils.GetCurrentUsername(), command, message),
