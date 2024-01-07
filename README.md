@@ -280,6 +280,36 @@ VPN : EU_Release_Arena_1 downloaded successfully
 VPNs are located at the following path : /home/qu35t/.local/htb-cli
 ```
 
+The VPNs used can be listed with the `--list` flag
+
+```bash
+❯ htb-cli vpn --list
+
+Product: endgames
+No information available
+
+Product: labs
+ID: 201
+Friendly Name: EU Free 2
+Current Clients: 23
+Location: EU - Free
+
+Product: starting_point
+ID: 440
+Friendly Name: EU StartingPoint 2
+Current Clients: 104
+Location: EU - Starting Point
+
+Product: competitive
+ID: 201
+Friendly Name: EU Free 2
+Current Clients: 23
+Location: EU - Free
+
+Product: fortresses
+No information available
+```
+
 A VPN can be started with the `--start` flag
 
 ```bash

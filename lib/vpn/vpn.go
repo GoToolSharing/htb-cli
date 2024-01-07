@@ -316,6 +316,8 @@ func Stop() (string, error) {
 }
 
 func getVPNConfiguration(url string) error {
+	parts := strings.Split(url, "=")
+	productValue := parts[len(parts)-1]
 	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return err
@@ -323,6 +325,7 @@ func getVPNConfiguration(url string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 401 {
+		fmt.Printf("Product: %s\nNo information available\n\n", productValue)
 		return nil
 	}
 
@@ -341,8 +344,6 @@ func getVPNConfiguration(url string) error {
 		return err
 	}
 
-	parts := strings.Split(url, "=")
-	productValue := parts[len(parts)-1]
 	fmt.Printf("Product: %s\nID: %d\nFriendly Name: %s\nCurrent Clients: %d\nLocation: %s\n\n", productValue, response.Data.Assigned.ID, response.Data.Assigned.FriendlyName, response.Data.Assigned.CurrentClients, response.Data.Assigned.LocationFriendly)
 	return nil
 }
