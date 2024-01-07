@@ -335,7 +335,7 @@ We can also stop it with the `--stop` flag
 
 Stopping VPN if any HackTheBox connection is found...
 Killed HackTheBox VPN process 48492
-Killed HackTheBox VPN process 48493
+Killed HackTheBox VPN process 48494
 ```
 
 ```bash
