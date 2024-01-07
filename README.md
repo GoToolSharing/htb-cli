@@ -191,6 +191,15 @@ Global Flags:
   -v, --verbose        Verbose mode
 ```
 
+If no flag is submitted, htb-cli starts the machine in `release arena`.
+
+```bash
+❯ htb-cli start
+
+Machine spawned! Playing on the competitive server
+Target: 10.129.254.131
+```
+
 ```bash
 ❯ htb-cli start -m Visual
 
