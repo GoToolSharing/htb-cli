@@ -6,6 +6,7 @@ import (
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/vpn"
+	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -20,6 +21,21 @@ var vpnCmd = &cobra.Command{
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
+		listVPNParam, err := cmd.Flags().GetBool("list")
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
+		}
+
+		if listVPNParam {
+			err := vpn.List()
+			if err != nil {
+				config.GlobalConfig.Logger.Error("", zap.Error(err))
+				os.Exit(1)
+			}
+			return
+		}
+
 		startVPNParam, err := cmd.Flags().GetBool("start")
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
@@ -77,7 +93,7 @@ var vpnCmd = &cobra.Command{
 				pattern = "Release_Arena"
 				filename = config.BaseDirectory + "/*" + pattern + "*"
 			default:
-				fmt.Println("Available modes : labs - sp - fortresses - prolabs - endgames - competitive")
+				fmt.Println("Available modes (-m) : labs - sp - fortresses - prolabs - endgames - competitive")
 				return
 			}
 			// fmt.Println("FILENAME")
@@ -113,7 +129,13 @@ var vpnCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			fmt.Println(message)
+			err = webhooks.SendToDiscord("vpn", message)
+			if err != nil {
+				config.GlobalConfig.Logger.Error("", zap.Error(err))
+				os.Exit(1)
+			}
 		}
+
 		config.GlobalConfig.Logger.Info("Exit vpn command correctly")
 	},
 }
@@ -121,7 +143,8 @@ var vpnCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(vpnCmd)
 	vpnCmd.Flags().BoolP("download", "d", false, "Download All VPNs from HackTheBox")
-	vpnCmd.Flags().BoolP("start", "", false, "Start VPN")
-	vpnCmd.Flags().BoolP("stop", "", false, "Stop VPN")
+	vpnCmd.Flags().BoolP("start", "", false, "Start a VPN")
+	vpnCmd.Flags().BoolP("stop", "", false, "Stop a VPN")
+	vpnCmd.Flags().BoolP("list", "", false, "List VPNs")
 	vpnCmd.Flags().StringP("mode", "m", "", "Mode")
 }

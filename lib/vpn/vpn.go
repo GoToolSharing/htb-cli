@@ -15,7 +15,6 @@ import (
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
-	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 )
 
 func downloadVPN(url string) error {
@@ -26,6 +25,9 @@ func downloadVPN(url string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 401 {
+		parts := strings.Split(url, "=")
+		productValue := parts[len(parts)-1]
+		fmt.Println("You do not have permissions to download the following vpn:", productValue)
 		return nil
 	}
 
@@ -61,6 +63,14 @@ func downloadVPN(url string) error {
 
 		if len(parts) > 1 {
 			parts[1] = "Labs"
+		}
+
+		vpnName = strings.Join(parts, "_")
+	} else if strings.Contains(url, "product=competitive") {
+		parts := strings.Split(vpnName, "_")
+
+		if len(parts) > 1 {
+			parts[1] = "Release_Arena"
 		}
 
 		vpnName = strings.Join(parts, "_")
@@ -121,11 +131,6 @@ func DownloadAll() error {
 	message := fmt.Sprintf("VPNs are located at the following path : %s", config.BaseDirectory)
 
 	fmt.Println(message)
-
-	err := webhooks.SendToDiscord("vpn", message)
-	if err != nil {
-		return err
-	}
 
 	return nil
 }
@@ -308,4 +313,74 @@ func Stop() (string, error) {
 
 	}
 	return "", nil
+}
+
+func getVPNConfiguration(url string) error {
+	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 401 {
+		return nil
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("error: Bad status code : %d", resp.StatusCode)
+	}
+
+	jsonData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	var response Response
+	err = json.Unmarshal(jsonData, &response)
+	if err != nil {
+		return err
+	}
+
+	parts := strings.Split(url, "=")
+	productValue := parts[len(parts)-1]
+	fmt.Printf("Product: %s\nID: %d\nFriendly Name: %s\nCurrent Clients: %d\nLocation: %s\n\n", productValue, response.Data.Assigned.ID, response.Data.Assigned.FriendlyName, response.Data.Assigned.CurrentClients, response.Data.Assigned.LocationFriendly)
+	return nil
+}
+
+func List() error {
+	config.GlobalConfig.Logger.Info("Recovering VPN configurations")
+	baseURL := fmt.Sprintf("%s/connections/servers?product=", config.BaseHackTheBoxAPIURL)
+	urls := []string{
+		baseURL + "labs",
+		baseURL + "starting_point",
+		baseURL + "endgames",
+		baseURL + "fortresses",
+		baseURL + "competitive",
+	}
+
+	var wg sync.WaitGroup
+	errors := make(chan error, len(urls))
+
+	for _, url := range urls {
+		wg.Add(1)
+		go func(url string) {
+			defer wg.Done()
+			err := getVPNConfiguration(url)
+			if err != nil {
+				errors <- err
+				return
+			}
+		}(url)
+	}
+
+	wg.Wait()
+	close(errors)
+
+	for err := range errors {
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

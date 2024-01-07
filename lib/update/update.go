@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
@@ -23,6 +24,9 @@ func Check(newVersion string) (string, error) {
 		}
 		body, err := io.ReadAll(resp.Body)
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Body: %s", utils.TruncateString(string(body), 500)))
+		if strings.Contains(string(body), "API rate limit") {
+			return "htb-cli cannot check for new updates at this time. Please try again later", nil
+		}
 		if err != nil {
 			return "", fmt.Errorf("error when reading the response: %v", err)
 		}
