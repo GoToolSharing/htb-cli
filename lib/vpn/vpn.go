@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -182,7 +183,21 @@ func DownloadAll() error {
 
 // Start starts the VPN connection using an OpenVPN configuration file.
 func Start(configPath string) (string, error) {
-	fmt.Println("VPN is starting...")
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("VPN config file : %s", configPath))
+	files, err := filepath.Glob(configPath)
+	if err != nil {
+		return "", fmt.Errorf("search error : %v", err)
+	}
+	if len(files) == 0 {
+		isConfirmed := utils.AskConfirmation("VPN was not found. Would you like to download it ?")
+		if isConfirmed {
+			err := DownloadAll()
+			if err != nil {
+				return "", err
+			}
+		}
+	}
+	config.GlobalConfig.Logger.Info("VPN is starting...")
 	cmd := "pgrep -fa openvpn"
 	hacktheboxFound := false
 	processes, err := exec.Command("sh", "-c", cmd).Output()
@@ -278,12 +293,12 @@ func Status() (bool, error) {
 	var result []map[string]interface{}
 	jsonBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return false, fmt.Errorf("Error reading response body: %s", err)
+		return false, fmt.Errorf("error reading response body: %s", err)
 	}
 
 	err = json.Unmarshal(jsonBody, &result)
 	if err != nil {
-		return false, fmt.Errorf("Error unmarshalling JSON: %s", err)
+		return false, fmt.Errorf("error unmarshalling JSON: %s", err)
 	}
 
 	if len(result) == 0 {
@@ -293,7 +308,7 @@ func Status() (bool, error) {
 	for _, item := range result {
 		connectionData, ok := item["connection"].(map[string]interface{})
 		if !ok {
-			return false, errors.New("Error asserting connection data")
+			return false, errors.New("error asserting connection data")
 		}
 
 		name := connectionData["name"]
@@ -329,7 +344,7 @@ func Stop() (string, error) {
 	cmd := "pgrep -fa openvpn"
 	processes, err := exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
-		return "", fmt.Errorf("error retrieving OpenVPN processes : %v", err)
+		return "No vpn connection is active", nil
 	}
 
 	lines := strings.Split(string(processes), "\n")
@@ -359,7 +374,8 @@ func Stop() (string, error) {
 				fmt.Printf("Killed HackTheBox VPN process %s\n", processID)
 			}
 		}
-	}
+		return "Completed checking and stopping HackTheBox VPN processes.", nil
 
-	return "Completed checking and stopping HackTheBox VPN processes.", nil
+	}
+	return "", nil
 }

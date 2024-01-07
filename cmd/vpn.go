@@ -107,11 +107,12 @@ var vpnCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		} else if stopVPNParam {
-			_, err := vpn.Stop()
+			message, err := vpn.Stop()
 			if err != nil {
 				config.GlobalConfig.Logger.Error("", zap.Error(err))
 				os.Exit(1)
 			}
+			fmt.Println(message)
 		}
 		config.GlobalConfig.Logger.Info("Exit vpn command correctly")
 	},

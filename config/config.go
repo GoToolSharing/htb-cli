@@ -63,7 +63,7 @@ func ConfigureLogger() error {
 	var err error
 	GlobalConfig.Logger, err = cfg.Build()
 	if err != nil {
-		return fmt.Errorf("Logger configuration error: %v", err)
+		return fmt.Errorf("logger configuration error: %v", err)
 	}
 	zap.ReplaceGlobals(GlobalConfig.Logger)
 	return nil
@@ -88,7 +88,7 @@ func LoadConfig(filepath string) (map[string]string, error) {
 
 		parts := strings.SplitN(line, "=", 2)
 		if len(parts) != 2 {
-			return nil, fmt.Errorf("Incorrectly formatted line in configuration file: %s", line)
+			return nil, fmt.Errorf("incorrectly formatted line in configuration file: %s", line)
 		}
 
 		key := strings.TrimSpace(parts[0])
@@ -112,15 +112,15 @@ func validateConfig(key, value string) error {
 	switch key {
 	case "Logging", "Batch":
 		if value != "True" && value != "False" {
-			return fmt.Errorf("The value for '%s' must be 'True' or 'False', got : %s", key, value)
+			return fmt.Errorf("the value for '%s' must be 'True' or 'False', got : %s", key, value)
 		}
 	case "Proxy":
 		if value != "False" && !isValidHTTPorHTTPSURL(value) {
-			return fmt.Errorf("The URL for '%s' must be a valid URL starting with http or https, got : %s", key, value)
+			return fmt.Errorf("the URL for '%s' must be a valid URL starting with http or https, got : %s", key, value)
 		}
 	case "Discord":
 		if value != "False" && !isValidDiscordWebhook(value) {
-			return fmt.Errorf("The Discord webhook URL is invalid : %s", value)
+			return fmt.Errorf("the Discord webhook URL is invalid : %s", value)
 		}
 	}
 
@@ -145,7 +145,7 @@ func Init() error {
 		GlobalConfig.Logger.Info(fmt.Sprintf("The \"%s\" folder does not exist, creation in progress...\n", BaseDirectory))
 		err := os.MkdirAll(BaseDirectory, os.ModePerm)
 		if err != nil {
-			return fmt.Errorf("Error folder creation: %s", err)
+			return fmt.Errorf("error folder creation: %s", err)
 		}
 
 		GlobalConfig.Logger.Info(fmt.Sprintf("\"%s\" folder created successfully\n\n", BaseDirectory))
@@ -155,21 +155,22 @@ func Init() error {
 	if _, err := os.Stat(confFilePath); os.IsNotExist(err) {
 		file, err := os.Create(confFilePath)
 		if err != nil {
-			return fmt.Errorf("Error creating file: %v", err)
+			return fmt.Errorf("error creating file: %v", err)
 		}
 		defer file.Close()
 
-		configContent := `Discord = False`
+		configContent := `Discord = False
+		Update = False`
 
 		writer := bufio.NewWriter(file)
 		_, err = writer.WriteString(configContent)
 		if err != nil {
-			return fmt.Errorf("Error when writing to file: %v", err)
+			return fmt.Errorf("error when writing to file: %v", err)
 		}
 
 		err = writer.Flush()
 		if err != nil {
-			return fmt.Errorf("Error clearing buffer: %v", err)
+			return fmt.Errorf("error clearing buffer: %v", err)
 		}
 
 		GlobalConfig.Logger.Info("Configuration file created successfully.")
@@ -178,7 +179,7 @@ func Init() error {
 	GlobalConfig.Logger.Info("Loading configuration file...")
 	config, err := LoadConfig(BaseDirectory + "/default.conf")
 	if err != nil {
-		return fmt.Errorf("Error loading configuration file: %v", err)
+		return fmt.Errorf("error loading configuration file: %v", err)
 	}
 
 	GlobalConfig.Logger.Info("Configuration successfully loaded")
