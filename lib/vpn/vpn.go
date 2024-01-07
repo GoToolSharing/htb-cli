@@ -130,57 +130,6 @@ func DownloadAll() error {
 	return nil
 }
 
-// // Start starts the VPN connection using an OpenVPN configuration file.
-// func Start(configPath string) (string, error) {
-// 	fmt.Println("VPN is starting...")
-// 	cmd := "pgrep -fa openvpn"
-// 	processes, err := exec.Command("sh", "-c", cmd).Output()
-// 	if err != nil {
-// 		return "", fmt.Errorf("error retrieving OpenVPN processes : %v", err)
-// 	}
-
-// 	lines := strings.Split(string(processes), "\n")
-
-// 	uniquePaths := make(map[string]bool)
-
-// 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("VPN processes: %v", lines))
-
-// 	for _, line := range lines {
-// 		if strings.TrimSpace(line) == "" {
-// 			continue
-// 		}
-
-// 		parts := strings.Fields(line)
-// 		configPath := parts[len(parts)-1]
-
-// 		if _, found := uniquePaths[configPath]; found {
-// 			continue
-// 		}
-
-// 		uniquePaths[configPath] = true
-
-// 		file, err := os.Open(configPath)
-// 		if err != nil {
-// 			return "", fmt.Errorf("error reading file %s: %v", configPath, err)
-// 		}
-// 		defer file.Close()
-
-// 		scanner := bufio.NewScanner(file)
-// 		for scanner.Scan() {
-// 			if strings.HasPrefix(scanner.Text(), "remote") && strings.Contains(scanner.Text(), "hackthebox.eu") {
-// 				config.GlobalConfig.Logger.Debug(fmt.Sprintf("HackTheBox VPN found : %s", configPath))
-// 				break
-// 			}
-// 		}
-
-// 		if err := scanner.Err(); err != nil {
-// 			return "", fmt.Errorf("error reading file %s: %v", configPath, err)
-// 		}
-// 	}
-
-// 	return "", nil
-// }
-
 // Start starts the VPN connection using an OpenVPN configuration file.
 func Start(configPath string) (string, error) {
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("VPN config file : %s", configPath))
@@ -318,25 +267,6 @@ func Status() (bool, error) {
 	}
 	return true, nil
 }
-
-// // Stop attempts to stop the currently active VPN connection.
-// func Stop() error {
-// 	fmt.Println("Try to stop the active VPN...")
-// 	pidFile := config.BaseDirectory + "/lab-vpn.pid"
-// 	pidData, err := os.ReadFile(pidFile)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("VPN PID : %v", pidData))
-
-// 	cmd := exec.Command("sudo", "kill", string(pidData))
-
-// 	err = cmd.Run()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
 
 // Stop terminates any active HackTheBox OpenVPN connections.
 func Stop() (string, error) {

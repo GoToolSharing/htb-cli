@@ -28,16 +28,36 @@ func coreStartCmd(machineChoosen string, machineID string) (string, error) {
 	}
 	config.GlobalConfig.Logger.Info(fmt.Sprintf("Machine ID: %s", machineID))
 
-	machineType, err := utils.GetMachineType(machineID)
+	machineTypeChan := make(chan string)
+	machineErrChan := make(chan error)
+	userSubChan := make(chan string)
+	userSubErrChan := make(chan error)
+
+	go func() {
+		machineType, err := utils.GetMachineType(machineID)
+		machineTypeChan <- machineType
+		machineErrChan <- err
+	}()
+
+	go func() {
+		userSubscription, err := utils.GetUserSubscription()
+		userSubChan <- userSubscription
+		userSubErrChan <- err
+	}()
+
+	machineType := <-machineTypeChan
+	err = <-machineErrChan
 	if err != nil {
 		return "", err
 	}
 	config.GlobalConfig.Logger.Info(fmt.Sprintf("Machine Type: %s", machineType))
 
-	userSubscription, err := utils.GetUserSubscription()
+	userSubscription := <-userSubChan
+	err = <-userSubErrChan
 	if err != nil {
 		return "", err
 	}
+
 	config.GlobalConfig.Logger.Info(fmt.Sprintf("User subscription: %s", userSubscription))
 
 	// isActive := utils.CheckVPN()

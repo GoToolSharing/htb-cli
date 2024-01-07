@@ -54,17 +54,37 @@ func coreStopCmd() (string, error) {
 	}
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
 
-	machineType, err := utils.GetMachineType(machineID)
-	if err != nil {
-		return "", err
-	}
-	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
+	machineTypeChan := make(chan string)
+	machineErrChan := make(chan error)
+	userSubChan := make(chan string)
+	userSubErrChan := make(chan error)
 
-	userSubscription, err := utils.GetUserSubscription()
+	go func() {
+		machineType, err := utils.GetMachineType(machineID)
+		machineTypeChan <- machineType
+		machineErrChan <- err
+	}()
+
+	go func() {
+		userSubscription, err := utils.GetUserSubscription()
+		userSubChan <- userSubscription
+		userSubErrChan <- err
+	}()
+
+	machineType := <-machineTypeChan
+	err = <-machineErrChan
 	if err != nil {
 		return "", err
 	}
-	config.GlobalConfig.Logger.Debug(fmt.Sprintf("User subscription: %s", userSubscription))
+	config.GlobalConfig.Logger.Info(fmt.Sprintf("Machine Type: %s", machineType))
+
+	userSubscription := <-userSubChan
+	err = <-userSubErrChan
+	if err != nil {
+		return "", err
+	}
+
+	config.GlobalConfig.Logger.Info(fmt.Sprintf("User subscription: %s", userSubscription))
 
 	apiEndpoint, jsonData := buildMachineStopRequest(machineType, userSubscription, machineID)
 	resp, err := utils.HtbRequest(http.MethodPost, apiEndpoint, jsonData)
