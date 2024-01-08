@@ -16,6 +16,7 @@ type Settings struct {
 	Logger     *zap.Logger
 	ProxyParam string
 	BatchParam bool
+	NoCheck    bool
 }
 
 var GlobalConfig Settings

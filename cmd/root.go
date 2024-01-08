@@ -27,14 +27,17 @@ var rootCmd = &cobra.Command{
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
-		message, err := update.Check(config.Version)
-		if err != nil {
-			config.GlobalConfig.Logger.Error("", zap.Error(err))
-			os.Exit(1)
-		}
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Message : %s", message))
-		if strings.Contains(message, "A new update") {
-			fmt.Printf("%s\n\n", message)
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Check for updates : %v", config.GlobalConfig.NoCheck))
+		if !config.GlobalConfig.NoCheck {
+			message, err := update.Check(config.Version)
+			if err != nil {
+				config.GlobalConfig.Logger.Error("", zap.Error(err))
+				os.Exit(1)
+			}
+			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Message : %s", message))
+			if strings.Contains(message, "A new update") {
+				fmt.Printf("%s\n\n", message)
+			}
 		}
 	},
 }
@@ -52,4 +55,5 @@ func init() {
 	rootCmd.PersistentFlags().CountVarP(&config.GlobalConfig.Verbose, "verbose", "v", "Verbose level")
 	rootCmd.PersistentFlags().StringVarP(&config.GlobalConfig.ProxyParam, "proxy", "p", "", "Configure a URL for an HTTP proxy")
 	rootCmd.PersistentFlags().BoolVarP(&config.GlobalConfig.BatchParam, "batch", "b", false, "Don't ask questions")
+	rootCmd.PersistentFlags().BoolVarP(&config.GlobalConfig.NoCheck, "no-check", "n", false, "Don't check for new updates")
 }
