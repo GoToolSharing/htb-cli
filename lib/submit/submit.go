@@ -69,6 +69,22 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Fortress ID : %d", fortressID))
 		url = fmt.Sprintf("%s/fortress/%d/flag", config.BaseHackTheBoxAPIURL, fortressID)
 		payload = map[string]string{}
+	} else if modeType == "release-arena" {
+		config.GlobalConfig.Logger.Info("Release Arena submit requested")
+		isConfirmed := utils.AskConfirmation("Would you like to submit a flag for the release arena ?")
+		if !isConfirmed {
+			return "", nil
+		}
+		releaseID, err := utils.SearchLastReleaseArenaMachine()
+		if err != nil {
+			return "", err
+		}
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Release Arena ID : %s", releaseID))
+		url = fmt.Sprintf("%s/arena/own", config.BaseHackTheBoxAPIURL)
+		payload = map[string]string{
+			"difficulty": difficultyString,
+			"id":         releaseID,
+		}
 	}
 
 	fmt.Print("Flag : ")

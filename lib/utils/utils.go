@@ -90,7 +90,7 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			// Checking if machines array is empty
 			if len(root.Machines.([]interface{})) == 0 {
 				fmt.Println("No machine was found")
-				return "", fmt.Errorf("error: No machine was found")
+				os.Exit(0)
 			}
 			var machines []Machine
 			machineData, _ := json.Marshal(root.Machines)
@@ -109,7 +109,7 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			// Checking if machines array is empty
 			if len(root.Machines.(map[string]interface{})) == 0 {
 				fmt.Println("No machine was found")
-				return "", fmt.Errorf("error: No machine was found")
+				os.Exit(0)
 			}
 			var machines map[string]Machine
 			machineData, _ := json.Marshal(root.Machines)
@@ -125,7 +125,8 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			}
 			os.Exit(0)
 		default:
-			return "", fmt.Errorf("no machine was found")
+			fmt.Println("No machine was found")
+			os.Exit(0)
 		}
 	} else if element_type == "Challenge" {
 		switch root.Challenges.(type) {
@@ -133,7 +134,7 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			// Checking if challenges array is empty
 			if len(root.Challenges.([]interface{})) == 0 {
 				fmt.Println("No challenge was found")
-				return "", fmt.Errorf("error: No challenge was found")
+				os.Exit(0)
 			}
 			var challenges []Challenge
 			challengeData, _ := json.Marshal(root.Challenges)
@@ -152,7 +153,7 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			// Checking if challenges array is empty
 			if len(root.Challenges.(map[string]interface{})) == 0 {
 				fmt.Println("No challenge was found")
-				return "", fmt.Errorf("error: No challenge was found")
+				os.Exit(0)
 			}
 			var challenges map[string]Challenge
 			challengeData, _ := json.Marshal(root.Challenges)
@@ -168,7 +169,8 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			}
 			os.Exit(0)
 		default:
-			fmt.Println("No challenge found")
+			fmt.Println("No challenge was found")
+			os.Exit(0)
 		}
 	} else if element_type == "Username" {
 		switch root.Usernames.(type) {

@@ -41,11 +41,6 @@ var submitCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		// config.GlobalConfig.Logger.Debug(fmt.Sprintf("Difficulty: %d", difficultyParam))
-		// config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine name: %s", machineNameParam))
-		// config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge name: %s", challengeNameParam))
-		// config.GlobalConfig.Logger.Debug(fmt.Sprintf("Fortress name: %s", fortressNameParam))
-
 		if challengeNameParam != "" || machineNameParam != "" {
 			if difficultyParam == 0 {
 				fmt.Println("required flag(s) 'difficulty' not set")
@@ -56,8 +51,6 @@ var submitCmd = &cobra.Command{
 		var modeType string
 		var modeValue string
 
-		// TODO: check si plusieurs arguments : -m sau -c dd -f aws -> Seulement un a la fois !
-
 		if fortressNameParam != "" {
 			modeType = "fortress"
 			modeValue = fortressNameParam
@@ -67,9 +60,13 @@ var submitCmd = &cobra.Command{
 		} else if challengeNameParam != "" {
 			modeType = "challenge"
 			modeValue = challengeNameParam
+		} else {
+			modeType = "release-arena"
+			modeValue = ""
 		}
 
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Mode type: %s", modeType))
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Mode value: %s", modeValue))
 
 		output, err := submit.CoreSubmitCmd(difficultyParam, modeType, modeValue)
 		if err != nil {
