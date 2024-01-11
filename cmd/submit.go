@@ -41,6 +41,12 @@ var submitCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		endgameNameParam, err := cmd.Flags().GetString("endgame_name")
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
+		}
+
 		if challengeNameParam != "" || machineNameParam != "" {
 			if difficultyParam == 0 {
 				fmt.Println("required flag(s) 'difficulty' not set")
@@ -60,6 +66,9 @@ var submitCmd = &cobra.Command{
 		} else if challengeNameParam != "" {
 			modeType = "challenge"
 			modeValue = challengeNameParam
+		} else if endgameNameParam != "" {
+			modeType = "endgame"
+			modeValue = endgameNameParam
 		} else {
 			modeType = "release-arena"
 			modeValue = ""
@@ -90,6 +99,7 @@ func init() {
 	submitCmd.Flags().StringP("machine_name", "m", "", "Machine Name")
 	submitCmd.Flags().StringP("challenge_name", "c", "", "Challenge Name")
 	submitCmd.Flags().StringP("fortress_name", "f", "", "Fortress Name")
+	submitCmd.Flags().StringP("endgame_name", "e", "", "Endgame Name")
 	submitCmd.Flags().IntP("difficulty", "d", 0, "Difficulty")
 	// err := submitCmd.MarkFlagRequired("difficulty")
 	// if err != nil {

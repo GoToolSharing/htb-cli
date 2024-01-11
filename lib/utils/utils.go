@@ -562,13 +562,50 @@ func SearchFortressID(partialName string) (int, error) {
 			return namesAndIDs[matchedName], nil
 		}
 	}
+	return 0, nil
+}
 
-	// return "", fmt.Errorf("error: Nothing was found")
-	// info := ParseJsonMessage(resp, "data")
-	// if info == nil {
-	// 	return 0, err
-	// }
-	// config.GlobalConfig.Logger.Debug(fmt.Sprintf("Data map: %v", info))
+func extractEndgamesNamesAndIDs(jsonData string) (map[string]int, error) {
+	var response EndgameJsonResponse
+	err := json.Unmarshal([]byte(jsonData), &response)
+	if err != nil {
+		return nil, err
+	}
 
+	namesAndIDs := make(map[string]int)
+	for _, item := range response.Data {
+		namesAndIDs[item.Name] = item.ID
+	}
+
+	return namesAndIDs, nil
+}
+
+func SearchEndgameID(partialName string) (int, error) {
+	url := fmt.Sprintf("%s/endgames", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return 0, err
+	}
+	jsonData, _ := io.ReadAll(resp.Body)
+	namesAndIDs, err := extractEndgamesNamesAndIDs(string(jsonData))
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return 0, nil
+	}
+
+	var names []string
+	for name := range namesAndIDs {
+		names = append(names, name)
+	}
+
+	matches := fuzzy.Find(partialName, names)
+
+	for _, match := range matches {
+		matchedName := names[match.Index]
+		isConfirmed := AskConfirmation("The following endgame was found : " + matchedName)
+		if isConfirmed {
+			return namesAndIDs[matchedName], nil
+		}
+	}
 	return 0, nil
 }

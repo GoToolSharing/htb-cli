@@ -21,7 +21,7 @@ type Root struct {
 	Usernames  interface{} `json:"users"`
 }
 
-// Move this
+// Fortreses
 
 type Item struct {
 	ID   int    `json:"id"`
@@ -33,3 +33,17 @@ type JsonResponse struct {
 	Status bool            `json:"status"`
 	Data   map[string]Item `json:"data"`
 }
+
+// Endgames
+
+type Endgame struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+// Structure pour représenter le JSON entier
+type EndgameJsonResponse struct {
+	Status bool      `json:"status"`
+	Data   []Endgame `json:"data"`
+}
+
