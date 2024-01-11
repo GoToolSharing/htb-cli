@@ -21,6 +21,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/briandowns/spinner"
+	"github.com/sahilm/fuzzy"
 )
 
 // SetTabWriterHeader will display the information in an array
@@ -515,4 +516,57 @@ func SearchLastReleaseArenaMachine() (string, error) {
 	machineID := int(machineF64)
 	machineIDstr := strconv.Itoa(machineID)
 	return machineIDstr, nil
+}
+
+func extractNamesAndIDs(jsonData string) (map[string]int, error) {
+	var response JsonResponse
+	err := json.Unmarshal([]byte(jsonData), &response)
+	if err != nil {
+		return nil, err
+	}
+
+	namesAndIDs := make(map[string]int)
+	for _, item := range response.Data {
+		namesAndIDs[item.Name] = item.ID
+	}
+
+	return namesAndIDs, nil
+}
+
+func SearchFortressID(partialName string) (int, error) {
+	url := fmt.Sprintf("%s/fortresses", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return 0, err
+	}
+	jsonData, _ := io.ReadAll(resp.Body)
+	namesAndIDs, err := extractNamesAndIDs(string(jsonData))
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return 0, nil
+	}
+
+	var names []string
+	for name := range namesAndIDs {
+		names = append(names, name)
+	}
+
+	matches := fuzzy.Find(partialName, names)
+
+	for _, match := range matches {
+		matchedName := names[match.Index]
+		isConfirmed := AskConfirmation("The following fortress was found : " + matchedName)
+		if isConfirmed {
+			return namesAndIDs[matchedName], nil
+		}
+	}
+
+	// return "", fmt.Errorf("error: Nothing was found")
+	// info := ParseJsonMessage(resp, "data")
+	// if info == nil {
+	// 	return 0, err
+	// }
+	// config.GlobalConfig.Logger.Debug(fmt.Sprintf("Data map: %v", info))
+
+	return 0, nil
 }

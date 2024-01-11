@@ -35,11 +35,43 @@ var submitCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Difficulty: %d", difficultyParam))
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine name: %s", machineNameParam))
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge name: %s", challengeNameParam))
+		fortressNameParam, err := cmd.Flags().GetString("fortress_name")
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
+		}
 
-		output, err := submit.CoreSubmitCmd(difficultyParam, machineNameParam, challengeNameParam)
+		// config.GlobalConfig.Logger.Debug(fmt.Sprintf("Difficulty: %d", difficultyParam))
+		// config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine name: %s", machineNameParam))
+		// config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge name: %s", challengeNameParam))
+		// config.GlobalConfig.Logger.Debug(fmt.Sprintf("Fortress name: %s", fortressNameParam))
+
+		if challengeNameParam != "" || machineNameParam != "" {
+			if difficultyParam == 0 {
+				fmt.Println("required flag(s) 'difficulty' not set")
+				os.Exit(1)
+			}
+		}
+
+		var modeType string
+		var modeValue string
+
+		// TODO: check si plusieurs arguments : -m sau -c dd -f aws -> Seulement un a la fois !
+
+		if fortressNameParam != "" {
+			modeType = "fortress"
+			modeValue = fortressNameParam
+		} else if machineNameParam != "" {
+			modeType = "machine"
+			modeValue = machineNameParam
+		} else if challengeNameParam != "" {
+			modeType = "challenge"
+			modeValue = challengeNameParam
+		}
+
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Mode type: %s", modeType))
+
+		output, err := submit.CoreSubmitCmd(difficultyParam, modeType, modeValue)
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
@@ -60,9 +92,10 @@ func init() {
 	rootCmd.AddCommand(submitCmd)
 	submitCmd.Flags().StringP("machine_name", "m", "", "Machine Name")
 	submitCmd.Flags().StringP("challenge_name", "c", "", "Challenge Name")
+	submitCmd.Flags().StringP("fortress_name", "f", "", "Fortress Name")
 	submitCmd.Flags().IntP("difficulty", "d", 0, "Difficulty")
-	err := submitCmd.MarkFlagRequired("difficulty")
-	if err != nil {
-		fmt.Println(err)
-	}
+	// err := submitCmd.MarkFlagRequired("difficulty")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 }

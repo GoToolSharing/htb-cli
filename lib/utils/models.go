@@ -20,3 +20,16 @@ type Root struct {
 	Challenges interface{} `json:"challenges"`
 	Usernames  interface{} `json:"users"`
 }
+
+// Move this
+
+type Item struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+// Structure pour représenter le JSON entier
+type JsonResponse struct {
+	Status bool            `json:"status"`
+	Data   map[string]Item `json:"data"`
+}

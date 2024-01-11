@@ -15,30 +15,32 @@ import (
 )
 
 // coreSubmitCmd handles the submission of flags for machines or challenges, returning a status message or error.
-func CoreSubmitCmd(difficultyParam int, machineNameParam string, challengeNameParam string) (string, error) {
-	if difficultyParam < 1 || difficultyParam > 10 {
-		return "", errors.New("difficulty must be set between 1 and 10")
+func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (string, error) {
+	var payload map[string]string
+	var difficultyString string
+	if difficultyParam != 0 {
+		if difficultyParam < 1 || difficultyParam > 10 {
+			return "", errors.New("difficulty must be set between 1 and 10")
+		}
+		difficultyString = strconv.Itoa(difficultyParam * 10)
 	}
 
-	// Common payload elements
-	difficultyString := strconv.Itoa(difficultyParam * 10)
-	payload := map[string]string{
-		"difficulty": difficultyString,
-	}
+	var url string
 
-	url := ""
-
-	if challengeNameParam != "" {
+	if modeType == "challenge" {
 		config.GlobalConfig.Logger.Info("Challenge submit requested")
-		challengeID, err := utils.SearchItemIDByName(challengeNameParam, "Challenge")
+		challengeID, err := utils.SearchItemIDByName(modeValue, "Challenge")
 		if err != nil {
 			return "", err
 		}
 		url = config.BaseHackTheBoxAPIURL + "/challenge/own"
-		payload["challenge_id"] = challengeID
-	} else if machineNameParam != "" {
+		payload = map[string]string{
+			"difficulty":   difficultyString,
+			"challenge_id": challengeID,
+		}
+	} else if modeType == "machine" {
 		config.GlobalConfig.Logger.Info("Machine submit requested")
-		machineID, err := utils.SearchItemIDByName(machineNameParam, "Machine")
+		machineID, err := utils.SearchItemIDByName(modeValue, "Machine")
 		if err != nil {
 			return "", err
 		}
@@ -54,28 +56,19 @@ func CoreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 			url = config.BaseHackTheBoxAPIURL + "/machine/own"
 
 		}
-		payload["id"] = machineID
-	} else if machineNameParam == "" && challengeNameParam == "" {
-		machineID, err := utils.GetActiveMachineID()
+		payload = map[string]string{
+			"difficulty": difficultyString,
+			"id":         machineID,
+		}
+	} else if modeType == "fortress" {
+		config.GlobalConfig.Logger.Info("Fortress submit requested")
+		fortressID, err := utils.SearchFortressID(modeValue)
 		if err != nil {
 			return "", err
 		}
-		if machineID == "" {
-			return "No machine is running", nil
-		}
-		machineType, err := utils.GetMachineType(machineID)
-		if err != nil {
-			return "", err
-		}
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
-
-		if machineType == "release" {
-			url = config.BaseHackTheBoxAPIURL + "/arena/own"
-		} else {
-			url = config.BaseHackTheBoxAPIURL + "/machine/own"
-
-		}
-		payload["id"] = machineID
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Fortress ID : %d", fortressID))
+		url = fmt.Sprintf("%s/fortress/%d/flag", config.BaseHackTheBoxAPIURL, fortressID)
+		payload = map[string]string{}
 	}
 
 	fmt.Print("Flag : ")
@@ -86,10 +79,10 @@ func CoreSubmitCmd(difficultyParam int, machineNameParam string, challengeNamePa
 	}
 	flagOriginal := string(flagByte)
 	flag := strings.ReplaceAll(flagOriginal, " ", "")
-	payload["flag"] = flag
 
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Flag: %s", flag))
-	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Difficulty: %s", difficultyString))
+
+	payload["flag"] = flag
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {

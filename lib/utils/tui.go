@@ -86,6 +86,8 @@ func displayInfo(dataMaps map[string]map[string]interface{}, dataMapKey string, 
 		formatterFunc = func(item map[string]interface{}) string {
 			var object_type interface{}
 			switch item["object_type"].(string) {
+			case "endgame":
+				object_type = item["flag_title"]
 			case "fortress":
 				object_type = item["flag_title"]
 			case "challenge":
