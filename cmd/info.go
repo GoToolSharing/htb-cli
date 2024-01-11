@@ -232,42 +232,48 @@ func displayActiveMachine(header string) error {
 
 		now := time.Now()
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Actual date: %v", now))
-		var remainingTime string
-		if date.After(now) {
-			duration := date.Sub(now)
-			hours := int(duration.Hours())
-			minutes := int(duration.Minutes()) % 60
-			seconds := int(duration.Seconds()) % 60
 
-			remainingTime = fmt.Sprintf("%dh %dm %ds", hours, minutes, seconds)
-		}
-		// Extend time
-		isConfirmed := utils.AskConfirmation(fmt.Sprintf("Would you like to extend the active machine time ? Remaining: %s", remainingTime))
-		if isConfirmed {
-			jsonData := []byte("{\"machine_id\":" + machineID + "}")
-			resp, err := utils.HtbRequest(http.MethodPost, config.BaseHackTheBoxAPIURL+"/vm/extend", jsonData)
-			if err != nil {
-				return err
+		timeLeft := date.Sub(now)
+		limit := 2 * time.Hour
+		if timeLeft > 0 && timeLeft <= limit {
+			var remainingTime string
+			if date.After(now) {
+				duration := date.Sub(now)
+				hours := int(duration.Hours())
+				minutes := int(duration.Minutes()) % 60
+				seconds := int(duration.Seconds()) % 60
+
+				remainingTime = fmt.Sprintf("%dh %dm %ds", hours, minutes, seconds)
+
 			}
-			var response Response
-			if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-				return fmt.Errorf("Error decoding JSON response: %v", err)
+			// Extend time
+			isConfirmed := utils.AskConfirmation(fmt.Sprintf("Would you like to extend the active machine time ? Remaining: %s", remainingTime))
+			if isConfirmed {
+				jsonData := []byte("{\"machine_id\":" + machineID + "}")
+				resp, err := utils.HtbRequest(http.MethodPost, config.BaseHackTheBoxAPIURL+"/vm/extend", jsonData)
+				if err != nil {
+					return err
+				}
+				var response Response
+				if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+					return fmt.Errorf("error decoding JSON response: %v", err)
+				}
+
+				inputLayout := time.RFC3339Nano
+
+				date, err := time.Parse(inputLayout, response.ExpiresAt)
+				if err != nil {
+					return fmt.Errorf("error decoding JSON response: %v", err)
+				}
+
+				outputLayout := "2006-01-02 -> 15h 04m 05s"
+
+				formattedDate := date.Format(outputLayout)
+
+				fmt.Println(response.Message)
+				fmt.Printf("Expires Date: %s\n", formattedDate)
+
 			}
-
-			inputLayout := time.RFC3339Nano
-
-			date, err := time.Parse(inputLayout, response.ExpiresAt)
-			if err != nil {
-				return fmt.Errorf("Error decoding JSON response: %v", err)
-			}
-
-			outputLayout := "2006-01-02 -> 15h 04m 05s"
-
-			formattedDate := date.Format(outputLayout)
-
-			fmt.Println(response.Message)
-			fmt.Printf("Expires Date: %s\n", formattedDate)
-
 		}
 
 		tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
@@ -321,7 +327,7 @@ func displayActiveMachine(header string) error {
 		utils.SetTabWriterData(w, bodyData)
 		w.Flush()
 	} else {
-		fmt.Print("No machine is running")
+		fmt.Println("No machine is running")
 	}
 	return nil
 }
