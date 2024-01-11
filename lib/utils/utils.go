@@ -561,6 +561,7 @@ func SearchFortressID(partialName string) (int, error) {
 		if isConfirmed {
 			return namesAndIDs[matchedName], nil
 		}
+		os.Exit(0)
 	}
 	return 0, nil
 }
@@ -606,6 +607,53 @@ func SearchEndgameID(partialName string) (int, error) {
 		if isConfirmed {
 			return namesAndIDs[matchedName], nil
 		}
+		os.Exit(0)
 	}
 	return 0, nil
+}
+
+func SearchProlabID(partialName string) (int, error) {
+	url := fmt.Sprintf("%s/prolabs", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return 0, err
+	}
+	jsonData, _ := io.ReadAll(resp.Body)
+	namesAndIDs, err := extractProlabsNamesAndIDs(string(jsonData))
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return 0, nil
+	}
+
+	var names []string
+	for name := range namesAndIDs {
+		names = append(names, name)
+	}
+
+	matches := fuzzy.Find(partialName, names)
+
+	for _, match := range matches {
+		matchedName := names[match.Index]
+		isConfirmed := AskConfirmation("The following prolab was found : " + matchedName)
+		if isConfirmed {
+			return namesAndIDs[matchedName], nil
+		}
+		os.Exit(0)
+	}
+	return 0, nil
+}
+
+func extractProlabsNamesAndIDs(jsonData string) (map[string]int, error) {
+	var response ProlabJsonResponse
+	err := json.Unmarshal([]byte(jsonData), &response)
+	if err != nil {
+		return nil, err
+	}
+
+	namesAndIDs := make(map[string]int)
+	for _, lab := range response.Data.Labs {
+		namesAndIDs[lab.Name] = lab.ID
+	}
+
+	return namesAndIDs, nil
 }

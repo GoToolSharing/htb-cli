@@ -35,15 +35,30 @@ type JsonResponse struct {
 }
 
 // Endgames
-
 type Endgame struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
-// Structure pour représenter le JSON entier
 type EndgameJsonResponse struct {
 	Status bool      `json:"status"`
 	Data   []Endgame `json:"data"`
 }
 
+// Prolabs
+
+type Lab struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+// Structure pour représenter la section 'data' du JSON
+type Data struct {
+	Labs []Lab `json:"labs"`
+}
+
+// Structure pour représenter le JSON entier
+type ProlabJsonResponse struct {
+	Status bool `json:"status"`
+	Data   Data `json:"data"`
+}

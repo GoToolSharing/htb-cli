@@ -23,25 +23,31 @@ var submitCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		machineNameParam, err := cmd.Flags().GetString("machine_name")
+		machineNameParam, err := cmd.Flags().GetString("machine")
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
 
-		challengeNameParam, err := cmd.Flags().GetString("challenge_name")
+		challengeNameParam, err := cmd.Flags().GetString("challenge")
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
 
-		fortressNameParam, err := cmd.Flags().GetString("fortress_name")
+		fortressNameParam, err := cmd.Flags().GetString("fortress")
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
 
-		endgameNameParam, err := cmd.Flags().GetString("endgame_name")
+		endgameNameParam, err := cmd.Flags().GetString("endgame")
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
+		}
+
+		prolabNameParam, err := cmd.Flags().GetString("prolab")
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
@@ -69,6 +75,9 @@ var submitCmd = &cobra.Command{
 		} else if endgameNameParam != "" {
 			modeType = "endgame"
 			modeValue = endgameNameParam
+		} else if prolabNameParam != "" {
+			modeType = "prolab"
+			modeValue = prolabNameParam
 		} else {
 			modeType = "release-arena"
 			modeValue = ""
@@ -96,13 +105,10 @@ var submitCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(submitCmd)
-	submitCmd.Flags().StringP("machine_name", "m", "", "Machine Name")
-	submitCmd.Flags().StringP("challenge_name", "c", "", "Challenge Name")
-	submitCmd.Flags().StringP("fortress_name", "f", "", "Fortress Name")
-	submitCmd.Flags().StringP("endgame_name", "e", "", "Endgame Name")
+	submitCmd.Flags().StringP("machine", "m", "", "Machine Name")
+	submitCmd.Flags().StringP("challenge", "c", "", "Challenge Name")
+	submitCmd.Flags().StringP("fortress", "f", "", "Fortress Name")
+	submitCmd.Flags().StringP("endgame", "e", "", "Endgame Name")
+	submitCmd.Flags().StringP("prolab", "p", "", "Prolab Name")
 	submitCmd.Flags().IntP("difficulty", "d", 0, "Difficulty")
-	// err := submitCmd.MarkFlagRequired("difficulty")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
 }

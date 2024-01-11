@@ -78,6 +78,15 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Endgame ID : %d", endgameID))
 		url = fmt.Sprintf("%s/endgame/%d/flag", config.BaseHackTheBoxAPIURL, endgameID)
 		payload = map[string]string{}
+	} else if modeType == "prolab" {
+		config.GlobalConfig.Logger.Info("Prolab submit requested")
+		prolabID, err := utils.SearchProlabID(modeValue)
+		if err != nil {
+			return "", err
+		}
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Prolab ID : %d", prolabID))
+		url = fmt.Sprintf("%s/prolab/%d/flag", config.BaseHackTheBoxAPIURL, prolabID)
+		payload = map[string]string{}
 	} else if modeType == "release-arena" {
 		config.GlobalConfig.Logger.Info("Release Arena submit requested")
 		isConfirmed := utils.AskConfirmation("Would you like to submit a flag for the release arena ?")
