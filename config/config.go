@@ -33,7 +33,7 @@ const BaseHackTheBoxAPIURL = "https://" + HostHackTheBox + "/api/v4"
 
 const StatusURL = "https://status.hackthebox.com/api/v2/status.json"
 
-const Version = "32501bfab6e93e517a12b7017130f96e6b933311"
+const Version = "dev"
 
 func ConfigureLogger() error {
 	var logLevel zapcore.Level
