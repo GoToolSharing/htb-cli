@@ -69,7 +69,7 @@ func downloadVPN(url string) error {
 	} else if strings.Contains(url, "product=competitive") {
 		parts := strings.Split(vpnName, "_")
 
-		if len(parts) > 1 {
+		if len(parts) > 1 && !strings.Contains(vpnName, "Release_Arena") {
 			parts[1] = "Release_Arena"
 		}
 
@@ -137,11 +137,11 @@ func DownloadAll() error {
 
 // Start starts the VPN connection using an OpenVPN configuration file.
 func Start(configPath string) (string, error) {
-	config.GlobalConfig.Logger.Debug(fmt.Sprintf("VPN config file : %s", configPath))
 	files, err := filepath.Glob(configPath)
 	if err != nil {
 		return "", fmt.Errorf("search error : %v", err)
 	}
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("VPN config file : %s", files))
 	if len(files) == 0 {
 		isConfirmed := utils.AskConfirmation("VPN was not found. Would you like to download it ?")
 		if isConfirmed {
@@ -152,7 +152,7 @@ func Start(configPath string) (string, error) {
 		}
 	}
 	config.GlobalConfig.Logger.Info("VPN is starting...")
-	cmd := "pgrep -fa openvpn"
+	cmd := "ps aux | grep '[o]penvpn'"
 	hacktheboxFound := false
 	processes, err := exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
@@ -171,7 +171,9 @@ func Start(configPath string) (string, error) {
 		}
 
 		parts := strings.Fields(line)
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("parts: %v", parts))
 		processPath := parts[len(parts)-1]
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("processPath: %v", processPath))
 
 		if _, found := uniquePaths[processPath]; found {
 			continue
