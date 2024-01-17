@@ -228,9 +228,26 @@ func displayActiveMachine(header string) error {
 	if err != nil {
 		return err
 	}
-	expiresTime, err := utils.GetActiveExpiredTime()
+	machineType, err := utils.GetMachineType(machineID)
 	if err != nil {
 		return err
+	}
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
+
+	var expiresTime string
+	switch {
+	case machineType == "release":
+		expiresTime, err = utils.GetReleaseArenaExpiredTime()
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Expires Time: %s", expiresTime))
+		if err != nil {
+			return err
+		}
+	default:
+		expiresTime, err = utils.GetActiveExpiredTime()
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Expires Time:: %s", expiresTime))
+		if err != nil {
+			return err
+		}
 	}
 
 	if machineID != "" {
@@ -300,6 +317,7 @@ func displayActiveMachine(header string) error {
 			return err
 		}
 		info := utils.ParseJsonMessage(resp, "info")
+		// info := utils.ParseJsonMessage(resp, "data")
 
 		data := info.(map[string]interface{})
 		status := utils.SetStatus(data)

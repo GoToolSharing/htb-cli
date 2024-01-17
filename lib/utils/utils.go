@@ -313,6 +313,22 @@ func GetActiveExpiredTime() (string, error) {
 	return fmt.Sprintf("%s", info.(map[string]interface{})["expires_at"]), nil
 }
 
+func GetReleaseArenaExpiredTime() (string, error) {
+	url := fmt.Sprintf("%s/season/machine/active", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	info := ParseJsonMessage(resp, "data")
+	if info == nil {
+		return "", nil
+	}
+	data := info.(map[string]interface{})
+	playInfo := data["play_info"].(map[string]interface{})
+	expiresAt := playInfo["expires_at"].(string)
+	return expiresAt, nil
+}
+
 // GetActiveMachineIP returns the ip of the active machine
 func GetActiveMachineIP() (string, error) {
 	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
