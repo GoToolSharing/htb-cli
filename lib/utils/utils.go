@@ -331,6 +331,24 @@ func GetActiveMachineIP() (string, error) {
 	return "Undefined", nil
 }
 
+// GetActiveReleaseArenaMachineIP returns the ip of the active release arena machine
+func GetActiveReleaseArenaMachineIP() (string, error) {
+	url := fmt.Sprintf("%s/season/machine/active", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	data := ParseJsonMessage(resp, "data")
+	if data == nil {
+		return "", err
+	}
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Relase arena active machine informations: %v", data))
+	if ipValue, ok := data.(map[string]interface{})["ip"].(string); ok {
+		return ipValue, nil
+	}
+	return "Undefined", nil
+}
+
 // HtbRequest makes an HTTP request to the Hackthebox API
 func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
