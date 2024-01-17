@@ -325,7 +325,12 @@ func displayActiveMachine(header string) error {
 		ip := "Undefined"
 		_ = ip
 		switch {
-		case userSubscription == "vip+" || machineType == "release":
+		case machineType == "release":
+			ip, err = utils.GetActiveReleaseArenaMachineIP()
+			if err != nil {
+				return err
+			}
+		case userSubscription == "vip+":
 			ip, err = utils.GetActiveMachineIP()
 			if err != nil {
 				return err

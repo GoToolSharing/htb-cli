@@ -343,10 +343,8 @@ func GetActiveReleaseArenaMachineIP() (string, error) {
 		return "", err
 	}
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Relase arena active machine informations: %v", data))
-	if ipValue, ok := data.(map[string]interface{})["ip"].(string); ok {
-		return ipValue, nil
-	}
-	return "Undefined", nil
+
+	return fmt.Sprintf("%v", data.(map[string]interface{})["ip"].(string)), nil
 }
 
 // HtbRequest makes an HTTP request to the Hackthebox API
