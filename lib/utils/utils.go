@@ -740,7 +740,7 @@ func processResponse(resp *http.Response) []ChallengeFinder {
 	defer resp.Body.Close()
 	var cr ChallengeResponseFinder
 	if err := json.NewDecoder(resp.Body).Decode(&cr); err != nil {
-		fmt.Errorf("JSON decoding error %v", err)
+		fmt.Println("JSON decoding error %v", err)
 		os.Exit(1)
 	}
 	return cr.ChallengesFinder
@@ -750,7 +750,7 @@ func sendRequest(url string, respChan chan<- *http.Response, wg *sync.WaitGroup)
 	defer wg.Done()
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		fmt.Errorf("error sending request : %v", err)
+		fmt.Println("error sending request : %v", err)
 		os.Exit(1)
 	}
 	respChan <- resp
