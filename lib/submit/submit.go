@@ -29,10 +29,15 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 
 	if modeType == "challenge" {
 		config.GlobalConfig.Logger.Info("Challenge submit requested")
-		challengeID, err := utils.SearchItemIDByName(modeValue, "Challenge")
+		challenges, err := utils.SearchChallengeByName(modeValue)
 		if err != nil {
 			return "", err
 		}
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge found: %v", challenges))
+
+		// TODO: get this int
+		challengeID := strconv.Itoa(challenges.ID)
+
 		url = config.BaseHackTheBoxAPIURL + "/challenge/own"
 		payload = map[string]string{
 			"difficulty":   difficultyString,
