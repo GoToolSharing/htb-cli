@@ -14,6 +14,7 @@ import (
 	"os/user"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"text/tabwriter"
 	"time"
@@ -656,4 +657,69 @@ func extractProlabsNamesAndIDs(jsonData string) (map[string]int, error) {
 	}
 
 	return namesAndIDs, nil
+}
+
+// Fuzzy finder for challenges
+
+func SearchChallengeByName(partialName string) (ChallengeFinder, error) {
+	var wg sync.WaitGroup
+	respChan := make(chan *http.Response, 2)
+	var allChallenges []ChallengeFinder
+
+	wg.Add(2)
+	go sendRequest(fmt.Sprintf("%s/challenge/list", config.BaseHackTheBoxAPIURL), respChan, &wg)
+	go sendRequest(fmt.Sprintf("%s/challenge/list/retired", config.BaseHackTheBoxAPIURL), respChan, &wg)
+
+	go func() {
+		wg.Wait()
+		close(respChan)
+	}()
+
+	for resp := range respChan {
+		challenges := processResponse(resp)
+		allChallenges = append(allChallenges, challenges...)
+	}
+
+	challengeNames := make([]string, len(allChallenges))
+	for i, ch := range allChallenges {
+		challengeNames[i] = ch.Name
+	}
+
+	matches := fuzzy.Find(partialName, challengeNames)
+
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenges matches: %v", matches))
+
+	for _, match := range matches {
+		matchedName := challengeNames[match.Index]
+		isConfirmed := AskConfirmation("The following challenge was found : " + matchedName)
+		if isConfirmed {
+			for _, ch := range allChallenges {
+				if ch.Name == matchedName {
+					return ch, nil
+				}
+			}
+		}
+	}
+
+	return ChallengeFinder{}, fmt.Errorf("no matching challenge found")
+}
+
+func processResponse(resp *http.Response) []ChallengeFinder {
+	defer resp.Body.Close()
+	var cr ChallengeResponseFinder
+	if err := json.NewDecoder(resp.Body).Decode(&cr); err != nil {
+		fmt.Errorf("JSON decoding error %v", err)
+		os.Exit(1)
+	}
+	return cr.ChallengesFinder
+}
+
+func sendRequest(url string, respChan chan<- *http.Response, wg *sync.WaitGroup) {
+	defer wg.Done()
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		fmt.Errorf("error sending request : %v", err)
+		os.Exit(1)
+	}
+	respChan <- resp
 }

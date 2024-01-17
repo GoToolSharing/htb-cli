@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -44,11 +45,25 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 	w := utils.SetTabWriterHeader(header)
 
 	// Iteration on all machines / challenges / users argument
+	var itemID string
 	for _, param := range params {
-		itemID, err := utils.SearchItemIDByName(param, elementType)
-		if err != nil {
-			fmt.Println(err)
-			return nil
+		if elementType == "Challenge" {
+			config.GlobalConfig.Logger.Info("Challenge search...")
+			challenges, err := utils.SearchChallengeByName(param)
+			if err != nil {
+				return err
+			}
+			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge found: %v", challenges))
+
+			// TODO: get this int
+			itemID = strconv.Itoa(challenges.ID)
+		} else {
+			itemID, err := utils.SearchItemIDByName(param, elementType)
+			_ = itemID
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
 		}
 
 		resp, err := utils.HtbRequest(http.MethodGet, (url + itemID), nil)

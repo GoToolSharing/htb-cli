@@ -62,3 +62,14 @@ type ProlabJsonResponse struct {
 	Status bool `json:"status"`
 	Data   Data `json:"data"`
 }
+
+// Challenges
+
+type ChallengeFinder struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+type ChallengeResponseFinder struct {
+	ChallengesFinder []ChallengeFinder `json:"challenges"`
+}
