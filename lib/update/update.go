@@ -14,7 +14,7 @@ func Check(newVersion string) (string, error) {
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("config.Version: %s", config.Version))
 	if config.Version == "dev" {
 		config.GlobalConfig.Logger.Info("Development version detected")
-		return "Development version (git pull to update)", nil
+		return "Development version", nil
 	}
 
 	// Main version
