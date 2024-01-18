@@ -40,7 +40,7 @@ func readHostsFile(processLine func(string) (string, bool)) (string, bool, error
 }
 
 func updateHostsFile(newContent string) error {
-	cmd := exec.Command("sh", "-c", fmt.Sprintf("echo '%s' | sudo tee /etc/hosts", newContent))
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("echo '%s' | sudo tee /etc/hosts > /dev/null", newContent))
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -48,15 +48,26 @@ func updateHostsFile(newContent string) error {
 }
 
 func AddEntryToHosts(ip string, host string) error {
-	fmt.Println("IP :", ip)
-	fmt.Println("Host :", host)
+	ipFound := false
+	hostAdded := false
+
 	processLine := func(line string) (string, bool) {
-		fields := strings.Fields(line)
-		if fields[0] != ip || strings.Contains(line, host) {
-			fmt.Println("Inside :", line)
+		trimmedLine := strings.TrimSpace(line)
+		if trimmedLine == "" {
 			return line, false
 		}
-		return line + " " + host, true
+
+		fields := strings.Fields(trimmedLine)
+		if fields[0] == ip {
+			ipFound = true
+			for _, field := range fields[1:] {
+				if field == host {
+					return line, false
+				}
+			}
+			return line + " " + host, true
+		}
+		return line, false
 	}
 
 	newContent, changeMade, err := readHostsFile(processLine)
@@ -64,33 +75,51 @@ func AddEntryToHosts(ip string, host string) error {
 		return err
 	}
 
-	fmt.Println("New content :", newContent)
+	if !ipFound {
+		newContent = strings.TrimSpace(newContent) + "\n" + ip + " " + host
+		hostAdded = true
+	} else {
+		hostAdded = changeMade
+	}
 
-	if changeMade {
-		if err := updateHostsFile(newContent); err != nil {
+	if hostAdded {
+		if err := updateHostsFile(strings.TrimSpace(newContent)); err != nil {
 			return err
 		}
-		fmt.Println("Entrée mise à jour ou ajoutée avec succès.")
+		fmt.Println("Entry successfully updated or added.")
 		return nil
 	}
 
-	fmt.Println("L'entrée existe déjà.")
+	fmt.Println("Entry already exists.")
 	return nil
 }
 
 func RemoveEntryFromHosts(ip string, host string) error {
+	hostRemoved := false
+
 	processLine := func(line string) (string, bool) {
-		fields := strings.Fields(line)
-		if fields[0] != ip {
+		trimmedLine := strings.TrimSpace(line)
+		if trimmedLine == "" {
 			return line, false
 		}
-		var newFields []string
-		for _, field := range fields {
-			if field != host {
-				newFields = append(newFields, field)
+
+		fields := strings.Fields(trimmedLine)
+		if fields[0] == ip {
+			var newFields []string
+			newFields = append(newFields, ip)
+
+			for _, field := range fields[1:] {
+				if field != host {
+					newFields = append(newFields, field)
+				}
 			}
+
+			if len(newFields) > 1 {
+				return strings.Join(newFields, " "), true
+			}
+			return "", true
 		}
-		return strings.Join(newFields, " "), len(newFields) != len(fields)
+		return line, false
 	}
 
 	newContent, changeMade, err := readHostsFile(processLine)
@@ -99,13 +128,17 @@ func RemoveEntryFromHosts(ip string, host string) error {
 	}
 
 	if changeMade {
+		hostRemoved = true
+		newContent = strings.TrimSpace(newContent)
 		if err := updateHostsFile(newContent); err != nil {
 			return err
 		}
-		fmt.Println("Entrée supprimée avec succès.")
+		fmt.Println("Entry successfully deleted.")
 		return nil
 	}
 
-	fmt.Println("L'entrée n'a pas été trouvée.")
+	if !hostRemoved {
+		fmt.Println("Entry not found.")
+	}
 	return nil
 }
