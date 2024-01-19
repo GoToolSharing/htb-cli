@@ -363,6 +363,20 @@ func GetActiveReleaseArenaMachineIP() (string, error) {
 	return fmt.Sprintf("%v", data.(map[string]interface{})["ip"].(string)), nil
 }
 
+func GetActiveReleaseArenaMachineName() (string, error) {
+	url := fmt.Sprintf("%s/season/machine/active", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	data := ParseJsonMessage(resp, "data")
+	if data == nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%v", data.(map[string]interface{})["name"].(string)), nil
+}
+
 // HtbRequest makes an HTTP request to the Hackthebox API
 func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
@@ -754,4 +768,15 @@ func sendRequest(url string, respChan chan<- *http.Response, wg *sync.WaitGroup)
 		os.Exit(1)
 	}
 	respChan <- resp
+}
+
+// SetupSignalHandler configures a signal handler to stop the spinner and gracefully exit upon receiving specific signals.
+func SetupSignalHandler(s *spinner.Spinner) {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigs
+		s.Stop()
+		os.Exit(0)
+	}()
 }
