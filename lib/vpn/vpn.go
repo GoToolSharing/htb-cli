@@ -9,28 +9,14 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"os/signal"
 	"path/filepath"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
-	"github.com/briandowns/spinner"
 )
-
-// setupSignalHandler configures a signal handler to stop the spinner and gracefully exit upon receiving specific signals.
-func setupSignalHandler(s *spinner.Spinner) {
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-sigs
-		s.Stop()
-		os.Exit(0)
-	}()
-}
 
 func downloadVPN(url string) error {
 	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
@@ -72,13 +58,19 @@ func downloadVPN(url string) error {
 	if resp.StatusCode == 429 {
 		fmt.Printf("[%s] - You have reached the limit for the number of requests. New attempt in 1 minute\n", productValue)
 		time.Sleep(60 * time.Second)
-		downloadVPN(url)
+		err := downloadVPN(url)
+		if err != nil {
+			return err
+		}
 	}
 
 	if resp.StatusCode == 500 || resp.StatusCode == 502 || resp.StatusCode == 400 {
 		fmt.Println("The server returned an error. New attempt to download the VPN.")
 		time.Sleep(2 * time.Second)
-		downloadVPN(url)
+		err := downloadVPN(url)
+		if err != nil {
+			return err
+		}
 	}
 
 	if resp.StatusCode != http.StatusOK {
