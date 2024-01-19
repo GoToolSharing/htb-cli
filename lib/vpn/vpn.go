@@ -31,7 +31,7 @@ func downloadVPN(url string) error {
 		return nil
 	}
 
-	if resp.StatusCode == 500 {
+	if resp.StatusCode == 500 || resp.StatusCode == 400 {
 		fmt.Println("The server returned an error. New attempt to download the VPN.")
 		downloadVPN(url)
 	}
