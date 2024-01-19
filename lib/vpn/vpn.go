@@ -31,6 +31,11 @@ func downloadVPN(url string) error {
 		return nil
 	}
 
+	if resp.StatusCode == 500 {
+		fmt.Println("The server returned an error. New attempt to download the VPN.")
+		downloadVPN(url)
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("error: Bad status code : %d", resp.StatusCode)
 	}
