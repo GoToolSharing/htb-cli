@@ -128,7 +128,6 @@ func RemoveEntryFromHosts(ip string, host string) error {
 	}
 
 	if changeMade {
-		hostRemoved = true
 		newContent = strings.TrimSpace(newContent)
 		if err := updateHostsFile(newContent); err != nil {
 			return err
