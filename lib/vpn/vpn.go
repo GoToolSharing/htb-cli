@@ -9,13 +9,28 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"strings"
 	"sync"
+	"syscall"
+	"time"
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/briandowns/spinner"
 )
+
+// setupSignalHandler configures a signal handler to stop the spinner and gracefully exit upon receiving specific signals.
+func setupSignalHandler(s *spinner.Spinner) {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigs
+		s.Stop()
+		os.Exit(0)
+	}()
+}
 
 func downloadVPN(url string) error {
 	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
@@ -24,9 +39,10 @@ func downloadVPN(url string) error {
 	}
 	defer resp.Body.Close()
 
+	parts := strings.Split(url, "=")
+	productValue := parts[len(parts)-1]
+
 	if resp.StatusCode == 401 {
-		parts := strings.Split(url, "=")
-		productValue := parts[len(parts)-1]
 		fmt.Println("You do not have permissions to download the following vpn:", productValue)
 		return nil
 	}
@@ -54,12 +70,14 @@ func downloadVPN(url string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 429 {
-		fmt.Println("You have reached the limit for the number of requests. Please wait 1 minute and try again.")
-		os.Exit(0)
+		fmt.Println(fmt.Sprintf("[%s] - You have reached the limit for the number of requests. New attempt in 1 minute", productValue))
+		time.Sleep(60 * time.Second)
+		downloadVPN(url)
 	}
 
-	if resp.StatusCode == 500 || resp.StatusCode == 400 {
+	if resp.StatusCode == 500 || resp.StatusCode == 502 || resp.StatusCode == 400 {
 		fmt.Println("The server returned an error. New attempt to download the VPN.")
+		time.Sleep(2 * time.Second)
 		downloadVPN(url)
 	}
 
@@ -129,12 +147,6 @@ func DownloadAll() error {
 
 	wg.Wait()
 	close(errors)
-
-	for err := range errors {
-		if err != nil {
-			return err
-		}
-	}
 
 	fmt.Println("")
 
