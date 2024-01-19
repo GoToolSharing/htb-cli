@@ -73,3 +73,23 @@ type ChallengeFinder struct {
 type ChallengeResponseFinder struct {
 	ChallengesFinder []ChallengeFinder `json:"challenges"`
 }
+
+// Activity
+
+type Activity struct {
+	CreatedAt  string `json:"created_at"`
+	Date       string `json:"date"`
+	DateDiff   string `json:"date_diff"`
+	UserID     int    `json:"user_id"`
+	UserName   string `json:"user_name"`
+	UserAvatar string `json:"user_avatar"`
+	Type       string `json:"type"`
+}
+
+type InfoActivity struct {
+	Activities []Activity `json:"activity"`
+}
+
+type DataActivity struct {
+	Info InfoActivity `json:"info"`
+}

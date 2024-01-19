@@ -92,8 +92,6 @@ var submitCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Println(output)
-
 		err = webhooks.SendToDiscord("submit", output)
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))

@@ -755,3 +755,26 @@ func sendRequest(url string, respChan chan<- *http.Response, wg *sync.WaitGroup)
 	}
 	respChan <- resp
 }
+
+func GetChallengeBlooder(challengeID string) (string, error) {
+	url := fmt.Sprintf("%s/challenge/activity/%s", config.BaseHackTheBoxAPIURL, challengeID)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	jsonData, _ := io.ReadAll(resp.Body)
+
+	var data DataActivity
+	err = json.Unmarshal([]byte(jsonData), &data)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, activity := range data.Info.Activities {
+		if activity.Type == "blood" {
+			return activity.UserName, nil
+		}
+	}
+
+	return "Not defined", nil
+}

@@ -11,6 +11,7 @@ import (
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"go.uber.org/zap"
 	"golang.org/x/term"
 )
 
@@ -26,6 +27,7 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 	}
 
 	var url string
+	var challengeID string
 
 	if modeType == "challenge" {
 		config.GlobalConfig.Logger.Info("Challenge submit requested")
@@ -36,7 +38,7 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge found: %v", challenges))
 
 		// TODO: get this int
-		challengeID := strconv.Itoa(challenges.ID)
+		challengeID = strconv.Itoa(challenges.ID)
 
 		url = config.BaseHackTheBoxAPIURL + "/challenge/own"
 		payload = map[string]string{
@@ -137,5 +139,18 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 	if !ok {
 		return "", errors.New("unexpected response format")
 	}
-	return message, nil
+
+	if modeType == "challenge" {
+		blooderName, err := utils.GetChallengeBlooder(challengeID)
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
+		}
+		fmt.Println("Blooder :", blooderName)
+	}
+
+	fmt.Println("")
+	fmt.Println(message)
+
+	return "", nil
 }
