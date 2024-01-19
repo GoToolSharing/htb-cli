@@ -70,7 +70,7 @@ func downloadVPN(url string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 429 {
-		fmt.Println(fmt.Sprintf("[%s] - You have reached the limit for the number of requests. New attempt in 1 minute", productValue))
+		fmt.Printf("[%s] - You have reached the limit for the number of requests. New attempt in 1 minute\n", productValue)
 		time.Sleep(60 * time.Second)
 		downloadVPN(url)
 	}
