@@ -31,11 +31,6 @@ func downloadVPN(url string) error {
 		return nil
 	}
 
-	if resp.StatusCode == 500 || resp.StatusCode == 400 {
-		fmt.Println("The server returned an error. New attempt to download the VPN.")
-		downloadVPN(url)
-	}
-
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("error: Bad status code : %d", resp.StatusCode)
 	}
@@ -57,6 +52,16 @@ func downloadVPN(url string) error {
 		return err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode == 429 {
+		fmt.Println("You have reached the limit for the number of requests. Please wait 1 minute and try again.")
+		os.Exit(0)
+	}
+
+	if resp.StatusCode == 500 || resp.StatusCode == 400 {
+		fmt.Println("The server returned an error. New attempt to download the VPN.")
+		downloadVPN(url)
+	}
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("error: Bad status code : %d", resp.StatusCode)
