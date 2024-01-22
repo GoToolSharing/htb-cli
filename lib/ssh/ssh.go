@@ -2,10 +2,14 @@ package ssh
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
+	"github.com/GoToolSharing/htb-cli/lib/submit"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/term"
 )
 
 func Connect(username, password, host string, port int) error {
@@ -83,7 +87,42 @@ func Connect(username, password, host string, port int) error {
 			fmt.Printf("%s: %s\n", filePath, string(contentOutput))
 			if len(contentOutput) == 32 {
 				fmt.Println("HTB flag detected")
-				// TODO: auto Submission
+				// TODO: auto submission with hostname research
+				hostnameSession, err := connection.NewSession()
+				if err != nil {
+					fmt.Printf("Error creating hostname session: %s\n", err)
+					continue
+				}
+				cmd := "hostname"
+				sessionOutput, err := hostnameSession.CombinedOutput(cmd)
+				hostnameSession.Close()
+				hostname := strings.ReplaceAll(string(sessionOutput), "\n", "")
+				fmt.Println("Hostname :", hostname)
+
+				// machineID, err := utils.SearchItemIDByName(hostname, "Machine")
+				// if err != nil {
+				// 	return err
+				// }
+
+				// fmt.Println("Machine ID :", machineID)
+
+				// submit.CoreSubmitCmd(difficultyParam, modeType, modeValue)
+
+				fmt.Print("Difficuly (1-10) : ")
+				difficultyByte, err := term.ReadPassword(int(os.Stdin.Fd()))
+				if err != nil {
+					return err
+				}
+				difficultyOriginal := string(difficultyByte)
+				difficulty := strings.ReplaceAll(difficultyOriginal, " ", "")
+				difficultyInt, err := strconv.Atoi(difficulty)
+				if err != nil {
+					return err
+				}
+				submit.CoreSubmitCmd(difficultyInt, "machine", hostname)
+
+				// config.GlobalConfig.Logger.Debug(fmt.Sprintf("Difficulty: %s", difficulty))
+
 			}
 			contentSession.Close()
 			break
