@@ -29,14 +29,19 @@ var getflagCmd = &cobra.Command{
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
-		ssh.Connect(username, password, host)
+		err = ssh.Connect(username, password, host, 22)
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
+		}
 		config.GlobalConfig.Logger.Info("Exit getflag command correctly")
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(getflagCmd)
-	getflagCmd.Flags().StringP("username", "", "", "SSH username")
-	getflagCmd.Flags().StringP("password", "", "", "SSH password")
-	getflagCmd.Flags().StringP("host", "", "", "SSH host")
+	getflagCmd.Flags().StringP("username", "u", "", "SSH username")
+	getflagCmd.Flags().StringP("password", "p", "", "SSH password")
+	getflagCmd.Flags().StringP("port", "P", "", "(Optional) SSH Port (Default 22)")
+	getflagCmd.Flags().StringP("host", "", "", "(Optional) SSH host")
 }

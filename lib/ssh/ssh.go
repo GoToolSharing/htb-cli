@@ -2,12 +2,13 @@ package ssh
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/crypto/ssh"
 )
 
-func Connect(username, password, host string) {
+func Connect(username, password, host string, port int) error {
 	config := &ssh.ClientConfig{
 		User: username,
 		Auth: []ssh.AuthMethod{
@@ -15,54 +16,82 @@ func Connect(username, password, host string) {
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
-
-	client, err := ssh.Dial("tcp", host, config)
+	connection, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host, port), config)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("Connection error: %s\n", err)
 	}
-	defer client.Close()
+	defer connection.Close()
+	fmt.Println("Connection established")
 
-	session, err := client.NewSession()
+	session, err := connection.NewSession()
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("Session creation error: %s\n", err)
 	}
 	defer session.Close()
 
-	cmd := "ls /home"
+	cmd := "cat /etc/passwd | grep -E '/home|/users' | cut -d: -f6"
 	output, err := session.CombinedOutput(cmd)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("Error during command execution: %s\n", err)
 	}
+	homes := strings.Split(string(output), "\n")
+	fmt.Println("Homes :", homes)
 
-	users := strings.Split(string(output), "\n")
-	for _, user := range users {
-		if user == "" {
+	fileFound := false
+	for _, home := range homes {
+		if home == "" {
 			continue
 		}
-		checkAndReadFile(client, "/home/"+user+"/user.txt")
-	}
-}
-func checkAndReadFile(client *ssh.Client, filePath string) {
-	session, err := client.NewSession()
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+		filePath := filepath.Join(home, "user.txt")
+		fileSession, err := connection.NewSession()
+		if err != nil {
+			fmt.Printf("Error creating file session: %s\n", err)
+			continue
+		}
+		cmd := fmt.Sprintf("if [ -f %s ]; then echo found; else echo not found; fi", filePath)
+		fileOutput, err := fileSession.CombinedOutput(cmd)
+		fileSession.Close()
 
-	cmd := fmt.Sprintf(`if [ -f %s ]; then 
-                            if [ -r %s ]; then 
-                                cat %s; 
-                            else 
-                                echo "File '%s' exists, but no read permission"; 
-                            fi; 
-                        else 
-                            echo "File '%s' does not exist"; 
-                        fi`, filePath, filePath, filePath, filePath, filePath)
+		if strings.TrimSpace(string(fileOutput)) == "found" {
+			fileFound = true
+			fmt.Printf("File found: %s\n", filePath)
 
-	output, err := session.CombinedOutput(cmd)
-	if err != nil {
-		panic(err)
+			contentSession, err := connection.NewSession()
+			if err != nil {
+				fmt.Printf("Error creating content session: %s\n", err)
+				continue
+			}
+			contentCmd := fmt.Sprintf("cat %s", filePath)
+			contentOutput, err := contentSession.CombinedOutput(contentCmd)
+			if err != nil {
+				fmt.Printf("File read error %s: %s\n", filePath, err)
+				permSession, err := connection.NewSession()
+				if err != nil {
+					fmt.Printf("Error creating permissions session: %s\n", err)
+					continue
+				}
+				permCmd := fmt.Sprintf("ls -la %s", filePath)
+				permOutput, err := permSession.CombinedOutput(permCmd)
+				if err != nil {
+					fmt.Printf("Error obtaining permissions: %s\n", err)
+				} else {
+					fmt.Printf("Permissions required: %s\n", string(permOutput))
+				}
+				permSession.Close()
+				continue
+			}
+			fmt.Printf("%s: %s\n", filePath, string(contentOutput))
+			if len(contentOutput) == 32 {
+				fmt.Println("HTB flag detected")
+				// TODO: auto Submission
+			}
+			contentSession.Close()
+			break
+		}
 	}
 
-	fmt.Println(string(output))
+	if !fileFound {
+		fmt.Println("user.txt file not found in home directories")
+	}
+	return nil
 }
