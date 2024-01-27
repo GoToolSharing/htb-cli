@@ -58,12 +58,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 			// TODO: get this int
 			itemID = strconv.Itoa(challenges.ID)
 		} else {
-			itemID, err := utils.SearchItemIDByName(param, elementType)
-			_ = itemID
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
+			itemID, _ = utils.SearchItemIDByName(param, elementType)
 		}
 
 		resp, err := utils.HtbRequest(http.MethodGet, (url + itemID), nil)
