@@ -35,18 +35,17 @@ func SubmitFlag(url string, payload map[string]string) (string, error) {
 func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (string, error) {
 	var payload map[string]string
 	var difficultyString string
-	if difficultyParam != 0 {
-		if difficultyParam < 1 || difficultyParam > 10 {
-			return "", errors.New("difficulty must be set between 1 and 10")
-		}
-		difficultyString = strconv.Itoa(difficultyParam * 10)
-	}
-
 	var url string
 	var challengeID string
 
 	if modeType == "challenge" {
 		config.GlobalConfig.Logger.Info("Challenge submit requested")
+		if difficultyParam != 0 {
+			if difficultyParam < 1 || difficultyParam > 10 {
+				return "", errors.New("difficulty must be set between 1 and 10")
+			}
+			difficultyString = strconv.Itoa(difficultyParam * 10)
+		}
 		challenges, err := utils.SearchChallengeByName(modeValue)
 		if err != nil {
 			return "", err
@@ -80,8 +79,7 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 
 		}
 		payload = map[string]string{
-			"difficulty": difficultyString,
-			"id":         machineID,
+			"id": machineID,
 		}
 	} else if modeType == "fortress" {
 		config.GlobalConfig.Logger.Info("Fortress submit requested")
@@ -123,8 +121,7 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Release Arena ID : %s", releaseID))
 		url = fmt.Sprintf("%s/arena/own", config.BaseHackTheBoxAPIURL)
 		payload = map[string]string{
-			"difficulty": difficultyString,
-			"id":         releaseID,
+			"id": releaseID,
 		}
 	}
 

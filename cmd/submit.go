@@ -53,7 +53,7 @@ var submitCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if challengeNameParam != "" || machineNameParam != "" {
+		if challengeNameParam != "" {
 			if difficultyParam == 0 {
 				fmt.Println("required flag(s) 'difficulty' not set")
 				os.Exit(1)
@@ -91,6 +91,8 @@ var submitCmd = &cobra.Command{
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
+
+		fmt.Println(output)
 
 		err = webhooks.SendToDiscord("submit", output)
 		if err != nil {
