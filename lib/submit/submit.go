@@ -158,5 +158,14 @@ func GetAchievementLink(machineID string) (string, error) {
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("User ID: %s", infoMap["id"]))
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
 
-	return fmt.Sprintf("\nAchievement link: https://labs.hackthebox.com/achievement/machine/%v/%s", infoMap["id"], machineID), nil
+	resp, err = utils.HtbRequest(http.MethodGet, fmt.Sprintf("%s/user/achievement/machine/%v/%s", config.BaseHackTheBoxAPIURL, infoMap["id"], machineID), nil)
+	if err != nil {
+		return "", err
+	}
+	_, ok := utils.ParseJsonMessage(resp, "message").(string)
+	if !ok {
+		return fmt.Sprintf("\nAchievement link: https://labs.hackthebox.com/achievement/machine/%v/%s", infoMap["id"], machineID), nil
+	}
+	return "", nil
+
 }
