@@ -101,6 +101,7 @@ func coreStartCmd(machineChoosen string, machineID string) (string, error) {
 	}
 
 	ip := "Undefined"
+	startTime := time.Now()
 	switch {
 	case machineType == "release":
 		s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
@@ -125,7 +126,7 @@ func coreStartCmd(machineChoosen string, machineID string) (string, error) {
 					s.Stop()
 					break LoopRelease
 				}
-				time.Sleep(6 * time.Second)
+				time.Sleep(3 * time.Second)
 			}
 		}
 	case userSubscription == "vip+":
@@ -151,7 +152,7 @@ func coreStartCmd(machineChoosen string, machineID string) (string, error) {
 					s.Stop()
 					break Loop
 				}
-				time.Sleep(6 * time.Second)
+				time.Sleep(3 * time.Second)
 			}
 		}
 	default:
@@ -162,8 +163,8 @@ func coreStartCmd(machineChoosen string, machineID string) (string, error) {
 		}
 		ip = activeMachineData["ip"].(string)
 	}
-
-	message = fmt.Sprintf("%s\nTarget: %s", message, ip)
+	tts := time.Since(startTime)
+	message = fmt.Sprintf("%s\nTarget: %s\nTime to spawn was %s !", message, ip, tts)
 	return message, nil
 }
 
