@@ -18,8 +18,8 @@ var versionCmd = &cobra.Command{
 		config.GlobalConfig.Logger.Info("Version command executed")
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("config.Version: %s", config.Version))
 		var message string
-		if len(config.Version) == 40 {
-			message = fmt.Sprintf("Development version (dev branch): %s", config.Version)
+		if config.Version == "dev" {
+			message = "Development version (dev branch)"
 		} else {
 			message = fmt.Sprintf("Stable version (main branch): %s", config.Version)
 		}

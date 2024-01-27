@@ -36,22 +36,3 @@ jobs:
         GOOS: ${{ matrix.os }}
         GOARCH: ${{ matrix.arch }}
       run: go build -v ./...
-
-  update-version:
-    needs: build
-    if: github.ref == 'refs/heads/dev'
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        ref: 'dev'
-    - name: Update Version in config.go
-      run: |
-        sed -i "s/const Version = \".*\"/const Version = \"$GITHUB_SHA\"/" config/config.go  
-    - name: Commit and Push
-      run: |
-        git config --global user.email "github-action@github.com"
-        git config --global user.name "Github Action"
-        git add config/config.go
-        git commit -m "Update dev version to $GITHUB_SHA"
-        git push origin HEAD:dev

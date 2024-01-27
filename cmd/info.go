@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -44,11 +45,20 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 	w := utils.SetTabWriterHeader(header)
 
 	// Iteration on all machines / challenges / users argument
+	var itemID string
 	for _, param := range params {
-		itemID, err := utils.SearchItemIDByName(param, elementType)
-		if err != nil {
-			fmt.Println(err)
-			return nil
+		if elementType == "Challenge" {
+			config.GlobalConfig.Logger.Info("Challenge search...")
+			challenges, err := utils.SearchChallengeByName(param)
+			if err != nil {
+				return err
+			}
+			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge found: %v", challenges))
+
+			// TODO: get this int
+			itemID = strconv.Itoa(challenges.ID)
+		} else {
+			itemID, _ = utils.SearchItemIDByName(param, elementType)
 		}
 
 		resp, err := utils.HtbRequest(http.MethodGet, (url + itemID), nil)
@@ -213,9 +223,26 @@ func displayActiveMachine(header string) error {
 	if err != nil {
 		return err
 	}
-	expiresTime, err := utils.GetActiveExpiredTime()
+	machineType, err := utils.GetMachineType(machineID)
 	if err != nil {
 		return err
+	}
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
+
+	var expiresTime string
+	switch {
+	case machineType == "release":
+		expiresTime, err = utils.GetReleaseArenaExpiredTime()
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Expires Time: %s", expiresTime))
+		if err != nil {
+			return err
+		}
+	default:
+		expiresTime, err = utils.GetActiveExpiredTime()
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Expires Time:: %s", expiresTime))
+		if err != nil {
+			return err
+		}
 	}
 
 	if machineID != "" {
@@ -232,42 +259,48 @@ func displayActiveMachine(header string) error {
 
 		now := time.Now()
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Actual date: %v", now))
-		var remainingTime string
-		if date.After(now) {
-			duration := date.Sub(now)
-			hours := int(duration.Hours())
-			minutes := int(duration.Minutes()) % 60
-			seconds := int(duration.Seconds()) % 60
 
-			remainingTime = fmt.Sprintf("%dh %dm %ds", hours, minutes, seconds)
-		}
-		// Extend time
-		isConfirmed := utils.AskConfirmation(fmt.Sprintf("Would you like to extend the active machine time ? Remaining: %s", remainingTime))
-		if isConfirmed {
-			jsonData := []byte("{\"machine_id\":" + machineID + "}")
-			resp, err := utils.HtbRequest(http.MethodPost, config.BaseHackTheBoxAPIURL+"/vm/extend", jsonData)
-			if err != nil {
-				return err
+		timeLeft := date.Sub(now)
+		limit := 2 * time.Hour
+		if timeLeft > 0 && timeLeft <= limit {
+			var remainingTime string
+			if date.After(now) {
+				duration := date.Sub(now)
+				hours := int(duration.Hours())
+				minutes := int(duration.Minutes()) % 60
+				seconds := int(duration.Seconds()) % 60
+
+				remainingTime = fmt.Sprintf("%dh %dm %ds", hours, minutes, seconds)
+
 			}
-			var response Response
-			if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-				return fmt.Errorf("Error decoding JSON response: %v", err)
+			// Extend time
+			isConfirmed := utils.AskConfirmation(fmt.Sprintf("Would you like to extend the active machine time ? Remaining: %s", remainingTime))
+			if isConfirmed {
+				jsonData := []byte("{\"machine_id\":" + machineID + "}")
+				resp, err := utils.HtbRequest(http.MethodPost, config.BaseHackTheBoxAPIURL+"/vm/extend", jsonData)
+				if err != nil {
+					return err
+				}
+				var response Response
+				if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+					return fmt.Errorf("error decoding JSON response: %v", err)
+				}
+
+				inputLayout := time.RFC3339Nano
+
+				date, err := time.Parse(inputLayout, response.ExpiresAt)
+				if err != nil {
+					return fmt.Errorf("error decoding JSON response: %v", err)
+				}
+
+				outputLayout := "2006-01-02 -> 15h 04m 05s"
+
+				formattedDate := date.Format(outputLayout)
+
+				fmt.Println(response.Message)
+				fmt.Printf("Expires Date: %s\n", formattedDate)
+
 			}
-
-			inputLayout := time.RFC3339Nano
-
-			date, err := time.Parse(inputLayout, response.ExpiresAt)
-			if err != nil {
-				return fmt.Errorf("Error decoding JSON response: %v", err)
-			}
-
-			outputLayout := "2006-01-02 -> 15h 04m 05s"
-
-			formattedDate := date.Format(outputLayout)
-
-			fmt.Println(response.Message)
-			fmt.Printf("Expires Date: %s\n", formattedDate)
-
 		}
 
 		tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
@@ -279,6 +312,7 @@ func displayActiveMachine(header string) error {
 			return err
 		}
 		info := utils.ParseJsonMessage(resp, "info")
+		// info := utils.ParseJsonMessage(resp, "data")
 
 		data := info.(map[string]interface{})
 		status := utils.SetStatus(data)
@@ -304,7 +338,12 @@ func displayActiveMachine(header string) error {
 		ip := "Undefined"
 		_ = ip
 		switch {
-		case userSubscription == "vip+" || machineType == "release":
+		case machineType == "release":
+			ip, err = utils.GetActiveReleaseArenaMachineIP()
+			if err != nil {
+				return err
+			}
+		case userSubscription == "vip+":
 			ip, err = utils.GetActiveMachineIP()
 			if err != nil {
 				return err
@@ -321,7 +360,7 @@ func displayActiveMachine(header string) error {
 		utils.SetTabWriterData(w, bodyData)
 		w.Flush()
 	} else {
-		fmt.Print("No machine is running")
+		fmt.Println("No machine is running")
 	}
 	return nil
 }

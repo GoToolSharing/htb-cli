@@ -23,29 +23,84 @@ var submitCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		machineNameParam, err := cmd.Flags().GetString("machine_name")
+		machineNameParam, err := cmd.Flags().GetString("machine")
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
 
-		challengeNameParam, err := cmd.Flags().GetString("challenge_name")
+		challengeNameParam, err := cmd.Flags().GetString("challenge")
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
 
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Difficulty: %d", difficultyParam))
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine name: %s", machineNameParam))
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge name: %s", challengeNameParam))
+		fortressNameParam, err := cmd.Flags().GetString("fortress")
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
+		}
 
-		output, err := submit.CoreSubmitCmd(difficultyParam, machineNameParam, challengeNameParam)
+		endgameNameParam, err := cmd.Flags().GetString("endgame")
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
+		}
+
+		prolabNameParam, err := cmd.Flags().GetString("prolab")
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
+		}
+
+		if challengeNameParam != "" {
+			if difficultyParam == 0 {
+				fmt.Println("required flag(s) 'difficulty' not set")
+				os.Exit(1)
+			}
+		}
+
+		var modeType string
+		var modeValue string
+
+		if fortressNameParam != "" {
+			modeType = "fortress"
+			modeValue = fortressNameParam
+		} else if machineNameParam != "" {
+			modeType = "machine"
+			modeValue = machineNameParam
+		} else if challengeNameParam != "" {
+			modeType = "challenge"
+			modeValue = challengeNameParam
+		} else if endgameNameParam != "" {
+			modeType = "endgame"
+			modeValue = endgameNameParam
+		} else if prolabNameParam != "" {
+			modeType = "prolab"
+			modeValue = prolabNameParam
+		} else {
+			modeType = "release-arena"
+			modeValue = ""
+		}
+
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Mode type: %s", modeType))
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Mode value: %s", modeValue))
+
+		output, machineID, err := submit.CoreSubmitCmd(difficultyParam, modeType, modeValue)
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
 
 		fmt.Println(output)
+
+		link, err := submit.GetAchievementLink(machineID)
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
+		}
+
+		fmt.Println(link)
 
 		err = webhooks.SendToDiscord("submit", output)
 		if err != nil {
@@ -58,11 +113,10 @@ var submitCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(submitCmd)
-	submitCmd.Flags().StringP("machine_name", "m", "", "Machine Name")
-	submitCmd.Flags().StringP("challenge_name", "c", "", "Challenge Name")
+	submitCmd.Flags().StringP("machine", "m", "", "Machine Name")
+	submitCmd.Flags().StringP("challenge", "c", "", "Challenge Name")
+	submitCmd.Flags().StringP("fortress", "f", "", "Fortress Name")
+	submitCmd.Flags().StringP("endgame", "e", "", "Endgame Name")
+	submitCmd.Flags().StringP("prolab", "p", "", "Prolab Name")
 	submitCmd.Flags().IntP("difficulty", "d", 0, "Difficulty")
-	err := submitCmd.MarkFlagRequired("difficulty")
-	if err != nil {
-		fmt.Println(err)
-	}
 }

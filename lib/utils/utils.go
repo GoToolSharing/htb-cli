@@ -14,6 +14,7 @@ import (
 	"os/user"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"text/tabwriter"
 	"time"
@@ -21,6 +22,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/briandowns/spinner"
+	"github.com/sahilm/fuzzy"
 )
 
 // SetTabWriterHeader will display the information in an array
@@ -89,7 +91,7 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			// Checking if machines array is empty
 			if len(root.Machines.([]interface{})) == 0 {
 				fmt.Println("No machine was found")
-				return "", fmt.Errorf("error: No machine was found")
+				os.Exit(0)
 			}
 			var machines []Machine
 			machineData, _ := json.Marshal(root.Machines)
@@ -108,7 +110,7 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			// Checking if machines array is empty
 			if len(root.Machines.(map[string]interface{})) == 0 {
 				fmt.Println("No machine was found")
-				return "", fmt.Errorf("error: No machine was found")
+				os.Exit(0)
 			}
 			var machines map[string]Machine
 			machineData, _ := json.Marshal(root.Machines)
@@ -124,7 +126,8 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			}
 			os.Exit(0)
 		default:
-			return "", fmt.Errorf("no machine was found")
+			fmt.Println("No machine was found")
+			os.Exit(0)
 		}
 	} else if element_type == "Challenge" {
 		switch root.Challenges.(type) {
@@ -132,7 +135,7 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			// Checking if challenges array is empty
 			if len(root.Challenges.([]interface{})) == 0 {
 				fmt.Println("No challenge was found")
-				return "", fmt.Errorf("error: No challenge was found")
+				os.Exit(0)
 			}
 			var challenges []Challenge
 			challengeData, _ := json.Marshal(root.Challenges)
@@ -151,7 +154,7 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			// Checking if challenges array is empty
 			if len(root.Challenges.(map[string]interface{})) == 0 {
 				fmt.Println("No challenge was found")
-				return "", fmt.Errorf("error: No challenge was found")
+				os.Exit(0)
 			}
 			var challenges map[string]Challenge
 			challengeData, _ := json.Marshal(root.Challenges)
@@ -167,7 +170,8 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			}
 			os.Exit(0)
 		default:
-			fmt.Println("No challenge found")
+			fmt.Println("No challenge was found")
+			os.Exit(0)
 		}
 	} else if element_type == "Username" {
 		switch root.Usernames.(type) {
@@ -309,6 +313,22 @@ func GetActiveExpiredTime() (string, error) {
 	return fmt.Sprintf("%s", info.(map[string]interface{})["expires_at"]), nil
 }
 
+func GetReleaseArenaExpiredTime() (string, error) {
+	url := fmt.Sprintf("%s/season/machine/active", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	info := ParseJsonMessage(resp, "data")
+	if info == nil {
+		return "", nil
+	}
+	data := info.(map[string]interface{})
+	playInfo := data["play_info"].(map[string]interface{})
+	expiresAt := playInfo["expires_at"].(string)
+	return expiresAt, nil
+}
+
 // GetActiveMachineIP returns the ip of the active machine
 func GetActiveMachineIP() (string, error) {
 	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
@@ -325,6 +345,22 @@ func GetActiveMachineIP() (string, error) {
 		return ipValue, nil
 	}
 	return "Undefined", nil
+}
+
+// GetActiveReleaseArenaMachineIP returns the ip of the active release arena machine
+func GetActiveReleaseArenaMachineIP() (string, error) {
+	url := fmt.Sprintf("%s/season/machine/active", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	data := ParseJsonMessage(resp, "data")
+	if data == nil {
+		return "", err
+	}
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Relase arena active machine informations: %v", data))
+
+	return fmt.Sprintf("%v", data.(map[string]interface{})["ip"].(string)), nil
 }
 
 // HtbRequest makes an HTTP request to the Hackthebox API
@@ -515,4 +551,230 @@ func SearchLastReleaseArenaMachine() (string, error) {
 	machineID := int(machineF64)
 	machineIDstr := strconv.Itoa(machineID)
 	return machineIDstr, nil
+}
+
+func extractNamesAndIDs(jsonData string) (map[string]int, error) {
+	var response JsonResponse
+	err := json.Unmarshal([]byte(jsonData), &response)
+	if err != nil {
+		return nil, err
+	}
+
+	namesAndIDs := make(map[string]int)
+	for _, item := range response.Data {
+		namesAndIDs[item.Name] = item.ID
+	}
+
+	return namesAndIDs, nil
+}
+
+func SearchFortressID(partialName string) (int, error) {
+	url := fmt.Sprintf("%s/fortresses", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return 0, err
+	}
+	jsonData, _ := io.ReadAll(resp.Body)
+	namesAndIDs, err := extractNamesAndIDs(string(jsonData))
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return 0, nil
+	}
+
+	var names []string
+	for name := range namesAndIDs {
+		names = append(names, name)
+	}
+
+	matches := fuzzy.Find(partialName, names)
+
+	for _, match := range matches {
+		matchedName := names[match.Index]
+		isConfirmed := AskConfirmation("The following fortress was found : " + matchedName)
+		if isConfirmed {
+			return namesAndIDs[matchedName], nil
+		}
+		os.Exit(0)
+	}
+	return 0, nil
+}
+
+func extractEndgamesNamesAndIDs(jsonData string) (map[string]int, error) {
+	var response EndgameJsonResponse
+	err := json.Unmarshal([]byte(jsonData), &response)
+	if err != nil {
+		return nil, err
+	}
+
+	namesAndIDs := make(map[string]int)
+	for _, item := range response.Data {
+		namesAndIDs[item.Name] = item.ID
+	}
+
+	return namesAndIDs, nil
+}
+
+func SearchEndgameID(partialName string) (int, error) {
+	url := fmt.Sprintf("%s/endgames", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return 0, err
+	}
+	jsonData, _ := io.ReadAll(resp.Body)
+	namesAndIDs, err := extractEndgamesNamesAndIDs(string(jsonData))
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return 0, nil
+	}
+
+	var names []string
+	for name := range namesAndIDs {
+		names = append(names, name)
+	}
+
+	matches := fuzzy.Find(partialName, names)
+
+	for _, match := range matches {
+		matchedName := names[match.Index]
+		isConfirmed := AskConfirmation("The following endgame was found : " + matchedName)
+		if isConfirmed {
+			return namesAndIDs[matchedName], nil
+		}
+		os.Exit(0)
+	}
+	return 0, nil
+}
+
+func SearchProlabID(partialName string) (int, error) {
+	url := fmt.Sprintf("%s/prolabs", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return 0, err
+	}
+	jsonData, _ := io.ReadAll(resp.Body)
+	namesAndIDs, err := extractProlabsNamesAndIDs(string(jsonData))
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return 0, nil
+	}
+
+	var names []string
+	for name := range namesAndIDs {
+		names = append(names, name)
+	}
+
+	matches := fuzzy.Find(partialName, names)
+
+	for _, match := range matches {
+		matchedName := names[match.Index]
+		isConfirmed := AskConfirmation("The following prolab was found : " + matchedName)
+		if isConfirmed {
+			return namesAndIDs[matchedName], nil
+		}
+		os.Exit(0)
+	}
+	return 0, nil
+}
+
+func extractProlabsNamesAndIDs(jsonData string) (map[string]int, error) {
+	var response ProlabJsonResponse
+	err := json.Unmarshal([]byte(jsonData), &response)
+	if err != nil {
+		return nil, err
+	}
+
+	namesAndIDs := make(map[string]int)
+	for _, lab := range response.Data.Labs {
+		namesAndIDs[lab.Name] = lab.ID
+	}
+
+	return namesAndIDs, nil
+}
+
+// Fuzzy finder for challenges
+
+func SearchChallengeByName(partialName string) (ChallengeFinder, error) {
+	var wg sync.WaitGroup
+	respChan := make(chan *http.Response, 2)
+	var allChallenges []ChallengeFinder
+
+	wg.Add(2)
+	go sendRequest(fmt.Sprintf("%s/challenge/list", config.BaseHackTheBoxAPIURL), respChan, &wg)
+	go sendRequest(fmt.Sprintf("%s/challenge/list/retired", config.BaseHackTheBoxAPIURL), respChan, &wg)
+
+	go func() {
+		wg.Wait()
+		close(respChan)
+	}()
+
+	for resp := range respChan {
+		challenges := processResponse(resp)
+		allChallenges = append(allChallenges, challenges...)
+	}
+
+	challengeNames := make([]string, len(allChallenges))
+	for i, ch := range allChallenges {
+		challengeNames[i] = ch.Name
+	}
+
+	matches := fuzzy.Find(partialName, challengeNames)
+
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenges matches: %v", matches))
+
+	for _, match := range matches {
+		matchedName := challengeNames[match.Index]
+		isConfirmed := AskConfirmation("The following challenge was found : " + matchedName)
+		if isConfirmed {
+			for _, ch := range allChallenges {
+				if ch.Name == matchedName {
+					return ch, nil
+				}
+			}
+		}
+	}
+
+	return ChallengeFinder{}, fmt.Errorf("no matching challenge found")
+}
+
+func processResponse(resp *http.Response) []ChallengeFinder {
+	defer resp.Body.Close()
+	var cr ChallengeResponseFinder
+	if err := json.NewDecoder(resp.Body).Decode(&cr); err != nil {
+		fmt.Printf("JSON decoding error %v", err)
+		os.Exit(1)
+	}
+	return cr.ChallengesFinder
+}
+
+func sendRequest(url string, respChan chan<- *http.Response, wg *sync.WaitGroup) {
+	defer wg.Done()
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		fmt.Printf("error sending request : %v", err)
+		os.Exit(1)
+	}
+	respChan <- resp
+}
+
+func GetChallengeBlooder(challengeID string) (string, error) {
+	url := fmt.Sprintf("%s/challenge/activity/%s", config.BaseHackTheBoxAPIURL, challengeID)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	jsonData, _ := io.ReadAll(resp.Body)
+
+	var data DataActivity
+	err = json.Unmarshal([]byte(jsonData), &data)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, activity := range data.Info.Activities {
+		if activity.Type == "blood" {
+			return activity.UserName, nil
+		}
+	}
+
+	return "Not defined", nil
 }

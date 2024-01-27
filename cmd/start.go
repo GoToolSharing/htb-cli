@@ -101,8 +101,35 @@ func coreStartCmd(machineChoosen string, machineID string) (string, error) {
 	}
 
 	ip := "Undefined"
+	startTime := time.Now()
 	switch {
-	case userSubscription == "vip+" || machineType == "release":
+	case machineType == "release":
+		s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
+		setupSignalHandler(s)
+		s.Suffix = " Waiting for the machine to start in order to fetch the IP address (this might take a while)."
+		s.Start()
+		defer s.Stop()
+		timeout := time.After(10 * time.Minute)
+	LoopRelease:
+		for {
+			select {
+			case <-timeout:
+				fmt.Println("Timeout (10 min) ! Exiting")
+				s.Stop()
+				return "", nil
+			default:
+				ip, err = utils.GetActiveReleaseArenaMachineIP()
+				if err != nil {
+					return "", err
+				}
+				if ip != "Undefined" {
+					s.Stop()
+					break LoopRelease
+				}
+				time.Sleep(3 * time.Second)
+			}
+		}
+	case userSubscription == "vip+":
 		s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 		setupSignalHandler(s)
 		s.Suffix = " Waiting for the machine to start in order to fetch the IP address (this might take a while)."
@@ -125,7 +152,7 @@ func coreStartCmd(machineChoosen string, machineID string) (string, error) {
 					s.Stop()
 					break Loop
 				}
-				time.Sleep(6 * time.Second)
+				time.Sleep(3 * time.Second)
 			}
 		}
 	default:
@@ -136,8 +163,8 @@ func coreStartCmd(machineChoosen string, machineID string) (string, error) {
 		}
 		ip = activeMachineData["ip"].(string)
 	}
-
-	message = fmt.Sprintf("%s\nTarget: %s", message, ip)
+	tts := time.Since(startTime)
+	message = fmt.Sprintf("%s\nTarget: %s\nTime to spawn was %s !", message, ip, tts)
 	return message, nil
 }
 

@@ -1,0 +1,1 @@
+Don't hesitate to contribute to the project with a pull request. All ideas are welcome to improve the project !
