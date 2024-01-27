@@ -14,6 +14,23 @@ import (
 	"golang.org/x/term"
 )
 
+func SubmitFlag(url string, payload map[string]string) (string, error) {
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return "", fmt.Errorf("failed to create JSON data: %w", err)
+	}
+	resp, err := utils.HtbRequest(http.MethodPost, url, jsonData)
+	if err != nil {
+		return "", err
+	}
+
+	message, ok := utils.ParseJsonMessage(resp, "message").(string)
+	if !ok {
+		return "", errors.New("unexpected response format")
+	}
+	return message, nil
+}
+
 // coreSubmitCmd handles the submission of flags for machines or challenges, returning a status message or error.
 func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (string, error) {
 	var payload map[string]string
@@ -123,19 +140,9 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 
 	payload["flag"] = flag
 
-	jsonData, err := json.Marshal(payload)
-	if err != nil {
-		return "", fmt.Errorf("failed to create JSON data: %w", err)
-	}
-
-	resp, err := utils.HtbRequest(http.MethodPost, url, jsonData)
+	message, err := SubmitFlag(url, payload)
 	if err != nil {
 		return "", err
-	}
-
-	message, ok := utils.ParseJsonMessage(resp, "message").(string)
-	if !ok {
-		return "", errors.New("unexpected response format")
 	}
 	return message, nil
 }

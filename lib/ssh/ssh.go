@@ -2,17 +2,15 @@ package ssh
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
-	"github.com/GoToolSharing/htb-cli/lib/submit"
+	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/GoToolSharing/htb-cli/lib/utils"
 	"golang.org/x/crypto/ssh"
-	"golang.org/x/term"
 )
 
-func Connect(username, password, host string, port int) error {
+func Connect(username, password, host string, port int) (*ssh.Client, error) {
 	config := &ssh.ClientConfig{
 		User: username,
 		Auth: []ssh.AuthMethod{
@@ -22,24 +20,27 @@ func Connect(username, password, host string, port int) error {
 	}
 	connection, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host, port), config)
 	if err != nil {
-		return fmt.Errorf("Connection error: %s\n", err)
+		return nil, fmt.Errorf("Connection error: %s\n", err)
 	}
-	defer connection.Close()
-	fmt.Println("Connection established")
+	fmt.Println("SSH connection established")
 
+	return connection, nil
+}
+
+func GetUserFlag(connection *ssh.Client) (string, error) {
 	session, err := connection.NewSession()
 	if err != nil {
-		return fmt.Errorf("Session creation error: %s\n", err)
+		return "", fmt.Errorf("Session creation error: %s\n", err)
 	}
 	defer session.Close()
 
 	cmd := "cat /etc/passwd | grep -E '/home|/users' | cut -d: -f6"
 	output, err := session.CombinedOutput(cmd)
 	if err != nil {
-		return fmt.Errorf("Error during command execution: %s\n", err)
+		return "", fmt.Errorf("Error during command execution: %s\n", err)
 	}
 	homes := strings.Split(string(output), "\n")
-	fmt.Println("Homes :", homes)
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Users homes : %v", homes))
 
 	fileFound := false
 	for _, home := range homes {
@@ -58,7 +59,7 @@ func Connect(username, password, host string, port int) error {
 
 		if strings.TrimSpace(string(fileOutput)) == "found" {
 			fileFound = true
-			fmt.Printf("File found: %s\n", filePath)
+			config.GlobalConfig.Logger.Debug(fmt.Sprintf("User flag found: %s\n", filePath))
 
 			contentSession, err := connection.NewSession()
 			if err != nil {
@@ -85,44 +86,9 @@ func Connect(username, password, host string, port int) error {
 				continue
 			}
 			fmt.Printf("%s: %s\n", filePath, string(contentOutput))
-			if len(contentOutput) == 32 {
-				fmt.Println("HTB flag detected")
-				// TODO: auto submission with hostname research
-				hostnameSession, err := connection.NewSession()
-				if err != nil {
-					fmt.Printf("Error creating hostname session: %s\n", err)
-					continue
-				}
-				cmd := "hostname"
-				sessionOutput, err := hostnameSession.CombinedOutput(cmd)
-				hostnameSession.Close()
-				hostname := strings.ReplaceAll(string(sessionOutput), "\n", "")
-				fmt.Println("Hostname :", hostname)
-
-				// machineID, err := utils.SearchItemIDByName(hostname, "Machine")
-				// if err != nil {
-				// 	return err
-				// }
-
-				// fmt.Println("Machine ID :", machineID)
-
-				// submit.CoreSubmitCmd(difficultyParam, modeType, modeValue)
-
-				fmt.Print("Difficuly (1-10) : ")
-				difficultyByte, err := term.ReadPassword(int(os.Stdin.Fd()))
-				if err != nil {
-					return err
-				}
-				difficultyOriginal := string(difficultyByte)
-				difficulty := strings.ReplaceAll(difficultyOriginal, " ", "")
-				difficultyInt, err := strconv.Atoi(difficulty)
-				if err != nil {
-					return err
-				}
-				submit.CoreSubmitCmd(difficultyInt, "machine", hostname)
-
-				// config.GlobalConfig.Logger.Debug(fmt.Sprintf("Difficulty: %s", difficulty))
-
+			if len(contentOutput) == 32 || len(contentOutput) == 33 {
+				config.GlobalConfig.Logger.Info("HTB flag detected")
+				return (string(contentOutput)), nil
 			}
 			contentSession.Close()
 			break
@@ -132,5 +98,49 @@ func Connect(username, password, host string, port int) error {
 	if !fileFound {
 		fmt.Println("user.txt file not found in home directories")
 	}
-	return nil
+	return "", nil
+}
+
+func GetHostname(connection *ssh.Client) (string, error) {
+	hostnameSession, err := connection.NewSession()
+	if err != nil {
+		return "", fmt.Errorf("Error creating hostname session: %s\n", err)
+	}
+	cmd := "hostname"
+	sessionOutput, err := hostnameSession.CombinedOutput(cmd)
+	hostnameSession.Close()
+	hostname := strings.ReplaceAll(string(sessionOutput), "\n", "")
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Hotname: %s", hostname))
+	return hostname, nil
+}
+
+func BuildSubmitStuff(hostname string, userFlag string) (string, map[string]string, error) {
+	// Can be release arena or machine
+	var payload map[string]string
+	var url string
+
+	machineID, err := utils.SearchItemIDByName(hostname, "Machine")
+	if err != nil {
+		return "", nil, err
+	}
+	machineType, err := utils.GetMachineType(machineID)
+	if err != nil {
+		return "", nil, err
+	}
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
+
+	if machineType == "release" {
+		url = config.BaseHackTheBoxAPIURL + "/arena/own"
+		payload = map[string]string{
+			"flag": userFlag,
+		}
+	} else {
+		url = config.BaseHackTheBoxAPIURL + "/machine/own"
+		payload = map[string]string{
+			"id":   machineID,
+			"flag": userFlag,
+		}
+	}
+
+	return url, payload, nil
 }
