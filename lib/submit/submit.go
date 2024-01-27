@@ -11,9 +11,25 @@ import (
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
-	"go.uber.org/zap"
 	"golang.org/x/term"
 )
+
+func SubmitFlag(url string, payload map[string]string) (string, error) {
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return "", fmt.Errorf("failed to create JSON data: %w", err)
+	}
+	resp, err := utils.HtbRequest(http.MethodPost, url, jsonData)
+	if err != nil {
+		return "", err
+	}
+
+	message, ok := utils.ParseJsonMessage(resp, "message").(string)
+	if !ok {
+		return "", errors.New("unexpected response format")
+	}
+	return message, nil
+}
 
 // coreSubmitCmd handles the submission of flags for machines or challenges, returning a status message or error.
 func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (string, error) {
@@ -125,32 +141,9 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 
 	payload["flag"] = flag
 
-	jsonData, err := json.Marshal(payload)
-	if err != nil {
-		return "", fmt.Errorf("failed to create JSON data: %w", err)
-	}
-
-	resp, err := utils.HtbRequest(http.MethodPost, url, jsonData)
+	message, err := SubmitFlag(url, payload)
 	if err != nil {
 		return "", err
 	}
-
-	message, ok := utils.ParseJsonMessage(resp, "message").(string)
-	if !ok {
-		return "", errors.New("unexpected response format")
-	}
-
-	if modeType == "challenge" {
-		blooderName, err := utils.GetChallengeBlooder(challengeID)
-		if err != nil {
-			config.GlobalConfig.Logger.Error("", zap.Error(err))
-			os.Exit(1)
-		}
-		fmt.Println("Blooder :", blooderName)
-	}
-
-	fmt.Println("")
-	fmt.Println(message)
-
-	return "", nil
+	return message, nil
 }
