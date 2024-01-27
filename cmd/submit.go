@@ -86,13 +86,21 @@ var submitCmd = &cobra.Command{
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Mode type: %s", modeType))
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Mode value: %s", modeValue))
 
-		output, err := submit.CoreSubmitCmd(difficultyParam, modeType, modeValue)
+		output, machineID, err := submit.CoreSubmitCmd(difficultyParam, modeType, modeValue)
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
 
 		fmt.Println(output)
+
+		link, err := submit.GetAchievementLink(machineID)
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			os.Exit(1)
+		}
+
+		fmt.Println(link)
 
 		err = webhooks.SendToDiscord("submit", output)
 		if err != nil {

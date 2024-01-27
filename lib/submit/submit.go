@@ -32,23 +32,24 @@ func SubmitFlag(url string, payload map[string]string) (string, error) {
 }
 
 // coreSubmitCmd handles the submission of flags for machines or challenges, returning a status message or error.
-func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (string, error) {
+func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (string, string, error) {
 	var payload map[string]string
 	var difficultyString string
 	var url string
 	var challengeID string
+	var mID string
 
 	if modeType == "challenge" {
 		config.GlobalConfig.Logger.Info("Challenge submit requested")
 		if difficultyParam != 0 {
 			if difficultyParam < 1 || difficultyParam > 10 {
-				return "", errors.New("difficulty must be set between 1 and 10")
+				return "", "", errors.New("difficulty must be set between 1 and 10")
 			}
 			difficultyString = strconv.Itoa(difficultyParam * 10)
 		}
 		challenges, err := utils.SearchChallengeByName(modeValue)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge found: %v", challenges))
 
@@ -64,11 +65,12 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 		config.GlobalConfig.Logger.Info("Machine submit requested")
 		machineID, err := utils.SearchItemIDByName(modeValue, "Machine")
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
+		mID = machineID
 		machineType, err := utils.GetMachineType(machineID)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
 
@@ -85,7 +87,7 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 		config.GlobalConfig.Logger.Info("Fortress submit requested")
 		fortressID, err := utils.SearchFortressID(modeValue)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Fortress ID : %d", fortressID))
 		url = fmt.Sprintf("%s/fortress/%d/flag", config.BaseHackTheBoxAPIURL, fortressID)
@@ -94,7 +96,7 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 		config.GlobalConfig.Logger.Info("Endgame submit requested")
 		endgameID, err := utils.SearchEndgameID(modeValue)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Endgame ID : %d", endgameID))
 		url = fmt.Sprintf("%s/endgame/%d/flag", config.BaseHackTheBoxAPIURL, endgameID)
@@ -103,7 +105,7 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 		config.GlobalConfig.Logger.Info("Prolab submit requested")
 		prolabID, err := utils.SearchProlabID(modeValue)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Prolab ID : %d", prolabID))
 		url = fmt.Sprintf("%s/prolab/%d/flag", config.BaseHackTheBoxAPIURL, prolabID)
@@ -112,24 +114,25 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 		config.GlobalConfig.Logger.Info("Release Arena submit requested")
 		isConfirmed := utils.AskConfirmation("Would you like to submit a flag for the release arena ?")
 		if !isConfirmed {
-			return "", nil
+			return "", "", nil
 		}
 		releaseID, err := utils.SearchLastReleaseArenaMachine()
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Release Arena ID : %s", releaseID))
 		url = fmt.Sprintf("%s/arena/own", config.BaseHackTheBoxAPIURL)
 		payload = map[string]string{
 			"id": releaseID,
 		}
+		mID = releaseID
 	}
 
 	fmt.Print("Flag : ")
 	flagByte, err := term.ReadPassword(int(os.Stdin.Fd()))
 	if err != nil {
 		fmt.Println("Error reading flag")
-		return "", fmt.Errorf("error reading flag")
+		return "", "", fmt.Errorf("error reading flag")
 	}
 	flagOriginal := string(flagByte)
 	flag := strings.ReplaceAll(flagOriginal, " ", "")
@@ -140,7 +143,20 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 
 	message, err := SubmitFlag(url, payload)
 	if err != nil {
+		return "", "", err
+	}
+	return message, mID, nil
+}
+
+func GetAchievementLink(machineID string) (string, error) {
+	resp, err := utils.HtbRequest(http.MethodGet, fmt.Sprintf("%s/user/info", config.BaseHackTheBoxAPIURL), nil)
+	if err != nil {
 		return "", err
 	}
-	return message, nil
+	info := utils.ParseJsonMessage(resp, "info")
+	infoMap, _ := info.(map[string]interface{})
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("User ID: %s", infoMap["id"]))
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
+
+	return fmt.Sprintf("\nAchievement link: https://labs.hackthebox.com/achievement/machine/%v/%s", infoMap["id"], machineID), nil
 }
