@@ -55,6 +55,9 @@ func GetUserFlag(connection *ssh.Client) (string, error) {
 		}
 		cmd := fmt.Sprintf("if [ -f %s ]; then echo found; else echo not found; fi", filePath)
 		fileOutput, err := fileSession.CombinedOutput(cmd)
+		if err != nil {
+			return "", err
+		}
 		fileSession.Close()
 
 		if strings.TrimSpace(string(fileOutput)) == "found" {
@@ -108,6 +111,9 @@ func GetHostname(connection *ssh.Client) (string, error) {
 	}
 	cmd := "hostname"
 	sessionOutput, err := hostnameSession.CombinedOutput(cmd)
+	if err != nil {
+		return "", err
+	}
 	hostnameSession.Close()
 	hostname := strings.ReplaceAll(string(sessionOutput), "\n", "")
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Hotname: %s", hostname))
