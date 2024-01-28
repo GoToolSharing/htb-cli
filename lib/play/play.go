@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
@@ -28,7 +29,7 @@ func setTmuxSessionName(ip string) error {
 func Configure(releaseParam bool) {
 	var machineID string
 	var seasonal string
-	host := ""
+	var host string
 	var machineName string
 	var machineIP string
 
@@ -59,26 +60,28 @@ func Configure(releaseParam bool) {
 
 		machineIP = "10.10.11.248"
 
+		host = fmt.Sprintf("%s.htb", strings.ToLower(machineName))
+
+		fmt.Println("Machine ID :", machineID)
+		fmt.Println("Machine IP :", machineIP)
+		fmt.Println("Machine Name :", machineName)
+		fmt.Println("Host :", host)
+		fmt.Println("Seasonal :", seasonal)
+
+		err = createConfigFile(machineName, machineIP, machineID, seasonal, host)
+		if err != nil {
+			fmt.Println("Error creating config file:", err)
+		}
+
 		// fmt.Println(output)
 
 	}
-
-	fmt.Println("Machine ID :", machineID)
-	fmt.Println("Machine IP :", machineIP)
-	fmt.Println("Machine Name :", machineName)
-	fmt.Println("Host :", host)
-	fmt.Println("Seasonal :", seasonal)
 
 	if err := setTmuxSessionName(machineIP); err != nil {
 		fmt.Println(err)
 	}
 
 	// TODO: add a line to the rc file !
-
-	// err := createConfigFile(machineName, machineIP, machineID, seasonal, host)
-	// if err != nil {
-	// 	fmt.Println("Error creating config file:", err)
-	// }
 
 	// fmt.Println("")
 
