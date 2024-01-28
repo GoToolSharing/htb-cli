@@ -164,7 +164,8 @@ func coreStartCmd(machineChoosen string, machineID string) (string, error) {
 		ip = activeMachineData["ip"].(string)
 	}
 	tts := time.Since(startTime)
-	message = fmt.Sprintf("%s\nTarget: %s\nTime to spawn was %s !", message, ip, tts)
+	formattedTts := fmt.Sprintf("%.2f", tts.Seconds())
+	message = fmt.Sprintf("%s\nTarget: %s\nTime to spawn was %s seconds !", message, ip, formattedTts)
 	return message, nil
 }
 
