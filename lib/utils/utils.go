@@ -299,8 +299,16 @@ func GetActiveMachineID() (string, error) {
 	return fmt.Sprintf("%.0f", info.(map[string]interface{})["id"].(float64)), nil
 }
 
-// GetActiveExpiredTime returns the expired date of the active machine
-func GetActiveExpiredTime() (string, error) {
+// GetExpiredTime returns the expired date of the machine
+func GetExpiredTime(machineType string) (string, error) {
+	if machineType == "release" {
+		return getReleaseArenaExpiredTime()
+	}
+	return getActiveExpiredTime()
+}
+
+// getActiveExpiredTime returns the expired date of the active machine
+func getActiveExpiredTime() (string, error) {
 	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -308,12 +316,18 @@ func GetActiveExpiredTime() (string, error) {
 	}
 	info := ParseJsonMessage(resp, "info")
 	if info == nil {
-		return "", nil
+		return "Undefined", nil
 	}
-	return fmt.Sprintf("%s", info.(map[string]interface{})["expires_at"]), nil
+	data := info.(map[string]interface{})
+	expiresAt := data["expires_at"]
+	if expiresAt == nil {
+		return "Undefined", nil
+	}
+	return expiresAt.(string), nil
 }
 
-func GetReleaseArenaExpiredTime() (string, error) {
+// getReleaseArenaExpiredTime returns the expired date of the release arena machine
+func getReleaseArenaExpiredTime() (string, error) {
 	url := fmt.Sprintf("%s/season/machine/active", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -321,12 +335,15 @@ func GetReleaseArenaExpiredTime() (string, error) {
 	}
 	info := ParseJsonMessage(resp, "data")
 	if info == nil {
-		return "", nil
+		return "Undefined", nil
 	}
 	data := info.(map[string]interface{})
 	playInfo := data["play_info"].(map[string]interface{})
-	expiresAt := playInfo["expires_at"].(string)
-	return expiresAt, nil
+	expiresAt := playInfo["expires_at"]
+	if expiresAt == nil {
+		return "Undefined", nil
+	}
+	return expiresAt.(string), nil
 }
 
 // GetActiveMachineIP returns the ip of the active machine

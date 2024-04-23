@@ -223,144 +223,138 @@ func displayActiveMachine(header string) error {
 	if err != nil {
 		return err
 	}
+	if machineID == "" {
+		fmt.Println("No machine is running")
+		return nil
+	}
 	machineType, err := utils.GetMachineType(machineID)
 	if err != nil {
 		return err
 	}
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
 
-	var expiresTime string
-	switch {
-	case machineType == "release":
-		expiresTime, err = utils.GetReleaseArenaExpiredTime()
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Expires Time: %s", expiresTime))
-		if err != nil {
-			return err
-		}
-	default:
-		expiresTime, err = utils.GetActiveExpiredTime()
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Expires Time:: %s", expiresTime))
+	expiresTime, err := utils.GetExpiredTime(machineType)
+	if err != nil {
+		return err
+	}
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Expires Time: %s", expiresTime))
+
+	config.GlobalConfig.Logger.Info("Active machine found !")
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
+
+	if expiresTime != "Undefined" {
+		err = checkIfExpiringSoon(expiresTime, machineID)
 		if err != nil {
 			return err
 		}
 	}
 
-	if machineID != "" {
-		config.GlobalConfig.Logger.Info("Active machine found !")
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Expires At: %v", expiresTime))
+	tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
+	w := utils.SetTabWriterHeader(header)
 
-		layout := "2006-01-02 15:04:05"
+	url := fmt.Sprintf("%s/machine/profile/%s", config.BaseHackTheBoxAPIURL, machineID)
+	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
+	info := utils.ParseJsonMessage(resp, "info")
+	// info := utils.ParseJsonMessage(resp, "data")
 
-		date, err := time.Parse(layout, expiresTime)
-		if err != nil {
-			return fmt.Errorf("date conversion error: %v", err)
-		}
+	data := info.(map[string]interface{})
+	status := utils.SetStatus(data)
+	retiredStatus := getMachineStatus(data)
 
-		now := time.Now()
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Actual date: %v", now))
+	datetime, err := utils.ParseAndFormatDate(data["release"].(string))
+	if err != nil {
+		return err
+	}
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
 
-		timeLeft := date.Sub(now)
-		limit := 2 * time.Hour
-		if timeLeft > 0 && timeLeft <= limit {
-			var remainingTime string
-			if date.After(now) {
-				duration := date.Sub(now)
-				hours := int(duration.Hours())
-				minutes := int(duration.Minutes()) % 60
-				seconds := int(duration.Seconds()) % 60
+	userSubscription, err := utils.GetUserSubscription()
+	if err != nil {
+		return err
+	}
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("User subscription: %s", userSubscription))
 
-				remainingTime = fmt.Sprintf("%dh %dm %ds", hours, minutes, seconds)
-
-			}
-			// Extend time
-			isConfirmed := utils.AskConfirmation(fmt.Sprintf("Would you like to extend the active machine time ? Remaining: %s", remainingTime))
-			if isConfirmed {
-				jsonData := []byte("{\"machine_id\":" + machineID + "}")
-				resp, err := utils.HtbRequest(http.MethodPost, config.BaseHackTheBoxAPIURL+"/vm/extend", jsonData)
-				if err != nil {
-					return err
-				}
-				var response Response
-				if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-					return fmt.Errorf("error decoding JSON response: %v", err)
-				}
-
-				inputLayout := time.RFC3339Nano
-
-				date, err := time.Parse(inputLayout, response.ExpiresAt)
-				if err != nil {
-					return fmt.Errorf("error decoding JSON response: %v", err)
-				}
-
-				outputLayout := "2006-01-02 -> 15h 04m 05s"
-
-				formattedDate := date.Format(outputLayout)
-
-				fmt.Println(response.Message)
-				fmt.Printf("Expires Date: %s\n", formattedDate)
-
-			}
-		}
-
-		tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
-		w := utils.SetTabWriterHeader(header)
-
-		url := fmt.Sprintf("%s/machine/profile/%s", config.BaseHackTheBoxAPIURL, machineID)
-		resp, err := utils.HtbRequest(http.MethodGet, url, nil)
+	ip := "Undefined"
+	_ = ip
+	switch {
+	case machineType == "release":
+		ip, err = utils.GetActiveReleaseArenaMachineIP()
 		if err != nil {
 			return err
 		}
-		info := utils.ParseJsonMessage(resp, "info")
-		// info := utils.ParseJsonMessage(resp, "data")
-
-		data := info.(map[string]interface{})
-		status := utils.SetStatus(data)
-		retiredStatus := getMachineStatus(data)
-
-		datetime, err := utils.ParseAndFormatDate(data["release"].(string))
+	case userSubscription == "vip+":
+		ip, err = utils.GetActiveMachineIP()
 		if err != nil {
 			return err
 		}
+	default:
+		ip = getIPStatus(data).(string)
+	}
 
-		machineType, err := utils.GetMachineType(machineID)
-		if err != nil {
-			return err
+	bodyData := fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n",
+		data["name"], data["os"], retiredStatus,
+		data["difficultyText"], data["stars"],
+		ip, status, data["last_reset_time"], datetime)
+
+	utils.SetTabWriterData(w, bodyData)
+	w.Flush()
+	return nil
+}
+
+func checkIfExpiringSoon(expiresTime string, machineID string) error {
+	layout := "2006-01-02 15:04:05"
+
+	date, err := time.Parse(layout, expiresTime)
+	if err != nil {
+		return fmt.Errorf("date conversion error: %v", err)
+	}
+
+	now := time.Now()
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Actual date: %v", now))
+
+	timeLeft := date.Sub(now)
+	limit := 2 * time.Hour
+	if timeLeft > 0 && timeLeft <= limit {
+		var remainingTime string
+		if date.After(now) {
+			duration := date.Sub(now)
+			hours := int(duration.Hours())
+			minutes := int(duration.Minutes()) % 60
+			seconds := int(duration.Seconds()) % 60
+
+			remainingTime = fmt.Sprintf("%dh %dm %ds", hours, minutes, seconds)
+
 		}
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
-
-		userSubscription, err := utils.GetUserSubscription()
-		if err != nil {
-			return err
-		}
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("User subscription: %s", userSubscription))
-
-		ip := "Undefined"
-		_ = ip
-		switch {
-		case machineType == "release":
-			ip, err = utils.GetActiveReleaseArenaMachineIP()
+		// Extend time
+		isConfirmed := utils.AskConfirmation(fmt.Sprintf("Would you like to extend the active machine time ? Remaining: %s", remainingTime))
+		if isConfirmed {
+			jsonData := []byte("{\"machine_id\":" + machineID + "}")
+			resp, err := utils.HtbRequest(http.MethodPost, config.BaseHackTheBoxAPIURL+"/vm/extend", jsonData)
 			if err != nil {
 				return err
 			}
-		case userSubscription == "vip+":
-			ip, err = utils.GetActiveMachineIP()
-			if err != nil {
-				return err
+			var response Response
+			if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+				return fmt.Errorf("error decoding JSON response: %v", err)
 			}
-		default:
-			ip = getIPStatus(data).(string)
+
+			inputLayout := time.RFC3339Nano
+
+			date, err := time.Parse(inputLayout, response.ExpiresAt)
+			if err != nil {
+				return fmt.Errorf("error decoding JSON response: %v", err)
+			}
+
+			outputLayout := "2006-01-02 -> 15h 04m 05s"
+
+			formattedDate := date.Format(outputLayout)
+
+			fmt.Println(response.Message)
+			fmt.Printf("Expires Date: %s\n", formattedDate)
+
 		}
-
-		bodyData := fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n",
-			data["name"], data["os"], retiredStatus,
-			data["difficultyText"], data["stars"],
-			ip, status, data["last_reset_time"], datetime)
-
-		utils.SetTabWriterData(w, bodyData)
-		w.Flush()
-	} else {
-		fmt.Println("No machine is running")
 	}
 	return nil
 }
