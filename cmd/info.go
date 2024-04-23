@@ -234,6 +234,9 @@ func displayActiveMachine(header string) error {
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
 
 	expiresTime, err := utils.GetExpiredTime(machineType)
+	if err != nil {
+		return err
+	}
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Expires Time: %s", expiresTime))
 
 	config.GlobalConfig.Logger.Info("Active machine found !")
