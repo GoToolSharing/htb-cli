@@ -86,36 +86,13 @@ var vpnCmd = &cobra.Command{
 				// TODO : Get VPN name
 				pattern = "Pro"
 				filename = config.BaseDirectory + "/*" + pattern + "*"
-			case "endgames":
-				pattern = "Endgame"
-				filename = config.BaseDirectory + "/*" + pattern + "*"
 			case "competitive":
 				pattern = "Release_Arena"
 				filename = config.BaseDirectory + "/*" + pattern + "*"
 			default:
-				fmt.Println("Available modes (-m) : labs - sp - fortresses - prolabs - endgames - competitive")
+				fmt.Println("Available modes (-m) : labs - sp - fortresses - prolabs - competitive")
 				return
 			}
-			// fmt.Println("FILENAME")
-			// fmt.Println(filename)
-
-			// pattern := regexp.MustCompile(pattern)
-
-			// err := filepath.Walk(config.BaseDirectory, func(path string, info os.FileInfo, err error) error {
-			// 	if err != nil {
-			// 		fmt.Println("Error accessing path:", path)
-			// 		return err
-			// 	}
-
-			// 	if !pattern.MatchString(info.Name()) && info.IsDir() {
-			// 		vpn.DownloadAll()
-			// 	}
-			// 	return nil
-			// })
-
-			// if err != nil {
-			// 	fmt.Println("Erreur lors de la recherche de fichiers:", err)
-			// }
 
 			_, err = vpn.Start(filename)
 			if err != nil {
