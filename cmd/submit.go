@@ -41,12 +41,6 @@ var submitCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		endgameNameParam, err := cmd.Flags().GetString("endgame")
-		if err != nil {
-			config.GlobalConfig.Logger.Error("", zap.Error(err))
-			os.Exit(1)
-		}
-
 		prolabNameParam, err := cmd.Flags().GetString("prolab")
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
@@ -72,9 +66,6 @@ var submitCmd = &cobra.Command{
 		} else if challengeNameParam != "" {
 			modeType = "challenge"
 			modeValue = challengeNameParam
-		} else if endgameNameParam != "" {
-			modeType = "endgame"
-			modeValue = endgameNameParam
 		} else if prolabNameParam != "" {
 			modeType = "prolab"
 			modeValue = prolabNameParam
@@ -116,7 +107,6 @@ func init() {
 	submitCmd.Flags().StringP("machine", "m", "", "Machine Name")
 	submitCmd.Flags().StringP("challenge", "c", "", "Challenge Name")
 	submitCmd.Flags().StringP("fortress", "f", "", "Fortress Name")
-	submitCmd.Flags().StringP("endgame", "e", "", "Endgame Name")
 	submitCmd.Flags().StringP("prolab", "p", "", "Prolab Name")
 	submitCmd.Flags().IntP("difficulty", "d", 0, "Difficulty")
 }

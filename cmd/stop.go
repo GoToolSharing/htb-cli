@@ -19,7 +19,7 @@ var (
 )
 
 // buildMachineStopRequest constructs the URL endpoint and JSON data payload for stopping a machine based on its type and user's subscription.
-func buildMachineStopRequest(machineType string, userSubscription string, machineID string) (string, []byte) {
+func buildMachineStopRequest(machineType string, userSubscription string, machineID int) (string, []byte) {
 	var apiEndpoint string
 	var jsonData []byte
 
@@ -34,7 +34,7 @@ func buildMachineStopRequest(machineType string, userSubscription string, machin
 		apiEndpoint = defaultAPI
 	}
 
-	jsonData = []byte(fmt.Sprintf(`{"machine_id": "%s"}`, machineID))
+	jsonData = []byte(fmt.Sprintf(`{"machine_id": "%d"}`, machineID))
 	return apiEndpoint, jsonData
 }
 
@@ -49,10 +49,10 @@ func coreStopCmd() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if machineID == "" {
+	if machineID == 0 {
 		return "No machine is running", nil
 	}
-	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %d", machineID))
 
 	machineTypeChan := make(chan string)
 	machineErrChan := make(chan error)

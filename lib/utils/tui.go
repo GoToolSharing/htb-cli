@@ -9,7 +9,6 @@ import (
 
 const (
 	maxFortressNameLength = 9
-	maxEndgameNameLength  = 9
 	maxProlabNameLength   = 11
 	maxActivityNameLength = 11
 )
@@ -86,8 +85,6 @@ func displayInfo(dataMaps map[string]map[string]interface{}, dataMapKey string, 
 		formatterFunc = func(item map[string]interface{}) string {
 			var object_type interface{}
 			switch item["object_type"].(string) {
-			case "endgame":
-				object_type = item["flag_title"]
 			case "fortress":
 				object_type = item["flag_title"]
 			case "challenge":
@@ -178,15 +175,13 @@ func DisplayInformationsGUI(profile map[string]interface{}, advancedLabsMap map[
 
 	fortressesPanel := displayInfo(advancedLabsMap, "fortresses", "Fortresses", "\U0001F3F0", maxFortressNameLength, 4)
 	prolabsPanel := displayInfo(advancedLabsMap, "prolabs", "Pro Labs", "\U0001F47D", maxProlabNameLength, 4)
-	endgamesPanel := displayInfo(advancedLabsMap, "endgames", "Endgames", "\U0001F3AE", maxEndgameNameLength, 3)
 	activityPanel := displayInfo(advancedLabsMap, "activity", "Activity", "", maxActivityNameLength, 3)
 
 	advancedLabsFlex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		SetDirection(tview.FlexColumn).
 		AddItem(fortressesPanel, 0, 1, false).
-		AddItem(prolabsPanel, 0, 1, false).
-		AddItem(endgamesPanel, 0, 1, false)
+		AddItem(prolabsPanel, 0, 1, false)
 
 	leftFlex := tview.NewFlex().
 		SetDirection(tview.FlexRow).

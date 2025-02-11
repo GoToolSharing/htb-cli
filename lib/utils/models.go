@@ -1,17 +1,17 @@
 package utils
 
 type Machine struct {
-	ID    string `json:"id"`
+	ID    int    `json:"id"`
 	Value string `json:"value"`
 }
 
 type Challenge struct {
-	ID    string `json:"id"`
+	ID    int    `json:"id"`
 	Value string `json:"value"`
 }
 
 type Username struct {
-	ID    string `json:"id"`
+	ID    int    `json:"id"`
 	Value string `json:"value"`
 }
 
@@ -32,17 +32,6 @@ type Item struct {
 type JsonResponse struct {
 	Status bool            `json:"status"`
 	Data   map[string]Item `json:"data"`
-}
-
-// Endgames
-type Endgame struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-type EndgameJsonResponse struct {
-	Status bool      `json:"status"`
-	Data   []Endgame `json:"data"`
 }
 
 // Prolabs

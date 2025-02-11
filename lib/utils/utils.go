@@ -12,7 +12,6 @@ import (
 	"os"
 	"os/signal"
 	"os/user"
-	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -70,11 +69,11 @@ func GetHTBToken() (string, error) {
 }
 
 // SearchItemIDByName will return the id of an item (machine / challenge / user) based on its name
-func SearchItemIDByName(item string, element_type string) (string, error) {
+func SearchItemIDByName(item string, element_type string) (int, error) {
 	url := fmt.Sprintf("%s/search/fetch?query=%s", config.BaseHackTheBoxAPIURL, item)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 	defer resp.Body.Close()
 	json_body, _ := io.ReadAll(resp.Body)
@@ -179,7 +178,7 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			// Checking if usernames array is empty
 			if len(root.Usernames.([]interface{})) == 0 {
 				fmt.Println("No username was found")
-				return "", fmt.Errorf("error: No username was found")
+				return 0, fmt.Errorf("error: No username was found")
 			}
 			var usernames []Username
 			usernameData, _ := json.Marshal(root.Usernames)
@@ -198,7 +197,7 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			// Checking if usernames array is empty
 			if len(root.Usernames.(map[string]interface{})) == 0 {
 				fmt.Println("No username was found")
-				return "", fmt.Errorf("error: No username was found")
+				return 0, fmt.Errorf("error: No username was found")
 			}
 			var usernames map[string]Username
 			usernameData, _ := json.Marshal(root.Usernames)
@@ -217,11 +216,11 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			fmt.Println("No username found")
 		}
 	} else {
-		return "", errors.New("bad element_type")
+		return 0, errors.New("bad element_type")
 	}
 
 	// The HackTheBox API can return either a slice or a map
-	return "", nil
+	return 0, nil
 }
 
 // ParseJsonMessage will parse the result of the API request into a JSON
@@ -236,7 +235,7 @@ func ParseJsonMessage(resp *http.Response, key string) interface{} {
 }
 
 // GetMachineType will return the machine type
-func GetMachineType(machine_id interface{}) (string, error) {
+func GetMachineType(machine_id int) (string, error) {
 	// Check if the machine is the latest release
 	url := fmt.Sprintf("%s/machine/recommended/", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
@@ -244,21 +243,20 @@ func GetMachineType(machine_id interface{}) (string, error) {
 		return "", err
 	}
 	card := ParseJsonMessage(resp, "card1").(map[string]interface{})
-	fmachine_id, _ := strconv.ParseFloat(machine_id.(string), 64)
-	if card["id"].(float64) == fmachine_id {
+	if card["id"] == machine_id {
 		return "release", nil
 	}
 
 	// Check if the machine is active or retired
-	url = fmt.Sprintf("%s/machine/profile/%v", config.BaseHackTheBoxAPIURL, machine_id)
+	url = fmt.Sprintf("%s/machine/profile/%d", config.BaseHackTheBoxAPIURL, machine_id)
 	resp, err = HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return "", err
 	}
 	info := ParseJsonMessage(resp, "info").(map[string]interface{})
-	if info["active"].(float64) == 1 {
+	if info["active"] == true {
 		return "active", nil
-	} else if info["retired"].(float64) == 1 {
+	} else if info["retired"] == true {
 		return "retired", nil
 	}
 	return "", errors.New("error: machine type not found")
@@ -286,7 +284,34 @@ func GetUserSubscription() (string, error) {
 }
 
 // GetActiveMachineID returns the id of the active machine
-func GetActiveMachineID() (string, error) {
+func GetActiveMachineID() (int, error) {
+	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return 0, err
+	}
+	info := ParseJsonMessage(resp, "info")
+	if info == nil {
+		return 0, err
+	}
+	idFloat, ok := info.(map[string]interface{})["id"].(float64)
+	if !ok {
+		return 0, fmt.Errorf("unable to parse machine ID")
+	}
+
+	return int(idFloat), nil
+}
+
+// GetExpiredTime returns the expired date of the machine
+func GetExpiredTime(machineType string) (string, error) {
+	if machineType == "release" {
+		return getReleaseArenaExpiredTime()
+	}
+	return getActiveExpiredTime()
+}
+
+// getActiveExpiredTime returns the expired date of the active machine
+func getActiveExpiredTime() (string, error) {
 	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -294,26 +319,18 @@ func GetActiveMachineID() (string, error) {
 	}
 	info := ParseJsonMessage(resp, "info")
 	if info == nil {
-		return "", err
+		return "Undefined", nil
 	}
-	return fmt.Sprintf("%.0f", info.(map[string]interface{})["id"].(float64)), nil
+	data := info.(map[string]interface{})
+	expiresAt := data["expires_at"]
+	if expiresAt == nil {
+		return "Undefined", nil
+	}
+	return expiresAt.(string), nil
 }
 
-// GetActiveExpiredTime returns the expired date of the active machine
-func GetActiveExpiredTime() (string, error) {
-	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
-	resp, err := HtbRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return "", err
-	}
-	info := ParseJsonMessage(resp, "info")
-	if info == nil {
-		return "", nil
-	}
-	return fmt.Sprintf("%s", info.(map[string]interface{})["expires_at"]), nil
-}
-
-func GetReleaseArenaExpiredTime() (string, error) {
+// getReleaseArenaExpiredTime returns the expired date of the release arena machine
+func getReleaseArenaExpiredTime() (string, error) {
 	url := fmt.Sprintf("%s/season/machine/active", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -321,12 +338,15 @@ func GetReleaseArenaExpiredTime() (string, error) {
 	}
 	info := ParseJsonMessage(resp, "data")
 	if info == nil {
-		return "", nil
+		return "Undefined", nil
 	}
 	data := info.(map[string]interface{})
 	playInfo := data["play_info"].(map[string]interface{})
-	expiresAt := playInfo["expires_at"].(string)
-	return expiresAt, nil
+	expiresAt := playInfo["expires_at"]
+	if expiresAt == nil {
+		return "Undefined", nil
+	}
+	return expiresAt.(string), nil
 }
 
 // GetActiveMachineIP returns the ip of the active machine
@@ -452,13 +472,13 @@ func GetInformationsFromActiveMachine() (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if machineID == "" {
+	if machineID == 0 {
 		fmt.Println("No machine is running")
 		return nil, nil
 	}
-	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %d", machineID))
 
-	url := fmt.Sprintf("%s/machine/profile/%s", config.BaseHackTheBoxAPIURL, machineID)
+	url := fmt.Sprintf("%s/machine/profile/%d", config.BaseHackTheBoxAPIURL, machineID)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -536,21 +556,19 @@ func GetCurrentUsername() string {
 	return user.Username
 }
 
-func SearchLastReleaseArenaMachine() (string, error) {
+func SearchLastReleaseArenaMachine() (int, error) {
 	url := fmt.Sprintf("%s/season/machine/active", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 	info := ParseJsonMessage(resp, "data")
 	if info == nil {
-		return "", err
+		return 0, err
 	}
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Information on the last active machine: %v", info))
-	machineF64 := info.(map[string]interface{})["id"].(float64)
-	machineID := int(machineF64)
-	machineIDstr := strconv.Itoa(machineID)
-	return machineIDstr, nil
+	machineID := int(info.(map[string]interface{})["id"].(float64))
+	return machineID, nil
 }
 
 func extractNamesAndIDs(jsonData string) (map[string]int, error) {
@@ -591,52 +609,6 @@ func SearchFortressID(partialName string) (int, error) {
 	for _, match := range matches {
 		matchedName := names[match.Index]
 		isConfirmed := AskConfirmation("The following fortress was found : " + matchedName)
-		if isConfirmed {
-			return namesAndIDs[matchedName], nil
-		}
-		os.Exit(0)
-	}
-	return 0, nil
-}
-
-func extractEndgamesNamesAndIDs(jsonData string) (map[string]int, error) {
-	var response EndgameJsonResponse
-	err := json.Unmarshal([]byte(jsonData), &response)
-	if err != nil {
-		return nil, err
-	}
-
-	namesAndIDs := make(map[string]int)
-	for _, item := range response.Data {
-		namesAndIDs[item.Name] = item.ID
-	}
-
-	return namesAndIDs, nil
-}
-
-func SearchEndgameID(partialName string) (int, error) {
-	url := fmt.Sprintf("%s/endgames", config.BaseHackTheBoxAPIURL)
-	resp, err := HtbRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return 0, err
-	}
-	jsonData, _ := io.ReadAll(resp.Body)
-	namesAndIDs, err := extractEndgamesNamesAndIDs(string(jsonData))
-	if err != nil {
-		fmt.Println("Error parsing JSON:", err)
-		return 0, nil
-	}
-
-	var names []string
-	for name := range namesAndIDs {
-		names = append(names, name)
-	}
-
-	matches := fuzzy.Find(partialName, names)
-
-	for _, match := range matches {
-		matchedName := names[match.Index]
-		isConfirmed := AskConfirmation("The following endgame was found : " + matchedName)
 		if isConfirmed {
 			return namesAndIDs[matchedName], nil
 		}

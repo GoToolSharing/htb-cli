@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/GoToolSharing/htb-cli/config"
@@ -16,17 +18,28 @@ import (
 	"go.uber.org/zap"
 )
 
+// setupSignalHandler configures a signal handler to stop the spinner and gracefully exit upon receiving specific signals.
+func setupSignalHandler(s *spinner.Spinner) {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigs
+		s.Stop()
+		os.Exit(0)
+	}()
+}
+
 // coreStartCmd starts a specified machine and returns a status message and any error encountered.
-func coreStartCmd(machineChoosen string, machineID string) (string, error) {
+func coreStartCmd(machineChoosen string, machineID int) (string, error) {
 	var err error
-	if machineID == "" {
+	if machineID == 0 {
 		machineID, err = utils.SearchItemIDByName(machineChoosen, "Machine")
 		if err != nil {
 			return "", err
 		}
 
 	}
-	config.GlobalConfig.Logger.Info(fmt.Sprintf("Machine ID: %s", machineID))
+	config.GlobalConfig.Logger.Info(fmt.Sprintf("Machine ID: %d", machineID))
 
 	machineTypeChan := make(chan string)
 	machineErrChan := make(chan error)
@@ -77,12 +90,12 @@ func coreStartCmd(machineChoosen string, machineID string) (string, error) {
 		jsonData = []byte("{}")
 	case userSubscription == "vip" || userSubscription == "vip+":
 		url = config.BaseHackTheBoxAPIURL + "/vm/spawn"
-		jsonData, err = json.Marshal(map[string]string{"machine_id": machineID})
+		jsonData, err = json.Marshal(map[string]interface{}{"machine_id": machineID})
 		if err != nil {
 			return "", fmt.Errorf("failed to create JSON data: %w", err)
 		}
 	default:
-		url = config.BaseHackTheBoxAPIURL + "/machine/play/" + machineID
+		url = config.BaseHackTheBoxAPIURL + fmt.Sprintf("%s%d", "/machine/play/", machineID)
 		jsonData = []byte("{}")
 	}
 
@@ -164,7 +177,8 @@ func coreStartCmd(machineChoosen string, machineID string) (string, error) {
 		ip = activeMachineData["ip"].(string)
 	}
 	tts := time.Since(startTime)
-	message = fmt.Sprintf("%s\nTarget: %s\nTime to spawn was %s !", message, ip, tts)
+	formattedTts := fmt.Sprintf("%.2f", tts.Seconds())
+	message = fmt.Sprintf("%s\nTarget: %s\nTime to spawn was %s seconds !", message, ip, formattedTts)
 	return message, nil
 }
 
@@ -180,15 +194,16 @@ var startCmd = &cobra.Command{
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
-		var machineID string
+		var machineID int
 		if machineChoosen == "" {
 			config.GlobalConfig.Logger.Info("Launching the machine in release arena")
 			machineID, err = utils.SearchLastReleaseArenaMachine()
+
 			if err != nil {
 				config.GlobalConfig.Logger.Error("", zap.Error(err))
 				os.Exit(1)
 			}
-			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID : %s", machineID))
+			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID : %d", machineID))
 
 		}
 		output, err := coreStartCmd(machineChoosen, machineID)
