@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/GoToolSharing/htb-cli/config"
@@ -15,6 +17,17 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
+
+// setupSignalHandler configures a signal handler to stop the spinner and gracefully exit upon receiving specific signals.
+func setupSignalHandler(s *spinner.Spinner) {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigs
+		s.Stop()
+		os.Exit(0)
+	}()
+}
 
 // coreStartCmd starts a specified machine and returns a status message and any error encountered.
 func coreStartCmd(machineChoosen string, machineID int) (string, error) {
