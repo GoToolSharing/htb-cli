@@ -1,17 +1,17 @@
 package utils
 
 type Machine struct {
-	ID    string `json:"id"`
+	ID    int    `json:"id"`
 	Value string `json:"value"`
 }
 
 type Challenge struct {
-	ID    string `json:"id"`
+	ID    int    `json:"id"`
 	Value string `json:"value"`
 }
 
 type Username struct {
-	ID    string `json:"id"`
+	ID    int    `json:"id"`
 	Value string `json:"value"`
 }
 

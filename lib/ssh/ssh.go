@@ -143,7 +143,7 @@ func BuildSubmitStuff(hostname string, userFlag string) (string, map[string]stri
 	} else {
 		url = config.BaseHackTheBoxAPIURL + "/machine/own"
 		payload = map[string]string{
-			"id":   machineID,
+			"id":   string(machineID),
 			"flag": userFlag,
 		}
 	}

@@ -67,7 +67,6 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 		if err != nil {
 			return "", "", err
 		}
-		mID = machineID
 		machineType, err := utils.GetMachineType(machineID)
 		if err != nil {
 			return "", "", err
@@ -81,7 +80,7 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 
 		}
 		payload = map[string]string{
-			"id": machineID,
+			"id": string(machineID),
 		}
 	} else if modeType == "fortress" {
 		config.GlobalConfig.Logger.Info("Fortress submit requested")

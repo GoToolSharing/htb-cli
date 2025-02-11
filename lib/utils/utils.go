@@ -70,11 +70,11 @@ func GetHTBToken() (string, error) {
 }
 
 // SearchItemIDByName will return the id of an item (machine / challenge / user) based on its name
-func SearchItemIDByName(item string, element_type string) (string, error) {
+func SearchItemIDByName(item string, element_type string) (int, error) {
 	url := fmt.Sprintf("%s/search/fetch?query=%s", config.BaseHackTheBoxAPIURL, item)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 	defer resp.Body.Close()
 	json_body, _ := io.ReadAll(resp.Body)
@@ -179,7 +179,7 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			// Checking if usernames array is empty
 			if len(root.Usernames.([]interface{})) == 0 {
 				fmt.Println("No username was found")
-				return "", fmt.Errorf("error: No username was found")
+				return 0, fmt.Errorf("error: No username was found")
 			}
 			var usernames []Username
 			usernameData, _ := json.Marshal(root.Usernames)
@@ -198,7 +198,7 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			// Checking if usernames array is empty
 			if len(root.Usernames.(map[string]interface{})) == 0 {
 				fmt.Println("No username was found")
-				return "", fmt.Errorf("error: No username was found")
+				return 0, fmt.Errorf("error: No username was found")
 			}
 			var usernames map[string]Username
 			usernameData, _ := json.Marshal(root.Usernames)
@@ -217,11 +217,11 @@ func SearchItemIDByName(item string, element_type string) (string, error) {
 			fmt.Println("No username found")
 		}
 	} else {
-		return "", errors.New("bad element_type")
+		return 0, errors.New("bad element_type")
 	}
 
 	// The HackTheBox API can return either a slice or a map
-	return "", nil
+	return 0, nil
 }
 
 // ParseJsonMessage will parse the result of the API request into a JSON
@@ -236,7 +236,7 @@ func ParseJsonMessage(resp *http.Response, key string) interface{} {
 }
 
 // GetMachineType will return the machine type
-func GetMachineType(machine_id interface{}) (string, error) {
+func GetMachineType(machine_id int) (string, error) {
 	// Check if the machine is the latest release
 	url := fmt.Sprintf("%s/machine/recommended/", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
@@ -244,21 +244,20 @@ func GetMachineType(machine_id interface{}) (string, error) {
 		return "", err
 	}
 	card := ParseJsonMessage(resp, "card1").(map[string]interface{})
-	fmachine_id, _ := strconv.ParseFloat(machine_id.(string), 64)
-	if card["id"].(float64) == fmachine_id {
+	if card["id"] == machine_id {
 		return "release", nil
 	}
 
 	// Check if the machine is active or retired
-	url = fmt.Sprintf("%s/machine/profile/%v", config.BaseHackTheBoxAPIURL, machine_id)
+	url = fmt.Sprintf("%s/machine/profile/%d", config.BaseHackTheBoxAPIURL, machine_id)
 	resp, err = HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return "", err
 	}
 	info := ParseJsonMessage(resp, "info").(map[string]interface{})
-	if info["active"].(float64) == 1 {
+	if info["active"] == true {
 		return "active", nil
-	} else if info["retired"].(float64) == 1 {
+	} else if info["retired"] == true {
 		return "retired", nil
 	}
 	return "", errors.New("error: machine type not found")
@@ -286,17 +285,22 @@ func GetUserSubscription() (string, error) {
 }
 
 // GetActiveMachineID returns the id of the active machine
-func GetActiveMachineID() (string, error) {
+func GetActiveMachineID() (int, error) {
 	url := fmt.Sprintf("%s/machine/active", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 	info := ParseJsonMessage(resp, "info")
 	if info == nil {
-		return "", err
+		return 0, err
 	}
-	return fmt.Sprintf("%.0f", info.(map[string]interface{})["id"].(float64)), nil
+	idFloat, ok := info.(map[string]interface{})["id"].(float64)
+	if !ok {
+		return 0, fmt.Errorf("unable to parse machine ID")
+	}
+
+	return int(idFloat), nil
 }
 
 // GetExpiredTime returns the expired date of the machine
@@ -469,7 +473,7 @@ func GetInformationsFromActiveMachine() (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if machineID == "" {
+	if machineID == 0 {
 		fmt.Println("No machine is running")
 		return nil, nil
 	}

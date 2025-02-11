@@ -20,7 +20,7 @@ func coreResetCmd() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if machineID == "" {
+	if machineID == 0 {
 		return "No active machine found", nil
 	}
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
@@ -43,7 +43,7 @@ func coreResetCmd() (string, error) {
 	url := config.BaseHackTheBoxAPIURL + endpoint
 
 	// Construct JSON data.
-	jsonData, err := json.Marshal(map[string]string{"machine_id": machineID})
+	jsonData, err := json.Marshal(map[string]string{"machine_id": string(machineID)})
 	if err != nil {
 		return "", fmt.Errorf("failed to create JSON data: %w", err)
 	}

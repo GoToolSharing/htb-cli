@@ -17,9 +17,9 @@ import (
 )
 
 // coreStartCmd starts a specified machine and returns a status message and any error encountered.
-func coreStartCmd(machineChoosen string, machineID string) (string, error) {
+func coreStartCmd(machineChoosen string, machineID int) (string, error) {
 	var err error
-	if machineID == "" {
+	if machineID == 0 {
 		machineID, err = utils.SearchItemIDByName(machineChoosen, "Machine")
 		if err != nil {
 			return "", err
@@ -77,12 +77,12 @@ func coreStartCmd(machineChoosen string, machineID string) (string, error) {
 		jsonData = []byte("{}")
 	case userSubscription == "vip" || userSubscription == "vip+":
 		url = config.BaseHackTheBoxAPIURL + "/vm/spawn"
-		jsonData, err = json.Marshal(map[string]string{"machine_id": machineID})
+		jsonData, err = json.Marshal(map[string]interface{}{"machine_id": machineID})
 		if err != nil {
 			return "", fmt.Errorf("failed to create JSON data: %w", err)
 		}
 	default:
-		url = config.BaseHackTheBoxAPIURL + "/machine/play/" + machineID
+		url = config.BaseHackTheBoxAPIURL + fmt.Sprintf("%s%d", "/machine/play/", machineID)
 		jsonData = []byte("{}")
 	}
 
@@ -181,10 +181,11 @@ var startCmd = &cobra.Command{
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
 		}
-		var machineID string
+		var machineID int
 		if machineChoosen == "" {
 			config.GlobalConfig.Logger.Info("Launching the machine in release arena")
-			machineID, err = utils.SearchLastReleaseArenaMachine()
+			//machineID, err = utils.SearchLastReleaseArenaMachine()
+			// TODO: Up again
 			if err != nil {
 				config.GlobalConfig.Logger.Error("", zap.Error(err))
 				os.Exit(1)

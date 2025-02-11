@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -23,8 +22,8 @@ type Response struct {
 }
 
 // Retrieves data for user profile
-func fetchData(itemID string, endpoint string, infoKey string) (map[string]interface{}, error) {
-	url := config.BaseHackTheBoxAPIURL + endpoint + itemID
+func fetchData(itemID int, endpoint string, infoKey string) (map[string]interface{}, error) {
+	url := fmt.Sprintf("%s%s%d", config.BaseHackTheBoxAPIURL, endpoint, itemID)
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("URL: %s", url))
 
 	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
@@ -45,7 +44,7 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 	w := utils.SetTabWriterHeader(header)
 
 	// Iteration on all machines / challenges / users argument
-	var itemID string
+	var itemID int
 	for _, param := range params {
 		if elementType == "Challenge" {
 			config.GlobalConfig.Logger.Info("Challenge search...")
@@ -55,13 +54,12 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 			}
 			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge found: %v", challenges))
 
-			// TODO: get this int
-			itemID = strconv.Itoa(challenges.ID)
+			itemID = challenges.ID
 		} else {
 			itemID, _ = utils.SearchItemIDByName(param, elementType)
 		}
 
-		resp, err := utils.HtbRequest(http.MethodGet, (url + itemID), nil)
+		resp, err := utils.HtbRequest(http.MethodGet, fmt.Sprintf("%s%d", url, itemID), nil)
 		if err != nil {
 			return err
 		}
@@ -87,10 +85,10 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 			name string
 			url  string
 		}{
-			{"Fortresses", "/user/profile/progress/fortress/"},
-			{"Endgames", "/user/profile/progress/endgame/"},
-			{"Prolabs", "/user/profile/progress/prolab/"},
-			{"Activity", "/user/profile/activity/"},
+			{"Fortresses", "/user/profile/progress/fortress/128441"},
+			{"Endgames", "/user/profile/progress/endgame/128441"},
+			{"Prolabs", "/user/profile/progress/prolab/128441"},
+			{"Activity", "/user/profile/activity/128441"},
 		}
 
 		dataMaps := make(map[string]map[string]interface{})
@@ -171,7 +169,7 @@ func coreInfoCmd(machineName []string, challengeName []string, usernameName []st
 		info := utils.ParseJsonMessage(resp, "info")
 		infoMap, _ := info.(map[string]interface{})
 		newInfo := infoType{
-			APIURL: config.BaseHackTheBoxAPIURL + "/user/profile/basic/",
+			APIURL: config.BaseHackTheBoxAPIURL + "/user/profile/basic/128441",
 			Header: "",
 			Params: []string{infoMap["name"].(string)},
 			Name:   "Username",
@@ -203,7 +201,7 @@ func coreInfoCmd(machineName []string, challengeName []string, usernameName []st
 
 // getMachineStatus returns machine status
 func getMachineStatus(data map[string]interface{}) string {
-	if data["retired"].(float64) == 0 {
+	if data["retired"] == false {
 		return "No"
 	}
 	return "Yes"
@@ -223,7 +221,7 @@ func displayActiveMachine(header string) error {
 	if err != nil {
 		return err
 	}
-	if machineID == "" {
+	if machineID == 0 {
 		fmt.Println("No machine is running")
 		return nil
 	}
@@ -240,7 +238,7 @@ func displayActiveMachine(header string) error {
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Expires Time: %s", expiresTime))
 
 	config.GlobalConfig.Logger.Info("Active machine found !")
-	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %d", machineID))
 
 	if expiresTime != "Undefined" {
 		err = checkIfExpiringSoon(expiresTime, machineID)
@@ -252,7 +250,7 @@ func displayActiveMachine(header string) error {
 	tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
 	w := utils.SetTabWriterHeader(header)
 
-	url := fmt.Sprintf("%s/machine/profile/%s", config.BaseHackTheBoxAPIURL, machineID)
+	url := fmt.Sprintf("%s/machine/profile/%d", config.BaseHackTheBoxAPIURL, machineID)
 	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return err
@@ -303,7 +301,7 @@ func displayActiveMachine(header string) error {
 	return nil
 }
 
-func checkIfExpiringSoon(expiresTime string, machineID string) error {
+func checkIfExpiringSoon(expiresTime string, machineID int) error {
 	layout := "2006-01-02 15:04:05"
 
 	date, err := time.Parse(layout, expiresTime)
@@ -330,7 +328,7 @@ func checkIfExpiringSoon(expiresTime string, machineID string) error {
 		// Extend time
 		isConfirmed := utils.AskConfirmation(fmt.Sprintf("Would you like to extend the active machine time ? Remaining: %s", remainingTime))
 		if isConfirmed {
-			jsonData := []byte("{\"machine_id\":" + machineID + "}")
+			jsonData := []byte("{\"machine_id\":" + string(machineID) + "}")
 			resp, err := utils.HtbRequest(http.MethodPost, config.BaseHackTheBoxAPIURL+"/vm/extend", jsonData)
 			if err != nil {
 				return err
