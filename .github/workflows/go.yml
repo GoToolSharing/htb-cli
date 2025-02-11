@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: ['1.19', '1.20', '1.21']
+        go: ['1.20', '1.22', '1.23', '1.24']
         os: [ 'linux', 'windows', 'darwin' ]
         arch: [ 'amd64', 'arm64' ]
     outputs:
