@@ -120,9 +120,9 @@ func GetHostname(connection *ssh.Client) (string, error) {
 	return hostname, nil
 }
 
-func BuildSubmitStuff(hostname string, userFlag string) (string, map[string]string, error) {
+func BuildSubmitStuff(hostname string, userFlag string) (string, map[string]interface{}, error) {
 	// Can be release arena or machine
-	var payload map[string]string
+	var payload map[string]interface{}
 	var url string
 
 	machineID, err := utils.SearchItemIDByName(hostname, "Machine")
@@ -137,13 +137,13 @@ func BuildSubmitStuff(hostname string, userFlag string) (string, map[string]stri
 
 	if machineType == "release" {
 		url = config.BaseHackTheBoxAPIURL + "/arena/own"
-		payload = map[string]string{
+		payload = map[string]interface{}{
 			"flag": userFlag,
 		}
 	} else {
 		url = config.BaseHackTheBoxAPIURL + "/machine/own"
-		payload = map[string]string{
-			"id":   string(machineID),
+		payload = map[string]interface{}{
+			"id":   machineID,
 			"flag": userFlag,
 		}
 	}
