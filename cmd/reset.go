@@ -43,7 +43,7 @@ func coreResetCmd() (string, error) {
 	url := config.BaseHackTheBoxAPIURL + endpoint
 
 	// Construct JSON data.
-	jsonData, err := json.Marshal(map[string]string{"machine_id": string(machineID)})
+	jsonData, err := json.Marshal(map[string]interface{}{"machine_id": machineID})
 	if err != nil {
 		return "", fmt.Errorf("failed to create JSON data: %w", err)
 	}
