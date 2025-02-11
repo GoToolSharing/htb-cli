@@ -85,10 +85,9 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 			name string
 			url  string
 		}{
-			{"Fortresses", "/user/profile/progress/fortress/128441"},
-			{"Endgames", "/user/profile/progress/endgame/128441"},
-			{"Prolabs", "/user/profile/progress/prolab/128441"},
-			{"Activity", "/user/profile/activity/128441"},
+			{"Fortresses", "/user/profile/progress/fortress/"},
+			{"Prolabs", "/user/profile/progress/prolab/"},
+			{"Activity", "/user/profile/activity/"},
 		}
 
 		dataMaps := make(map[string]map[string]interface{})
@@ -169,7 +168,7 @@ func coreInfoCmd(machineName []string, challengeName []string, usernameName []st
 		info := utils.ParseJsonMessage(resp, "info")
 		infoMap, _ := info.(map[string]interface{})
 		newInfo := infoType{
-			APIURL: config.BaseHackTheBoxAPIURL + "/user/profile/basic/128441",
+			APIURL: config.BaseHackTheBoxAPIURL + "/user/profile/basic/",
 			Header: "",
 			Params: []string{infoMap["name"].(string)},
 			Name:   "Username",
