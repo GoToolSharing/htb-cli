@@ -111,7 +111,7 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 		if err != nil {
 			return "", 0, err
 		}
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Release Arena ID : %s", releaseID))
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Release Arena ID : %d", releaseID))
 		url = fmt.Sprintf("%s/arena/own", config.BaseHackTheBoxAPIURL)
 		payload = map[string]interface{}{
 			"id": releaseID,

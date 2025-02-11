@@ -476,7 +476,7 @@ func GetInformationsFromActiveMachine() (map[string]interface{}, error) {
 		fmt.Println("No machine is running")
 		return nil, nil
 	}
-	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %d", machineID))
 
 	url := fmt.Sprintf("%s/machine/profile/%d", config.BaseHackTheBoxAPIURL, machineID)
 	resp, err := HtbRequest(http.MethodGet, url, nil)

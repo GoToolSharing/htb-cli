@@ -39,7 +39,7 @@ func coreStartCmd(machineChoosen string, machineID int) (string, error) {
 		}
 
 	}
-	config.GlobalConfig.Logger.Info(fmt.Sprintf("Machine ID: %s", machineID))
+	config.GlobalConfig.Logger.Info(fmt.Sprintf("Machine ID: %d", machineID))
 
 	machineTypeChan := make(chan string)
 	machineErrChan := make(chan error)

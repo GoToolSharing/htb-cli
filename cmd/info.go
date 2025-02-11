@@ -327,7 +327,7 @@ func checkIfExpiringSoon(expiresTime string, machineID int) error {
 		// Extend time
 		isConfirmed := utils.AskConfirmation(fmt.Sprintf("Would you like to extend the active machine time ? Remaining: %s", remainingTime))
 		if isConfirmed {
-			jsonData := []byte("{\"machine_id\":" + string(machineID) + "}")
+			jsonData := []byte(fmt.Sprintf(`{"machine_id":%d}`, machineID))
 			resp, err := utils.HtbRequest(http.MethodPost, config.BaseHackTheBoxAPIURL+"/vm/extend", jsonData)
 			if err != nil {
 				return err
@@ -337,14 +337,14 @@ func checkIfExpiringSoon(expiresTime string, machineID int) error {
 				return fmt.Errorf("error decoding JSON response: %v", err)
 			}
 
-			inputLayout := time.RFC3339Nano
+			inputLayout := "2006-01-02 15:04:05"
 
 			date, err := time.Parse(inputLayout, response.ExpiresAt)
 			if err != nil {
 				return fmt.Errorf("error decoding JSON response: %v", err)
 			}
 
-			outputLayout := "2006-01-02 -> 15h 04m 05s"
+			outputLayout := "2006-01-02 - 15h 04m 05s"
 
 			formattedDate := date.Format(outputLayout)
 

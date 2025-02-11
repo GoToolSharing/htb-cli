@@ -23,7 +23,7 @@ func coreResetCmd() (string, error) {
 	if machineID == 0 {
 		return "No active machine found", nil
 	}
-	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %s", machineID))
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %d", machineID))
 
 	// Retrieve the type of the machine.
 	machineType, err := utils.GetMachineType(machineID)
