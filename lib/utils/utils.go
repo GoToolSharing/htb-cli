@@ -12,7 +12,6 @@ import (
 	"os"
 	"os/signal"
 	"os/user"
-	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -557,21 +556,19 @@ func GetCurrentUsername() string {
 	return user.Username
 }
 
-func SearchLastReleaseArenaMachine() (string, error) {
+func SearchLastReleaseArenaMachine() (int, error) {
 	url := fmt.Sprintf("%s/season/machine/active", config.BaseHackTheBoxAPIURL)
 	resp, err := HtbRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 	info := ParseJsonMessage(resp, "data")
 	if info == nil {
-		return "", err
+		return 0, err
 	}
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Information on the last active machine: %v", info))
-	machineF64 := info.(map[string]interface{})["id"].(float64)
-	machineID := int(machineF64)
-	machineIDstr := strconv.Itoa(machineID)
-	return machineIDstr, nil
+	machineID := int(info.(map[string]interface{})["id"].(float64))
+	return machineID, nil
 }
 
 func extractNamesAndIDs(jsonData string) (map[string]int, error) {

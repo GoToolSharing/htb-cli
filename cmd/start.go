@@ -184,13 +184,13 @@ var startCmd = &cobra.Command{
 		var machineID int
 		if machineChoosen == "" {
 			config.GlobalConfig.Logger.Info("Launching the machine in release arena")
-			//machineID, err = utils.SearchLastReleaseArenaMachine()
-			// TODO: Up again
+			machineID, err = utils.SearchLastReleaseArenaMachine()
+
 			if err != nil {
 				config.GlobalConfig.Logger.Error("", zap.Error(err))
 				os.Exit(1)
 			}
-			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID : %s", machineID))
+			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID : %d", machineID))
 
 		}
 		output, err := coreStartCmd(machineChoosen, machineID)
