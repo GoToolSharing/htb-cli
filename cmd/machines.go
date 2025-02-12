@@ -1,12 +1,15 @@
 package cmd
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/GoToolSharing/htb-cli/lib/machines"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
@@ -119,13 +122,51 @@ var machinesCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		app := tview.NewApplication()
 
-		getAndDisplayFlex := func(url, title string, isScheduled bool, flex *tview.Flex) error {
-			resp, err := utils.HtbRequest(http.MethodGet, url, nil)
-			if err != nil {
-				return fmt.Errorf("failed to get data from %s: %w", url, err)
-			}
+		refreshParam, err := cmd.Flags().GetBool("refresh")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 
-			info := utils.ParseJsonMessage(resp, "data")
+		db, err := sql.Open("sqlite3", config.BaseDirectory+"/htb-cli.db")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Close()
+
+		if refreshParam {
+			isConfirmed := utils.AskConfirmation("The cache data will be deleted, do you want to continue ?")
+			if !isConfirmed {
+				return
+			}
+			_, err = db.Exec("DELETE FROM machines")
+			if err != nil {
+				log.Fatalf("Error deleting existing data: %v", err)
+			}
+			config.GlobalConfig.Logger.Info("Machine cache data has been deleted")
+		}
+
+		var info interface{}
+
+		getAndDisplayFlex := func(url, title string, isScheduled bool, flex *tview.Flex) error {
+			if refreshParam {
+				config.GlobalConfig.Logger.Info("Machine data recovery via API")
+				resp, err := utils.HtbRequest(http.MethodGet, url, nil)
+				if err != nil {
+					return fmt.Errorf("failed to get data from %s: %w", url, err)
+				}
+
+				info = utils.ParseJsonMessage(resp, "data")
+
+				machines.InsertMachines(db, info, title)
+			} else {
+				config.GlobalConfig.Logger.Info("Machine data recovery via cache")
+				info, err = machines.GetMachinesFromCache(db, title)
+
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
 
 			machineFlex, err := createFlex(info, title, isScheduled)
 			if err != nil {
@@ -169,4 +210,5 @@ var machinesCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(machinesCmd)
+	machinesCmd.Flags().BoolP("refresh", "r", false, "Refresh cache")
 }

@@ -184,5 +184,14 @@ func Init() error {
 	GlobalConfig.Logger.Info("Configuration successfully loaded")
 	GlobalConfig.Logger.Debug(fmt.Sprintf("%v", config))
 	ConfigFile = config
+
+	confFilePath = BaseDirectory + "/htb-cli.db"
+	if _, err := os.Stat(confFilePath); os.IsNotExist(err) {
+		err := dbSetup()
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
