@@ -33,6 +33,17 @@ func coreStatusCmd() (string, error) {
 	fmt.Println(fmt.Sprintf("Name : %s", name))
 	fmt.Println(fmt.Sprintf("OS : %s", os))
 	fmt.Println(fmt.Sprintf("Stars : %v", stars))
+
+	if authUserInUserOwns && authUserInRootOwns {
+		link, err := utils.GetAchievementLink(int(activeMachineData["id"].(float64)))
+		if err != nil {
+			config.GlobalConfig.Logger.Error("", zap.Error(err))
+			return "", err
+		}
+		fmt.Println("The machine has been pwned !")
+		fmt.Println(link)
+		return "", nil
+	}
 	fmt.Println(fmt.Sprintf("User flag : %v", authUserInUserOwns))
 	fmt.Println(fmt.Sprintf("Root flag : %v", authUserInRootOwns))
 	return "", nil

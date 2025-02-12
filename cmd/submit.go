@@ -6,6 +6,7 @@ import (
 
 	"github.com/GoToolSharing/htb-cli/config"
 	"github.com/GoToolSharing/htb-cli/lib/submit"
+	"github.com/GoToolSharing/htb-cli/lib/utils"
 	"github.com/GoToolSharing/htb-cli/lib/webhooks"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -85,7 +86,7 @@ var submitCmd = &cobra.Command{
 
 		fmt.Println(output)
 
-		link, err := submit.GetAchievementLink(machineID)
+		link, err := utils.GetAchievementLink(machineID)
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
