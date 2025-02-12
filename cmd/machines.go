@@ -197,7 +197,7 @@ var machinesCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		err = machines.UpdateCacheDate(db)
+		err = cache.UpdateCacheDate(db, "machines_cache_date")
 
 		if err != nil {
 			log.Fatal(err)

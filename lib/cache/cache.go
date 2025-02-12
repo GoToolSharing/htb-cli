@@ -42,3 +42,12 @@ func CheckCacheDate(db *sql.DB) (bool, error) {
 
 	return false, nil
 }
+
+func UpdateCacheDate(db *sql.DB, key string) error {
+	_, err := db.Exec(fmt.Sprintf("UPDATE config SET %s = CURRENT_TIMESTAMP", key))
+	if err != nil {
+		return fmt.Errorf("Error updating date cache: %v", err)
+	}
+	config.GlobalConfig.Logger.Info("Date cache updated with current date")
+	return nil
+}
