@@ -169,12 +169,32 @@ func coreStartCmd(machineChoosen string, machineID int) (string, error) {
 			}
 		}
 	default:
-		// Get IP address from active machine
-		activeMachineData, err := utils.GetInformationsFromActiveMachine()
-		if err != nil {
-			return "", err
+		s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
+		setupSignalHandler(s)
+		s.Suffix = " Waiting for the machine to start in order to fetch the IP address (this might take a while)."
+		s.Start()
+		defer s.Stop()
+		timeout := time.After(10 * time.Minute)
+	LoopDefault:
+		for {
+			select {
+			case <-timeout:
+				fmt.Println("Timeout (10 min) ! Exiting")
+				s.Stop()
+				return "", nil
+			default:
+				activeMachineData, err := utils.GetInformationsFromActiveMachine()
+				if err != nil {
+					return "", err
+				}
+				if activeMachineData["ip"] != nil {
+					ip = activeMachineData["ip"].(string)
+					s.Stop()
+					break LoopDefault
+				}
+				time.Sleep(3 * time.Second)
+			}
 		}
-		ip = activeMachineData["ip"].(string)
 	}
 	tts := time.Since(startTime)
 	formattedTts := fmt.Sprintf("%.2f", tts.Seconds())
