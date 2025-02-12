@@ -96,15 +96,23 @@ func SearchItemIDByName(item string, element_type string) (int, error) {
 			machineData, _ := json.Marshal(root.Machines)
 			err := json.Unmarshal(machineData, &machines)
 			if err != nil {
-				fmt.Println("error:", err)
+				return 0, fmt.Errorf("error: %v", err)
 			}
-			config.GlobalConfig.Logger.Info("Machine found")
-			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine name: %s", machines[0].Value))
-			isConfirmed := AskConfirmation("The following machine was found : " + machines[0].Value)
-			if isConfirmed {
-				return machines[0].ID, nil
+
+			config.GlobalConfig.Logger.Info("Machines found")
+
+			for _, machine := range machines {
+				config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine name: %s", machine.Value))
+
+				isConfirmed := AskConfirmation("The following machine was found: " + machine.Value)
+				if isConfirmed {
+					return machine.ID, nil
+				}
 			}
+
+			config.GlobalConfig.Logger.Info("No machine was selected")
 			os.Exit(0)
+
 		case map[string]interface{}:
 			// Checking if machines array is empty
 			if len(root.Machines.(map[string]interface{})) == 0 {
@@ -115,15 +123,23 @@ func SearchItemIDByName(item string, element_type string) (int, error) {
 			machineData, _ := json.Marshal(root.Machines)
 			err := json.Unmarshal(machineData, &machines)
 			if err != nil {
-				fmt.Println("error:", err)
+				return 0, fmt.Errorf("error: %v", err)
 			}
-			config.GlobalConfig.Logger.Info("Machine found")
-			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine name: %s", machines["0"].Value))
-			isConfirmed := AskConfirmation("The following machine was found : " + machines["0"].Value)
-			if isConfirmed {
-				return machines["0"].ID, nil
+
+			config.GlobalConfig.Logger.Info("Machines found")
+
+			for key, machine := range machines {
+				config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine [%s]: %s", key, machine.Value))
+
+				isConfirmed := AskConfirmation("The following machine was found: " + machine.Value)
+				if isConfirmed {
+					return machine.ID, nil
+				}
 			}
+
+			config.GlobalConfig.Logger.Info("No machine was selected")
 			os.Exit(0)
+
 		default:
 			fmt.Println("No machine was found")
 			os.Exit(0)
@@ -140,15 +156,23 @@ func SearchItemIDByName(item string, element_type string) (int, error) {
 			challengeData, _ := json.Marshal(root.Challenges)
 			err := json.Unmarshal(challengeData, &challenges)
 			if err != nil {
-				fmt.Println("error:", err)
+				return 0, fmt.Errorf("error: %v", err)
 			}
-			config.GlobalConfig.Logger.Info("Challenge found")
-			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge name: %s", challenges[0].Value))
-			isConfirmed := AskConfirmation("The following challenge was found : " + challenges[0].Value)
-			if isConfirmed {
-				return challenges[0].ID, nil
+
+			config.GlobalConfig.Logger.Info("Challenges found")
+
+			for _, challenge := range challenges {
+				config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge name: %s", challenge.Value))
+
+				isConfirmed := AskConfirmation("The following challenge was found: " + challenge.Value)
+				if isConfirmed {
+					return challenge.ID, nil
+				}
 			}
+
+			config.GlobalConfig.Logger.Info("No challenge was selected")
 			os.Exit(0)
+
 		case map[string]interface{}:
 			// Checking if challenges array is empty
 			if len(root.Challenges.(map[string]interface{})) == 0 {
@@ -159,15 +183,23 @@ func SearchItemIDByName(item string, element_type string) (int, error) {
 			challengeData, _ := json.Marshal(root.Challenges)
 			err := json.Unmarshal(challengeData, &challenges)
 			if err != nil {
-				fmt.Println("error:", err)
+				return 0, fmt.Errorf("error: %v", err)
 			}
-			config.GlobalConfig.Logger.Info("Challenge found")
-			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge name: %s", challenges["0"].Value))
-			isConfirmed := AskConfirmation("The following challenge was found : " + challenges["0"].Value)
-			if isConfirmed {
-				return challenges["0"].ID, nil
+
+			config.GlobalConfig.Logger.Info("Challenges found")
+
+			for key, challenge := range challenges {
+				config.GlobalConfig.Logger.Debug(fmt.Sprintf("Challenge [%s]: %s", key, challenge.Value))
+
+				isConfirmed := AskConfirmation("The following challenge was found: " + challenge.Value)
+				if isConfirmed {
+					return challenge.ID, nil
+				}
 			}
+
+			config.GlobalConfig.Logger.Info("No challenge was selected")
 			os.Exit(0)
+
 		default:
 			fmt.Println("No challenge was found")
 			os.Exit(0)
@@ -184,15 +216,23 @@ func SearchItemIDByName(item string, element_type string) (int, error) {
 			usernameData, _ := json.Marshal(root.Usernames)
 			err := json.Unmarshal(usernameData, &usernames)
 			if err != nil {
-				fmt.Println("error:", err)
+				return 0, fmt.Errorf("error: %v", err)
 			}
-			config.GlobalConfig.Logger.Info("Username found")
-			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Username value: %s", usernames[0].Value))
-			isConfirmed := AskConfirmation("The following username was found : " + usernames[0].Value)
-			if isConfirmed {
-				return usernames[0].ID, nil
+
+			config.GlobalConfig.Logger.Info("Usernames found")
+
+			for _, user := range usernames {
+				config.GlobalConfig.Logger.Debug(fmt.Sprintf("Username value: %s", user.Value))
+
+				isConfirmed := AskConfirmation("The following username was found: " + user.Value)
+				if isConfirmed {
+					return user.ID, nil
+				}
 			}
+
+			config.GlobalConfig.Logger.Info("No username was selected")
 			os.Exit(0)
+
 		case map[string]interface{}:
 			// Checking if usernames array is empty
 			if len(root.Usernames.(map[string]interface{})) == 0 {
@@ -203,15 +243,23 @@ func SearchItemIDByName(item string, element_type string) (int, error) {
 			usernameData, _ := json.Marshal(root.Usernames)
 			err := json.Unmarshal(usernameData, &usernames)
 			if err != nil {
-				fmt.Println("error:", err)
+				return 0, fmt.Errorf("error: %v", err)
 			}
-			config.GlobalConfig.Logger.Info("Username found")
-			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Username value: %s", usernames["0"].Value))
-			isConfirmed := AskConfirmation("The following username was found : " + usernames["0"].Value)
-			if isConfirmed {
-				return usernames["0"].ID, nil
+
+			config.GlobalConfig.Logger.Info("Usernames found")
+
+			for key, user := range usernames {
+				config.GlobalConfig.Logger.Debug(fmt.Sprintf("Username [%s]: %s", key, user.Value))
+
+				isConfirmed := AskConfirmation("The following username was found: " + user.Value)
+				if isConfirmed {
+					return user.ID, nil
+				}
 			}
+
+			config.GlobalConfig.Logger.Info("No username was selected")
 			os.Exit(0)
+
 		default:
 			fmt.Println("No username found")
 		}
@@ -465,6 +513,21 @@ func TruncateString(str string, maxLength int) string {
 		return str[:maxLength]
 	}
 	return str
+}
+
+func GetInformationsWithMachineId(machineID int) (map[string]interface{}, error) {
+	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID: %d", machineID))
+
+	url := fmt.Sprintf("%s/machine/profile/%d", config.BaseHackTheBoxAPIURL, machineID)
+	resp, err := HtbRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	info := ParseJsonMessage(resp, "info")
+
+	data := info.(map[string]interface{})
+
+	return data, nil
 }
 
 func GetInformationsFromActiveMachine() (map[string]interface{}, error) {
