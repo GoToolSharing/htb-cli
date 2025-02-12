@@ -165,7 +165,7 @@ func coreStartCmd(machineChoosen string, machineID int) (string, error) {
 					s.Stop()
 					break Loop
 				}
-				time.Sleep(3 * time.Second)
+				time.Sleep(5 * time.Second)
 			}
 		}
 	default:
@@ -192,7 +192,7 @@ func coreStartCmd(machineChoosen string, machineID int) (string, error) {
 					s.Stop()
 					break LoopDefault
 				}
-				time.Sleep(3 * time.Second)
+				time.Sleep(5 * time.Second)
 			}
 		}
 	}
