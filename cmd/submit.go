@@ -70,7 +70,7 @@ var submitCmd = &cobra.Command{
 			modeType = "prolab"
 			modeValue = prolabNameParam
 		} else {
-			modeType = "release-arena"
+			modeType = "active"
 			modeValue = ""
 		}
 
