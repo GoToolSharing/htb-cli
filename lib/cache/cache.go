@@ -14,9 +14,13 @@ func CheckCacheDate(db *sql.DB) (bool, error) {
 
 	err := db.QueryRow("SELECT machines_cache_date FROM config").Scan(&cacheDateStr)
 	if err != nil {
-		fmt.Println(err)
 		if err == sql.ErrNoRows {
 			config.GlobalConfig.Logger.Info("No data in the table (machines_cache_date)")
+			_, err := db.Exec("INSERT into config (machines_cache_date) VALUES (CURRENT_TIMESTAMP)")
+			if err != nil {
+				return false, fmt.Errorf("Error updating date cache: %v", err)
+			}
+			config.GlobalConfig.Logger.Info("Date cache insered with current date")
 			return true, nil
 		}
 		return false, fmt.Errorf("error retrieving machines_cache_date: %v", err)
