@@ -67,6 +67,14 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 		if err != nil {
 			return "", 0, err
 		}
+		machineData, err := utils.GetInformationsWithMachineId(machineID)
+		if err != nil {
+			return "", 0, err
+		}
+		if machineData["authUserInUserOwns"].(bool) && machineData["authUserInRootOwns"].(bool) {
+			return "The machine has already been pwned", machineID, nil
+		}
+
 		machineType, err := utils.GetMachineType(machineID)
 		if err != nil {
 			return "", 0, err
@@ -77,7 +85,6 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 			url = config.BaseHackTheBoxAPIURL + "/arena/own"
 		} else {
 			url = config.BaseHackTheBoxAPIURL + "/machine/own"
-
 		}
 		payload = map[string]interface{}{
 			"id": machineID,
@@ -101,22 +108,42 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Prolab ID : %d", prolabID))
 		url = fmt.Sprintf("%s/prolab/%d/flag", config.BaseHackTheBoxAPIURL, prolabID)
 		payload = map[string]interface{}{}
-	} else if modeType == "release-arena" {
-		config.GlobalConfig.Logger.Info("Release Arena submit requested")
-		isConfirmed := utils.AskConfirmation("Would you like to submit a flag for the release arena ?")
-		if !isConfirmed {
-			return "", 0, nil
-		}
-		releaseID, err := utils.SearchLastReleaseArenaMachine()
+	} else if modeType == "active" {
+		config.GlobalConfig.Logger.Info("Active machine submit requested")
+		activeMachineData, err := utils.GetInformationsFromActiveMachine()
 		if err != nil {
 			return "", 0, err
 		}
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Release Arena ID : %d", releaseID))
-		url = fmt.Sprintf("%s/arena/own", config.BaseHackTheBoxAPIURL)
-		payload = map[string]interface{}{
-			"id": releaseID,
+		if activeMachineData["authUserInUserOwns"].(bool) && activeMachineData["authUserInRootOwns"].(bool) {
+			return "The machine has already been pwned", activeMachineData["id"].(int), nil
 		}
-		mID = releaseID
+		isConfirmed := utils.AskConfirmation("Would you like to submit a flag for the active machine ?")
+		if !isConfirmed {
+			return "", 0, nil
+		}
+
+		machineID, err := utils.GetActiveMachineID()
+		if err != nil {
+			return "", 0, err
+		}
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine ID : %d", machineID))
+
+		machineType, err := utils.GetMachineType(machineID)
+		if err != nil {
+			return "", 0, err
+		}
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
+
+		if machineType == "release" {
+			url = config.BaseHackTheBoxAPIURL + "/arena/own"
+		} else {
+			url = config.BaseHackTheBoxAPIURL + "/machine/own"
+		}
+		payload = map[string]interface{}{
+			"id": machineID,
+		}
+
+		mID = machineID
 	}
 
 	fmt.Print("Flag : ")
