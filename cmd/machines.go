@@ -160,8 +160,14 @@ var machinesCmd = &cobra.Command{
 
 				info = utils.ParseJsonMessage(resp, "data")
 
-				machines.InsertMachines(db, info, title)
-				cache.UpdateCacheDate(db, "machines_cache_date")
+				err = machines.InsertMachines(db, info, title)
+				if err != nil {
+					log.Fatal(err)
+				}
+				err = cache.UpdateCacheDate(db, "machines_cache_date")
+				if err != nil {
+					log.Fatal(err)
+				}
 			} else {
 				config.GlobalConfig.Logger.Info("Machine data recovery via cache")
 				info, err = machines.GetMachinesFromCache(db, title)

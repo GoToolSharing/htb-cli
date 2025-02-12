@@ -21,6 +21,10 @@ func coreStatusCmd() (string, error) {
 		return "", err
 	}
 
+	if activeMachineData == nil {
+		return "", nil
+	}
+
 	ip := activeMachineData["ip"].(string)
 	name := activeMachineData["name"].(string)
 	os := activeMachineData["os"].(string)
@@ -29,10 +33,10 @@ func coreStatusCmd() (string, error) {
 	stars := activeMachineData["stars"].(float64)
 
 	fmt.Println("---- Active Machine ----")
-	fmt.Println(fmt.Sprintf("IP : %s", ip))
-	fmt.Println(fmt.Sprintf("Name : %s", name))
-	fmt.Println(fmt.Sprintf("OS : %s", os))
-	fmt.Println(fmt.Sprintf("Stars : %v", stars))
+	fmt.Printf("IP : %s\n", ip)
+	fmt.Printf("Name : %s\n", name)
+	fmt.Printf("OS : %s\n", os)
+	fmt.Printf("Stars : %v\n", stars)
 
 	if authUserInUserOwns && authUserInRootOwns {
 		link, err := utils.GetAchievementLink(int(activeMachineData["id"].(float64)))
@@ -44,8 +48,8 @@ func coreStatusCmd() (string, error) {
 		fmt.Println(link)
 		return "", nil
 	}
-	fmt.Println(fmt.Sprintf("User flag : %v", authUserInUserOwns))
-	fmt.Println(fmt.Sprintf("Root flag : %v", authUserInRootOwns))
+	fmt.Printf("User flag : %v\n", authUserInUserOwns)
+	fmt.Printf("Root flag : %v\n", authUserInRootOwns)
 	return "", nil
 }
 
