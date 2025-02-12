@@ -33,6 +33,8 @@ const BaseHackTheBoxAPIURL = "https://" + HostHackTheBox + "/api/v4"
 
 const Version = "dev"
 
+const Database = "/htb-cli.db"
+
 func ConfigureLogger() error {
 	var logLevel zapcore.Level
 
@@ -185,7 +187,7 @@ func Init() error {
 	GlobalConfig.Logger.Debug(fmt.Sprintf("%v", config))
 	ConfigFile = config
 
-	confFilePath = BaseDirectory + "/htb-cli.db"
+	confFilePath = BaseDirectory + Database
 	if _, err := os.Stat(confFilePath); os.IsNotExist(err) {
 		err := dbSetup()
 		if err != nil {

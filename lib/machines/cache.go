@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/GoToolSharing/htb-cli/config"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -18,6 +19,15 @@ type Machine struct {
 	ReleaseDate time.Time `json:"release"`
 	UserOwns    bool      `json:"user"`
 	RootOwns    bool      `json:"root"`
+}
+
+func UpdateCacheDate(db *sql.DB) error {
+	_, err := db.Exec("UPDATE config SET machines_cache_date = CURRENT_TIMESTAMP WHERE id = 1")
+	if err != nil {
+		return fmt.Errorf("Error updating date cache: %v", err)
+	}
+	config.GlobalConfig.Logger.Info("Date cache updated with current date")
+	return nil
 }
 
 // Function to retrieve data and format it like the API

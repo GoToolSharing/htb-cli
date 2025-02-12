@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/GoToolSharing/htb-cli/lib/cache"
 	"github.com/GoToolSharing/htb-cli/lib/machines"
 	"github.com/GoToolSharing/htb-cli/lib/utils"
 	"github.com/rivo/tview"
@@ -128,17 +129,18 @@ var machinesCmd = &cobra.Command{
 			return
 		}
 
-		db, err := sql.Open("sqlite3", config.BaseDirectory+"/htb-cli.db")
+		db, err := sql.Open("sqlite3", config.BaseDirectory+config.Database)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer db.Close()
 
-		if refreshParam {
-			isConfirmed := utils.AskConfirmation("The cache data will be deleted, do you want to continue ?")
-			if !isConfirmed {
-				return
-			}
+		updateCache, err := cache.CheckCacheDate(db)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if updateCache || (refreshParam && utils.AskConfirmation("The cache data will be deleted, do you want to continue ?")) {
 			_, err = db.Exec("DELETE FROM machines")
 			if err != nil {
 				log.Fatalf("Error deleting existing data: %v", err)
@@ -149,7 +151,7 @@ var machinesCmd = &cobra.Command{
 		var info interface{}
 
 		getAndDisplayFlex := func(url, title string, isScheduled bool, flex *tview.Flex) error {
-			if refreshParam {
+			if refreshParam || updateCache {
 				config.GlobalConfig.Logger.Info("Machine data recovery via API")
 				resp, err := utils.HtbRequest(http.MethodGet, url, nil)
 				if err != nil {
@@ -193,6 +195,12 @@ var machinesCmd = &cobra.Command{
 		if err := getAndDisplayFlex(scheduledURL, scheduledTitle, true, rightFlex); err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
+		}
+
+		err = machines.UpdateCacheDate(db)
+
+		if err != nil {
+			log.Fatal(err)
 		}
 
 		rightFlex.AddItem(tview.NewTextView().SetText("").SetDynamicColors(true), 0, 0, false)

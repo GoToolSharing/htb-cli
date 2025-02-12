@@ -9,7 +9,7 @@ import (
 )
 
 func dbSetup() error {
-	db, err := sql.Open("sqlite3", BaseDirectory+"/htb-cli.db")
+	db, err := sql.Open("sqlite3", BaseDirectory+Database)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -30,9 +30,22 @@ func dbSetup() error {
 
 	_, err = db.Exec(createTableSQL)
 	if err != nil {
-		return fmt.Errorf("error during table creation: %v", err)
+		return fmt.Errorf("error during table (machines) creation: %v", err)
 	}
 
-	GlobalConfig.Logger.Info("Machines' table successfully created !")
+	GlobalConfig.Logger.Info("machines' table successfully created !")
+
+	createTableSQL = `
+	CREATE TABLE IF NOT EXISTS config (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		machines_cache_date TIMESTAMP NOT NULL
+	);`
+
+	_, err = db.Exec(createTableSQL)
+	if err != nil {
+		return fmt.Errorf("error during table (config) creation: %v", err)
+	}
+
+	GlobalConfig.Logger.Info("config' table successfully created !")
 	return nil
 }
