@@ -115,7 +115,7 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string) (stri
 			return "", 0, err
 		}
 		if activeMachineData["authUserInUserOwns"].(bool) && activeMachineData["authUserInRootOwns"].(bool) {
-			return "The machine has already been pwned", activeMachineData["id"].(int), nil
+			return "The machine has already been pwned", int(activeMachineData["id"].(float64)), nil
 		}
 		isConfirmed := utils.AskConfirmation("Would you like to submit a flag for the active machine ?")
 		if !isConfirmed {
