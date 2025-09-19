@@ -12,9 +12,9 @@ import (
 )
 
 func coreStatusCmd() (string, error) {
-	fmt.Println("---- VPN Status ----")
+	//fmt.Println("---- VPN Status ----")
 
-	fmt.Println("")
+	//fmt.Println("")
 	activeMachineData, err := utils.GetInformationsFromActiveMachine()
 
 	if err != nil {
@@ -25,11 +25,20 @@ func coreStatusCmd() (string, error) {
 		return "", nil
 	}
 
+	if activeMachineData["info_status"] == nil {
+		return "No information provided", nil
+	}
+
+	if activeMachineData["ip"] == nil {
+		return "No IP assigned yet", nil
+	}
+
 	ip := activeMachineData["ip"].(string)
 	name := activeMachineData["name"].(string)
 	os := activeMachineData["os"].(string)
 	authUserInUserOwns := activeMachineData["authUserInUserOwns"].(bool)
 	authUserInRootOwns := activeMachineData["authUserInRootOwns"].(bool)
+	informations := activeMachineData["info_status"].(string)
 	stars := activeMachineData["stars"].(float64)
 
 	fmt.Println("---- Active Machine ----")
@@ -37,6 +46,7 @@ func coreStatusCmd() (string, error) {
 	fmt.Printf("Name : %s\n", name)
 	fmt.Printf("OS : %s\n", os)
 	fmt.Printf("Stars : %v\n", stars)
+	fmt.Printf("Informations : %v\n", informations)
 
 	if authUserInUserOwns && authUserInRootOwns {
 		link, err := utils.GetAchievementLink(int(activeMachineData["id"].(float64)))
