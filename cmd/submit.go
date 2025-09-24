@@ -48,6 +48,8 @@ var submitCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		flagValueParam, _ := cmd.Flags().GetString("flag")
+
 		if challengeNameParam != "" {
 			if difficultyParam == 0 {
 				fmt.Println("required flag(s) 'difficulty' not set")
@@ -78,7 +80,7 @@ var submitCmd = &cobra.Command{
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Mode type: %s", modeType))
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Mode value: %s", modeValue))
 
-		output, machineID, err := submit.CoreSubmitCmd(difficultyParam, modeType, modeValue)
+		output, machineID, err := submit.CoreSubmitCmd(difficultyParam, modeType, modeValue, flagValueParam)
 		if err != nil {
 			config.GlobalConfig.Logger.Error("", zap.Error(err))
 			os.Exit(1)
@@ -108,6 +110,7 @@ func init() {
 	submitCmd.Flags().StringP("machine", "m", "", "Machine Name")
 	submitCmd.Flags().StringP("challenge", "c", "", "Challenge Name")
 	submitCmd.Flags().StringP("fortress", "f", "", "Fortress Name")
+	submitCmd.Flags().String("flag", "", "Flag value")
 	submitCmd.Flags().StringP("prolab", "p", "", "Prolab Name")
 	submitCmd.Flags().IntP("difficulty", "d", 0, "Difficulty")
 }
