@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/PentestGPT-Project/htb-cli/config"
 	"github.com/gorilla/websocket"
 )
 

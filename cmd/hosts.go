@@ -3,8 +3,8 @@ package cmd
 import (
 	"os"
 
-	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/lib/hosts"
+	"github.com/PentestGPT-Project/htb-cli/config"
+	"github.com/PentestGPT-Project/htb-cli/lib/hosts"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )

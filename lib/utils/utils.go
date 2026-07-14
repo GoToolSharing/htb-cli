@@ -2,7 +2,6 @@ package utils
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,19 +9,19 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/signal"
 	"os/user"
 	"strings"
 	"sync"
-	"syscall"
 	"text/tabwriter"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/PentestGPT-Project/htb-cli/config"
 	"github.com/briandowns/spinner"
 	"github.com/sahilm/fuzzy"
 )
+
+const httpTimeout = 30 * time.Second
 
 // SetTabWriterHeader will display the information in an array
 func SetTabWriterHeader(header string) *tabwriter.Writer {
@@ -434,24 +433,16 @@ func GetActiveReleaseArenaMachineIP() (string, error) {
 // HtbRequest makes an HTTP request to the Hackthebox API
 func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-sigs
-		s.Stop()
-		os.Exit(0)
-	}()
-
 	s.Start()
+	defer s.Stop()
+
 	JWT_TOKEN, err := GetHTBToken()
 	if err != nil {
-		s.Stop()
 		return nil, err
 	}
 
 	req, err := http.NewRequest(method, urlParam, bytes.NewBuffer(jsonData))
 	if err != nil {
-		s.Stop()
 		return nil, err
 	}
 
@@ -461,51 +452,78 @@ func HtbRequest(method string, urlParam string, jsonData []byte) (*http.Response
 	if method == http.MethodPost {
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Accept", "application/json, text/plain, */*")
-	} else if method == http.MethodGet {
-		req.Header.Set("Host", config.HostHackTheBox)
 	}
 
-	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
-		},
-	}
-
-	if config.GlobalConfig.ProxyParam != "" {
-		config.GlobalConfig.Logger.Info("Proxy URL found")
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Proxy value : %s", config.GlobalConfig.ProxyParam))
-		proxyURLParsed, err := url.Parse(config.GlobalConfig.ProxyParam)
-		if err != nil {
-			s.Stop()
-			return nil, fmt.Errorf("error parsing proxy url : %v", err)
-		}
-		transport.Proxy = http.ProxyURL(proxyURLParsed)
+	client, err := newHTTPClient(true)
+	if err != nil {
+		return nil, err
 	}
 
 	config.GlobalConfig.Logger.Info("Sending an HTTP HTB request")
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Request URL: %v", req.URL))
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Request method: %v", req.Method))
-	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Request body: %v", req.Body))
-
-	client := &http.Client{Transport: transport, CheckRedirect: func(req *http.Request, via []*http.Request) error {
-		return http.ErrUseLastResponse
-	}}
 
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-	body, _ := io.ReadAll(resp.Body)
-	resp.Body = io.NopCloser(bytes.NewReader(body))
-
-	// Check if token is invalid or expired
-	if resp.StatusCode == 302 && strings.Contains(resp.Header.Get("Location"), "/login") {
-		s.Stop()
-		return nil, fmt.Errorf("HTB Token appears invalid or expired")
+	body, err := bufferResponse(resp)
+	if err != nil {
+		return nil, err
 	}
-	s.Stop()
+	if err := validateHTBResponse(resp, body); err != nil {
+		return nil, err
+	}
 	return resp, nil
+}
+
+func newHTTPClient(disableRedirects bool) (*http.Client, error) {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	if config.GlobalConfig.ProxyParam != "" {
+		config.GlobalConfig.Logger.Info("Proxy URL found")
+		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Proxy value : %s", config.GlobalConfig.ProxyParam))
+		proxyURL, err := url.Parse(config.GlobalConfig.ProxyParam)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing proxy url: %v", err)
+		}
+		transport.Proxy = http.ProxyURL(proxyURL)
+	}
+
+	client := &http.Client{Transport: transport, Timeout: httpTimeout}
+	if disableRedirects {
+		client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {
+			return http.ErrUseLastResponse
+		}
+	}
+	return client, nil
+}
+
+func bufferResponse(resp *http.Response) ([]byte, error) {
+	body, err := io.ReadAll(resp.Body)
+	closeErr := resp.Body.Close()
+	resp.Body = io.NopCloser(bytes.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("error reading HTTP response: %w", err)
+	}
+	if closeErr != nil {
+		return nil, fmt.Errorf("error closing HTTP response: %w", closeErr)
+	}
+	return body, nil
+}
+
+func validateHTBResponse(resp *http.Response, body []byte) error {
+	if resp.StatusCode == http.StatusFound && strings.Contains(resp.Header.Get("Location"), "/login") {
+		return errors.New("HTB token appears invalid or expired")
+	}
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return fmt.Errorf("HTB API request %s %s returned %s", resp.Request.Method, resp.Request.URL.Path, resp.Status)
+	}
+	contentType := strings.ToLower(resp.Header.Get("Content-Type"))
+	trimmedBody := strings.TrimSpace(string(body))
+	if strings.Contains(contentType, "text/html") || strings.HasPrefix(trimmedBody, "<") {
+		return fmt.Errorf("HTB API request %s %s returned HTML instead of API data", resp.Request.Method, resp.Request.URL.Path)
+	}
+	return nil
 }
 
 func TruncateString(str string, maxLength int) string {
@@ -556,19 +574,11 @@ func GetInformationsFromActiveMachine() (map[string]interface{}, error) {
 // HTTPRequest makes an HTTP request with the specified method, URL, proxy settings, and data.
 func HTTPRequest(method string, urlParam string, jsonData []byte) (*http.Response, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-sigs
-		s.Stop()
-		os.Exit(0)
-	}()
-
 	s.Start()
+	defer s.Stop()
 
 	req, err := http.NewRequest(method, urlParam, bytes.NewBuffer(jsonData))
 	if err != nil {
-		s.Stop()
 		return nil, err
 	}
 
@@ -578,38 +588,25 @@ func HTTPRequest(method string, urlParam string, jsonData []byte) (*http.Respons
 		req.Header.Set("Content-Type", "application/json")
 	}
 
-	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
-		},
-	}
-
-	if config.GlobalConfig.ProxyParam != "" {
-		config.GlobalConfig.Logger.Info("Proxy URL found")
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Proxy value : %s", config.GlobalConfig.ProxyParam))
-		proxyURLParsed, err := url.Parse(config.GlobalConfig.ProxyParam)
-		if err != nil {
-			s.Stop()
-			return nil, fmt.Errorf("error parsing proxy url : %v", err)
-		}
-		transport.Proxy = http.ProxyURL(proxyURLParsed)
+	client, err := newHTTPClient(false)
+	if err != nil {
+		return nil, err
 	}
 
 	config.GlobalConfig.Logger.Info("Sending an HTTP request")
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Request URL: %v", req.URL))
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Request method: %v", req.Method))
-	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Request body: %v", req.Body))
-
-	client := &http.Client{Transport: transport}
 
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-	body, _ := io.ReadAll(resp.Body)
-	resp.Body = io.NopCloser(bytes.NewReader(body))
-	s.Stop()
+	if _, err := bufferResponse(resp); err != nil {
+		return nil, err
+	}
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("HTTP request %s %s returned %s", resp.Request.Method, resp.Request.URL.Path, resp.Status)
+	}
 	return resp, nil
 }
 

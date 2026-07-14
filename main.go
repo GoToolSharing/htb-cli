@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/GoToolSharing/htb-cli/cmd"
+	"github.com/PentestGPT-Project/htb-cli/cmd"
 )
 
 func main() {

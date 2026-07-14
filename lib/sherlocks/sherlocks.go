@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/PentestGPT-Project/htb-cli/config"
+	"github.com/PentestGPT-Project/htb-cli/lib/utils"
 	"github.com/chzyer/readline"
 	"github.com/sahilm/fuzzy"
 )
@@ -137,7 +137,6 @@ func GetTaskByID(sherlockID string, sherlockTaskID int, sherlockHint bool) error
 			return err
 		}
 		flag = strings.TrimSpace(flag)
-		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Flag: %s", flag))
 		taskID := strconv.Itoa(sherlockData.Tasks[sherlockTaskID-1].ID)
 
 		message, err := submitTask(sherlockID, taskID, flag)

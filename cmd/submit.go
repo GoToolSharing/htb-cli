@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/lib/submit"
-	"github.com/GoToolSharing/htb-cli/lib/utils"
-	"github.com/GoToolSharing/htb-cli/lib/webhooks"
+	"github.com/PentestGPT-Project/htb-cli/config"
+	"github.com/PentestGPT-Project/htb-cli/lib/submit"
+	"github.com/PentestGPT-Project/htb-cli/lib/utils"
+	"github.com/PentestGPT-Project/htb-cli/lib/webhooks"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -88,13 +88,16 @@ var submitCmd = &cobra.Command{
 
 		fmt.Println(output)
 
-		link, err := utils.GetAchievementLink(machineID)
-		if err != nil {
-			config.GlobalConfig.Logger.Error("", zap.Error(err))
-			os.Exit(1)
+		if machineID > 0 {
+			link, err := utils.GetAchievementLink(machineID)
+			if err != nil {
+				config.GlobalConfig.Logger.Error("", zap.Error(err))
+				os.Exit(1)
+			}
+			if link != "" {
+				fmt.Println(link)
+			}
 		}
-
-		fmt.Println(link)
 
 		err = webhooks.SendToDiscord("submit", output)
 		if err != nil {

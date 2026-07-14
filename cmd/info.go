@@ -10,8 +10,8 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/PentestGPT-Project/htb-cli/config"
+	"github.com/PentestGPT-Project/htb-cli/lib/utils"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )

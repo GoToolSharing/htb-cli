@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/lib/vpn"
-	"github.com/GoToolSharing/htb-cli/lib/webhooks"
+	"github.com/PentestGPT-Project/htb-cli/config"
+	"github.com/PentestGPT-Project/htb-cli/lib/vpn"
+	"github.com/PentestGPT-Project/htb-cli/lib/webhooks"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )

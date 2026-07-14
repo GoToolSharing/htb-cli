@@ -8,7 +8,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
 
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: ['1.20', '1.22', '1.23', '1.24']
+        go: ['1.26.5']
         os: [ 'linux', 'windows', 'darwin' ]
         arch: [ 'amd64', 'arm64' ]
     outputs:

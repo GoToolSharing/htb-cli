@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/PentestGPT-Project/htb-cli/config"
+	"github.com/PentestGPT-Project/htb-cli/lib/utils"
 	"golang.org/x/term"
 )
 
@@ -84,7 +84,7 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string, flagV
 		if machineType == "release" {
 			url = config.BaseHackTheBoxAPIURL + "/arena/own"
 		} else {
-			url = config.BaseHackTheBoxAPIURL + "/machine/own"
+			url = config.MachineOwnAPIURL
 		}
 		payload = map[string]interface{}{
 			"id": machineID,
@@ -114,6 +114,9 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string, flagV
 		if err != nil {
 			return "", 0, err
 		}
+		if activeMachineData == nil {
+			return "", 0, errors.New("no active machine")
+		}
 		if activeMachineData["authUserInUserOwns"].(bool) && activeMachineData["authUserInRootOwns"].(bool) {
 			return "The machine has already been pwned", int(activeMachineData["id"].(float64)), nil
 		}
@@ -137,7 +140,7 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string, flagV
 		if machineType == "release" {
 			url = config.BaseHackTheBoxAPIURL + "/arena/own"
 		} else {
-			url = config.BaseHackTheBoxAPIURL + "/machine/own"
+			url = config.MachineOwnAPIURL
 		}
 		payload = map[string]interface{}{
 			"id": machineID,
@@ -160,8 +163,6 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string, flagV
 	}
 
 	flag := strings.ReplaceAll(flagOriginal, " ", "")
-
-	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Flag: %s", flag))
 
 	payload["flag"] = flag
 

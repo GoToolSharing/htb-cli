@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/lib/update"
+	"github.com/PentestGPT-Project/htb-cli/config"
+	"github.com/PentestGPT-Project/htb-cli/lib/update"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -31,12 +31,12 @@ var rootCmd = &cobra.Command{
 		if !config.GlobalConfig.NoCheck {
 			message, err := update.Check(config.Version)
 			if err != nil {
-				config.GlobalConfig.Logger.Error("", zap.Error(err))
-				os.Exit(1)
-			}
-			config.GlobalConfig.Logger.Debug(fmt.Sprintf("Message : %s", message))
-			if strings.Contains(message, "A new update") {
-				fmt.Printf("%s\n\n", message)
+				config.GlobalConfig.Logger.Warn("Update check failed; continuing", zap.Error(err))
+			} else {
+				config.GlobalConfig.Logger.Debug(fmt.Sprintf("Message : %s", message))
+				if strings.Contains(message, "A new update") {
+					fmt.Printf("%s\n\n", message)
+				}
 			}
 		}
 	},

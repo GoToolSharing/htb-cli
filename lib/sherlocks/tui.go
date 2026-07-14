@@ -3,7 +3,7 @@ package sherlocks
 import (
 	"fmt"
 
-	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/PentestGPT-Project/htb-cli/config"
 	"github.com/rivo/tview"
 )
 

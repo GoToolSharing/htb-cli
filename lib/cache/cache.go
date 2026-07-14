@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/PentestGPT-Project/htb-cli/config"
 )
 
 // Function to retrieve machines_cache_date and compare with current date

@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/GoToolSharing/htb-cli/config"
+	"github.com/PentestGPT-Project/htb-cli/config"
 	"github.com/spf13/cobra"
 )
 

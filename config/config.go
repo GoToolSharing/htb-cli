@@ -31,6 +31,9 @@ const HostHackTheBox = "labs.hackthebox.com"
 
 const BaseHackTheBoxAPIURL = "https://" + HostHackTheBox + "/api/v4"
 
+// Machine flag submission moved to API v5 while the rest of the CLI remains on v4.
+const MachineOwnAPIURL = "https://" + HostHackTheBox + "/api/v5/machine/own"
+
 const Version = "dev"
 
 const Database = "/htb-cli.db"

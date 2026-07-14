@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/lib/sherlocks"
-	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/PentestGPT-Project/htb-cli/config"
+	"github.com/PentestGPT-Project/htb-cli/lib/sherlocks"
+	"github.com/PentestGPT-Project/htb-cli/lib/utils"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"

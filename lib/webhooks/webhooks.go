@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
-	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/PentestGPT-Project/htb-cli/config"
+	"github.com/PentestGPT-Project/htb-cli/lib/utils"
 )
 
 // SendToDiscord sends a message to a Discord channel using a webhook URL.
@@ -20,7 +21,7 @@ func SendToDiscord(command string, message string) error {
 		Description: fmt.Sprintf("User **%s** used the **%s** command.\n**Message:** %s", utils.GetCurrentUsername(), command, message),
 		Color:       12345,
 		Thumbnail: EmbedThumbnail{
-			URL: "https://github.com/GoToolSharing/htb-cli/blob/main/assets/logo.png?raw=true",
+			URL: "https://github.com/PentestGPT-Project/htb-cli/blob/main/assets/logo.png?raw=true",
 		},
 	}
 	payload := map[string]interface{}{
@@ -37,7 +38,7 @@ func SendToDiscord(command string, message string) error {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to send request: %w", err)

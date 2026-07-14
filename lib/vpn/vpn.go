@@ -14,8 +14,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/GoToolSharing/htb-cli/config"
-	"github.com/GoToolSharing/htb-cli/lib/utils"
+	"github.com/PentestGPT-Project/htb-cli/config"
+	"github.com/PentestGPT-Project/htb-cli/lib/utils"
 )
 
 func downloadVPN(url string) error {
