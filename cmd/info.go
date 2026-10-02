@@ -22,8 +22,12 @@ type Response struct {
 }
 
 // Retrieves data for user profile
-func fetchData(itemID int, endpoint string, infoKey string) (map[string]interface{}, error) {
-	url := fmt.Sprintf("%s%s%d", config.BaseHackTheBoxAPIURL, endpoint, itemID)
+func fetchData(itemID int, endpoint string, infoKey string, apiVersion string) (map[string]interface{}, error) {
+	baseURL := config.BaseHackTheBoxAPIURL
+	if apiVersion == "v5" {
+		baseURL = strings.Replace(config.BaseHackTheBoxAPIURL, "/v4", "/v5", 1)
+	}
+	url := fmt.Sprintf("%s%s%d", baseURL, endpoint, itemID)
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("URL: %s", url))
 
 	resp, err := utils.HtbRequest(http.MethodGet, url, nil)
@@ -32,12 +36,24 @@ func fetchData(itemID int, endpoint string, infoKey string) (map[string]interfac
 	}
 
 	parsedInfo := utils.ParseJsonMessage(resp, infoKey)
+	
+	// Handle v5 API response
+	if apiVersion == "v5" && infoKey == "data" {
+		if dataArray, ok := parsedInfo.([]interface{}); ok {
+			return map[string]interface{}{
+				"activity": dataArray,
+			}, nil
+		}
+		return nil, errors.New("Could not convert data to array")
+	}
+	
 	dataMap, ok := parsedInfo.(map[string]interface{})
 	if !ok {
 		return nil, errors.New("Could not convert parsedInfo to map[string]interface{}")
 	}
 	return dataMap, nil
 }
+
 
 // fetchAndDisplayInfo fetches and displays information based on the specified parameters.
 func fetchAndDisplayInfo(url, header string, params []string, elementType string) error {
@@ -82,18 +98,20 @@ func fetchAndDisplayInfo(url, header string, params []string, elementType string
 		data := info.(map[string]interface{})
 
 		endpoints := []struct {
-			name string
-			url  string
+			name       string
+			url        string
+			apiVersion string
+			infoKey    string
 		}{
-			{"Fortresses", "/user/profile/progress/fortress/"},
-			{"Prolabs", "/user/profile/progress/prolab/"},
-			{"Activity", "/user/profile/activity/"},
+			{"Fortresses", "/user/profile/progress/fortress/", "v4", "profile"},
+			{"Prolabs", "/user/profile/progress/prolab/", "v4", "profile"},
+			{"Activity", "/user/profile/activity/", "v5", "data"},
 		}
 
 		dataMaps := make(map[string]map[string]interface{})
 
 		for _, ep := range endpoints {
-			data, err := fetchData(itemID, ep.url, "profile")
+			data, err := fetchData(itemID, ep.url, ep.infoKey, ep.apiVersion)
 			if err != nil {
 				fmt.Printf("Error fetching data for %s: %v\n", ep.name, err)
 				continue

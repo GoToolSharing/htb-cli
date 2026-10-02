@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/GoToolSharing/htb-cli/config"
@@ -20,7 +21,6 @@ import (
 const (
 	machineURL     = config.BaseHackTheBoxAPIURL + "/machine/paginated/?per_page=20"
 	retiredURL     = config.BaseHackTheBoxAPIURL + "/machine/list/retired/paginated/?per_page=20&sort_by=release-date"
-	scheduledURL   = config.BaseHackTheBoxAPIURL + "/machine/unreleased/"
 	activeTitle    = "Active"
 	retiredTitle   = "Retired"
 	scheduledTitle = "Scheduled"
@@ -29,6 +29,8 @@ const (
 	Penguin        = "\U0001F427"
 	Computer       = "\U0001F5A5 "
 )
+
+var scheduledURL = strings.Replace(config.BaseHackTheBoxAPIURL, "/v4", "/v5", 1) + "/machines?per_page=15&state=unreleased"
 
 // getColorFromDifficultyText returns the color corresponding to the given difficulty.
 func getColorFromDifficultyText(difficultyText string) string {
@@ -67,48 +69,94 @@ func createFlex(info interface{}, title string, isScheduled bool) (*tview.Flex, 
 		data := value.(map[string]interface{})
 
 		// Determining the color according to difficulty
-
 		key := "Undefined"
 		_ = key
 		if title == "Scheduled" {
-			key = data["difficulty_text"].(string)
+			if val, ok := data["difficultyText"].(string); ok {
+				key = val
+			}
 		} else {
-			key = data["difficultyText"].(string)
+			if val, ok := data["difficultyText"].(string); ok {
+				key = val
+			}
 		}
 		color := getColorFromDifficultyText(key)
-		osEmoji := getOSEmoji(data["os"].(string))
+		
+		osStr := "Unknown"
+		if os, ok := data["os"].(string); ok {
+			osStr = os
+		}
+		osEmoji := getOSEmoji(osStr)
 
 		var formatString string
 
 		// Choice of display format depending on the nature of the information
 		if isScheduled {
+			diffText := "Undefined"
+			if val, ok := data["difficultyText"].(string); ok {
+				diffText = val
+			}
+			name := "Undefined"
+			if val, ok := data["name"].(string); ok {
+				name = val
+			}
 			formatString = fmt.Sprintf("%-10s %s%-10s %s%-10s[-]",
-				data["name"], osEmoji, data["os"], color, data["difficulty_text"])
+				name, osEmoji, osStr, color, diffText)
 		} else {
 			// Convert and format date
-			parsedDate, err := time.Parse(time.RFC3339Nano, data["release"].(string))
+			var releaseDateStr string
+			if val, ok := data["release"].(string); ok {
+				releaseDateStr = val
+			} else if val, ok := data["releaseDate"].(string); ok {
+				releaseDateStr = val
+			}
+			
+			if releaseDateStr == "" {
+				continue
+			}
+
+			parsedDate, err := time.Parse(time.RFC3339Nano, releaseDateStr)
 			if err != nil {
-				return nil, fmt.Errorf("error parsing date: %v", err)
+				// Try RFC3339 format for v5 API
+				parsedDate, err = time.Parse(time.RFC3339, releaseDateStr)
+				if err != nil {
+					return nil, fmt.Errorf("error parsing date: %v", err)
+				}
 			}
 			formattedDate := parsedDate.Format("02 January 2006")
 
 			userEmoji := CrossMark + "User"
-			if value, ok := data["authUserInUserOwns"]; ok && value != nil {
-				if value.(bool) {
+			if val, ok := data["authUserInUserOwns"]; ok && val != nil {
+				if boolVal, ok := val.(bool); ok && boolVal {
 					userEmoji = CheckMark + "User"
 				}
 			}
 
 			rootEmoji := CrossMark + "Root"
-			if value, ok := data["authUserInRootOwns"]; ok && value != nil {
-				if value.(bool) {
+			if val, ok := data["authUserInRootOwns"]; ok && val != nil {
+				if boolVal, ok := val.(bool); ok && boolVal {
 					rootEmoji = CheckMark + "Root"
 				}
 			}
 
+			name := "Undefined"
+			if val, ok := data["name"].(string); ok {
+				name = val
+			}
+			
+			diffText := "Undefined"
+			if val, ok := data["difficultyText"].(string); ok {
+				diffText = val
+			}
+			
+			star := 0.0
+			if val, ok := data["star"].(float64); ok {
+				star = val
+			}
+
 			formatString = fmt.Sprintf("%-15s %s%-10s %s%-10s[-] %-5v %-5v %-7v %-30s",
-				data["name"], osEmoji, data["os"], color, data["difficultyText"],
-				data["star"], userEmoji, rootEmoji, formattedDate)
+				name, osEmoji, osStr, color, diffText,
+				star, userEmoji, rootEmoji, formattedDate)
 		}
 
 		flex.AddItem(tview.NewTextView().SetText(formatString).SetDynamicColors(true), 1, 0, false)

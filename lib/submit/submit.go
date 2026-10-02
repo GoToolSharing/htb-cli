@@ -81,11 +81,7 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string, flagV
 		}
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
 
-		if machineType == "release" {
-			url = config.BaseHackTheBoxAPIURL + "/arena/own"
-		} else {
-			url = config.BaseHackTheBoxAPIURL + "/machine/own"
-		}
+		url = config.BaseHackTheBoxAPIURLv5 + "/machine/own"
 		payload = map[string]interface{}{
 			"id": machineID,
 		}
@@ -134,11 +130,7 @@ func CoreSubmitCmd(difficultyParam int, modeType string, modeValue string, flagV
 		}
 		config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
 
-		if machineType == "release" {
-			url = config.BaseHackTheBoxAPIURL + "/arena/own"
-		} else {
-			url = config.BaseHackTheBoxAPIURL + "/machine/own"
-		}
+		url = config.BaseHackTheBoxAPIURLv5 + "/machine/own"
 		payload = map[string]interface{}{
 			"id": machineID,
 		}

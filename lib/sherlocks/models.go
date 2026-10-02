@@ -19,7 +19,8 @@ type SherlockElement struct {
 }
 
 type SherlockData struct {
-	Data []SherlockElement `json:"data"`
+	Data    []SherlockElement `json:"data"`
+	Message string            `json:"message"`
 }
 
 type SherlockNameID struct {

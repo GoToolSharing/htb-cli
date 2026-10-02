@@ -91,27 +91,39 @@ func InsertMachines(db *sql.DB, data interface{}, title string) error {
 		id := int(machineMap["id"].(float64))
 		name := machineMap["name"].(string)
 		os := machineMap["os"].(string)
-		releaseDateStr := machineMap["release"].(string)
 		status := title
 		var difficulty string
 		var star float64
 		var userOwns bool
 		var rootOwns bool
+		var releaseDateStr string
 
-		// Scheduled machines
-		if val, ok := machineMap["difficulty_text"].(string); ok {
-			difficulty = val
+		// Scheduled machines (v5 API)
+		if val, ok := machineMap["releaseDate"].(string); ok {
+			releaseDateStr = val
+			difficulty = machineMap["difficultyText"].(string)
 			star = 0
 			userOwns = false
 			rootOwns = false
 		} else {
+			// Active/Retired machines (v4 API)
+			releaseDateStr = machineMap["release"].(string)
 			difficulty = machineMap["difficultyText"].(string)
 			star = machineMap["star"].(float64)
 			userOwns = machineMap["authUserInUserOwns"].(bool)
 			rootOwns = machineMap["authUserInRootOwns"].(bool)
 		}
 
-		releaseDate, err := time.Parse("2006-01-02T15:04:05.000000Z", releaseDateStr)
+		// Parse date - handle both v4 and v5 formats
+		var releaseDate time.Time
+		var err error
+		if status == "Scheduled" {
+			// v5 format: 2026-08-29T19:00:00.000Z
+			releaseDate, err = time.Parse(time.RFC3339, releaseDateStr)
+		} else {
+			// v4 format: 2006-01-02T15:04:05.000000Z
+			releaseDate, err = time.Parse("2006-01-02T15:04:05.000000Z", releaseDateStr)
+		}
 		if err != nil {
 			return fmt.Errorf("date parsing error for %s: %v", name, err)
 		}

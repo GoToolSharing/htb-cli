@@ -135,17 +135,10 @@ func BuildSubmitStuff(hostname string, userFlag string) (string, map[string]inte
 	}
 	config.GlobalConfig.Logger.Debug(fmt.Sprintf("Machine Type: %s", machineType))
 
-	if machineType == "release" {
-		url = config.BaseHackTheBoxAPIURL + "/arena/own"
-		payload = map[string]interface{}{
-			"flag": userFlag,
-		}
-	} else {
-		url = config.BaseHackTheBoxAPIURL + "/machine/own"
-		payload = map[string]interface{}{
-			"id":   machineID,
-			"flag": userFlag,
-		}
+	url = config.BaseHackTheBoxAPIURLv5 + "/machine/own"
+	payload = map[string]interface{}{
+		"id":   machineID,
+		"flag": userFlag,
 	}
 
 	return url, payload, nil

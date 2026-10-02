@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/rivo/tview"
 )
@@ -20,8 +21,15 @@ func calculateSpacing(baseName string, maxNameLength int) string {
 
 // Parse and return the user's subscription level
 func parseUserSubscription(profile map[string]interface{}) string {
-	isVip := profile["isVip"].(bool)
-	isDedicatedVIP := profile["isDedicatedVip"].(bool)
+	isVip := false
+	if val, ok := profile["isVip"].(bool); ok {
+		isVip = val
+	}
+
+	isDedicatedVIP := false
+	if val, ok := profile["isDedicatedVip"].(bool); ok {
+		isDedicatedVIP = val
+	}
 
 	if isDedicatedVIP {
 		return "VIP+"
@@ -74,36 +82,78 @@ func displayInfoPanel(title string, items []interface{}, formatterFunc func(map[
 
 // Get the right keys for display
 func displayInfo(dataMaps map[string]map[string]interface{}, dataMapKey string, title string, flagSymbol string, maxNameLength int, paddingBottom int) *tview.Flex {
-	items, ok := dataMaps[strings.ToUpper(string(dataMapKey[0]))+dataMapKey[1:]][dataMapKey].([]interface{})
+	// Check if the capitalized key exists first
+	capitalizedKey := strings.ToUpper(string(dataMapKey[0])) + dataMapKey[1:]
+	dataMap, ok := dataMaps[capitalizedKey]
 	if !ok {
-		fmt.Println("Error: couldn't convert data")
+		// Key doesn't exist in dataMaps
+		return nil
+	}
+
+	// Check if the inner key exists
+	itemsInterface, ok := dataMap[dataMapKey]
+	if !ok {
+		// Inner key doesn't exist
+		return nil
+	}
+
+	// Try to convert to slice
+	items, ok := itemsInterface.([]interface{})
+	if !ok {
+		fmt.Printf("Error: couldn't convert data for key '%s'\n", dataMapKey)
 		return nil
 	}
 
 	var formatterFunc func(item map[string]interface{}) string
 	if dataMapKey == "activity" {
 		formatterFunc = func(item map[string]interface{}) string {
-			var object_type interface{}
-			switch item["object_type"].(string) {
-			case "fortress":
-				object_type = item["flag_title"]
-			case "challenge":
-				object_type = item["challenge_category"]
-			case "machine":
-				switch item["type"].(string) {
-				case "root":
-					object_type = "System"
-				case "user":
-					object_type = "User"
-				default:
-					object_type = item["type"].(string)
+			// Handle v5 API format
+			activityType := "unknown"
+			if typeVal, ok := item["type"].(string); ok {
+				activityType = typeVal
+			}
+
+			name := "N/A"
+			if nameVal, ok := item["name"].(string); ok {
+				name = nameVal
+			}
+
+			points := 0.0
+			if pointsVal, ok := item["points"].(float64); ok {
+				points = pointsVal
+			}
+
+			bloodStatus := ""
+			if blood, ok := item["blood"].(bool); ok && blood {
+				bloodStatus = " [red]🩸[-]"
+			}
+
+			// Parse and format ownDate
+			dateStr := ""
+			if ownDate, ok := item["ownDate"].(string); ok {
+				if parsedDate, err := time.Parse(time.RFC3339, ownDate); err == nil {
+					dateStr = parsedDate.Format("2006-01-02 15:04")
+				} else {
+					dateStr = ownDate
 				}
 			}
-			return fmt.Sprintf("[::b]Owned %v - %s %s - %s - [green]+[%vpts][-]", object_type, item["name"], item["object_type"], item["date_diff"], item["points"])
+
+			return fmt.Sprintf("[::b]%s - %s - [green]+[%.0fpts][-] (%s)%s", activityType, name, points, dateStr, bloodStatus)
 		}
 	} else {
 		formatterFunc = func(item map[string]interface{}) string {
-			return formatFlagInfo(item["name"].(string), item["owned_flags"].(float64), item["total_flags"].(float64), flagSymbol, maxNameLength)
+			name := "N/A"
+			if nameVal, ok := item["name"].(string); ok {
+				name = nameVal
+			}
+			var owned, total float64 = 0, 0
+			if ownedVal, ok := item["owned_flags"].(float64); ok {
+				owned = ownedVal
+			}
+			if totalVal, ok := item["total_flags"].(float64); ok {
+				total = totalVal
+			}
+			return formatFlagInfo(name, owned, total, flagSymbol, maxNameLength)
 		}
 	}
 
@@ -117,13 +167,21 @@ func DisplayInformationsGUI(profile map[string]interface{}, advancedLabsMap map[
 	universityName, universityRank := "N/A", "N/A"
 
 	if teamMap, ok := profile["team"].(map[string]interface{}); ok && teamMap != nil {
-		teamName = teamMap["name"].(string)
-		teamRank = fmt.Sprintf("%v", teamMap["ranking"].(float64))
+		if name, ok := teamMap["name"].(string); ok {
+			teamName = name
+		}
+		if rank, ok := teamMap["ranking"].(float64); ok {
+			teamRank = fmt.Sprintf("%v", rank)
+		}
 	}
 
 	if universityMap, ok := profile["university"].(map[string]interface{}); ok && universityMap != nil {
-		universityName = universityMap["name"].(string)
-		universityRank = fmt.Sprintf("%v", universityMap["rank"].(float64))
+		if name, ok := universityMap["name"].(string); ok {
+			universityName = name
+		}
+		if rank, ok := universityMap["rank"].(float64); ok {
+			universityRank = fmt.Sprintf("%v", rank)
+		}
 	}
 
 	subscription := parseUserSubscription(profile)
@@ -141,7 +199,11 @@ func DisplayInformationsGUI(profile map[string]interface{}, advancedLabsMap map[
 
 	userInformationsFlex := tview.NewFlex().SetDirection(tview.FlexRow)
 	userInformationsFlex.SetBorder(true).SetTitle("Profile").SetTitleAlign(tview.AlignLeft)
-	userInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]ID           : %d[-]", int(profile["id"].(float64)))).SetDynamicColors(true), 1, 0, false)
+	id := "N/A"
+	if idVal, ok := profile["id"].(float64); ok {
+		id = fmt.Sprintf("%d", int(idVal))
+	}
+	userInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]ID           : %v[-]", id)).SetDynamicColors(true), 1, 0, false)
 	userInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Name         : %v[-]", profile["name"])).SetDynamicColors(true), 1, 0, false)
 	userInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]Team         : %v[-]", teamName)).SetDynamicColors(true), 1, 0, false)
 	userInformationsFlex.AddItem(tview.NewTextView().SetText(fmt.Sprintf("[::b]University   : %v[-]", universityName)).SetDynamicColors(true), 1, 0, false)
@@ -179,15 +241,25 @@ func DisplayInformationsGUI(profile map[string]interface{}, advancedLabsMap map[
 
 	advancedLabsFlex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		SetDirection(tview.FlexColumn).
-		AddItem(fortressesPanel, 0, 1, false).
-		AddItem(prolabsPanel, 0, 1, false)
+		SetDirection(tview.FlexColumn)
+	
+	// Only add panels that are not nil
+	if fortressesPanel != nil {
+		advancedLabsFlex.AddItem(fortressesPanel, 0, 1, false)
+	}
+	if prolabsPanel != nil {
+		advancedLabsFlex.AddItem(prolabsPanel, 0, 1, false)
+	}
 
 	leftFlex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(userInformationsContainer, 0, 1, false).
-		AddItem(advancedLabsFlex, 0, 1, false).
-		AddItem(activityPanel, 0, 2, false)
+		AddItem(advancedLabsFlex, 0, 1, false)
+	
+	// Only add activity panel if it's not nil
+	if activityPanel != nil {
+		leftFlex.AddItem(activityPanel, 0, 2, false)
+	}
 
 	mainFlex := tview.NewFlex().
 		AddItem(leftFlex, 0, 2, false)

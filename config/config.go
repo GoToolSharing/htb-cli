@@ -30,6 +30,7 @@ var BaseDirectory = homeDir + "/.local/htb-cli"
 const HostHackTheBox = "labs.hackthebox.com"
 
 const BaseHackTheBoxAPIURL = "https://" + HostHackTheBox + "/api/v4"
+const BaseHackTheBoxAPIURLv5 = "https://" + HostHackTheBox + "/api/v5"
 
 const Version = "dev"
 
